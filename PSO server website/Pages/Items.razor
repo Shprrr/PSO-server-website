@@ -1,0 +1,68 @@
+﻿@page "/items"
+@inject HttpClient http
+
+<PageTitle>Items</PageTitle>
+
+<h1>Items</h1>
+
+@if (itemsFiltered == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <InputText DisplayName="Filter" @bind-Value="filter" @bind-Value:after="OnFilterValueChanged" placeholder="Filter name" />
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>Name</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in itemsFiltered)
+            {
+                <tr>
+                    <td>@item.Id</td>
+                    <td>@item.Name</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private ItemModel[]? items;
+    private string filter = "";
+    private ItemModel[]? itemsFiltered;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var names = await http.GetFromJsonAsync<Dictionary<string, string>>("data/names-v4.json");
+        items = names?.Select(n => new ItemModel(n.Key, n.Value)).ToArray();
+        OnFilterValueChanged();
+    }
+
+    private void OnFilterValueChanged()
+    {
+        if (string.IsNullOrEmpty(filter))
+            itemsFiltered = items;
+        else
+            itemsFiltered = items?.Where(i => i.Name.Equals(filter, StringComparison.InvariantCultureIgnoreCase)).ToArray();
+    }
+
+    private class ItemModel
+    {
+        public ItemModel(string id, string name)
+        {
+            Id = id;
+            Name = name;
+        }
+
+        public string Id { get; set; } = "";
+        public string Name { get; set; } = "";
+
+        public override string ToString() => $"{Name} ({Id})";
+    }
+}
