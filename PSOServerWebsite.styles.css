@@ -143,3 +143,57 @@ main[b-x8btpx0o3k] {
         overflow-y: auto;
     }
 }
+/* /Pages/RareDrops.razor.rz.scp.css */
+.secid-viridia[b-ifimzlxf9d] {
+    background-color: green;
+    color: white;
+    border-bottom-color: black !important;
+}
+.secid-greennill[b-ifimzlxf9d] {
+    background-color: lime;
+}
+.secid-skyly[b-ifimzlxf9d] {
+    background-color: cyan;
+}
+.secid-bluefull[b-ifimzlxf9d] {
+    background-color: blue;
+    color: white;
+    border-bottom-color: black !important;
+}
+.secid-purplenum[b-ifimzlxf9d] {
+    background-color: purple;
+    color: white;
+    border-bottom-color: black !important;
+}
+.secid-pinkal[b-ifimzlxf9d] {
+    background-color: pink;
+}
+.secid-redria[b-ifimzlxf9d] {
+    background-color: red;
+    color: white;
+    border-bottom-color: black !important;
+}
+.secid-oran[b-ifimzlxf9d] {
+    background-color: orange;
+}
+.secid-yellowboze[b-ifimzlxf9d] {
+    background-color: yellow;
+}
+.secid-whitill[b-ifimzlxf9d] {
+    background-color: #e6e6e6;
+}
+
+.table thead[b-ifimzlxf9d] {
+    position: sticky;
+    top: 3.5em;
+}
+
+.probability[b-ifimzlxf9d] {
+    color: darkgray;
+}
+    .probability[b-ifimzlxf9d]::before {
+        content: '(';
+    }
+    .probability[b-ifimzlxf9d]::after {
+        content: ')';
+    }
