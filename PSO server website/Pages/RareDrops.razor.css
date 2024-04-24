@@ -1,0 +1,53 @@
+﻿.secid-viridia {
+    background-color: green;
+    color: white;
+    border-bottom-color: black !important;
+}
+.secid-greennill {
+    background-color: lime;
+}
+.secid-skyly {
+    background-color: cyan;
+}
+.secid-bluefull {
+    background-color: blue;
+    color: white;
+    border-bottom-color: black !important;
+}
+.secid-purplenum {
+    background-color: purple;
+    color: white;
+    border-bottom-color: black !important;
+}
+.secid-pinkal {
+    background-color: pink;
+}
+.secid-redria {
+    background-color: red;
+    color: white;
+    border-bottom-color: black !important;
+}
+.secid-oran {
+    background-color: orange;
+}
+.secid-yellowboze {
+    background-color: yellow;
+}
+.secid-whitill {
+    background-color: #e6e6e6;
+}
+
+.table thead {
+    position: sticky;
+    top: 3.5em;
+}
+
+.probability {
+    color: darkgray;
+}
+    .probability::before {
+        content: '(';
+    }
+    .probability::after {
+        content: ')';
+    }
