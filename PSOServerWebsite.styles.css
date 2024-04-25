@@ -183,9 +183,19 @@ main[b-x8btpx0o3k] {
     background-color: #e6e6e6;
 }
 
+h3[b-ifimzlxf9d], h4[b-ifimzlxf9d] {
+    position: sticky;
+    background-color: white;
+}
+h3[b-ifimzlxf9d] {
+    top: 3.5rem;
+}
+h4[b-ifimzlxf9d] {
+    top: 5.5rem;
+}
 .table thead[b-ifimzlxf9d] {
     position: sticky;
-    top: 3.5em;
+    top: 4.5rem;
 }
 
 .probability[b-ifimzlxf9d] {
