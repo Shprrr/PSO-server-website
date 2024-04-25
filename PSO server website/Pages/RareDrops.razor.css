@@ -37,9 +37,19 @@
     background-color: #e6e6e6;
 }
 
+h3, h4 {
+    position: sticky;
+    background-color: white;
+}
+h3 {
+    top: 3.5rem;
+}
+h4 {
+    top: 5.5rem;
+}
 .table thead {
     position: sticky;
-    top: 3.5em;
+    top: 4.5rem;
 }
 
 .probability {

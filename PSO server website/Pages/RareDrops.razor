@@ -1,6 +1,7 @@
 ﻿@page "/rareDrops"
-@using System.Text.Json
-@inject HttpClient http
+@using PSOServerWebsite.Services
+@inject RareDropsService rareDropsService
+@inject ItemsService itemsService
 
 <PageTitle>Rare Drops</PageTitle>
 
@@ -13,151 +14,73 @@
 else
 {
     <h2>Normal Mode</h2>
-    <h3>Episode 1</h3>
-    <h4>Normal</h4>
-    <table class="table">
-        <thead>
-            <tr>
-                <td></td>
-                <th class="secid-viridia">Viridia</th>
-                <th class="secid-greennill">Greenill</th>
-                <th class="secid-skyly">Skyly</th>
-                <th class="secid-bluefull">Bluefull</th>
-                <th class="secid-purplenum">Purplenum</th>
-                <th class="secid-pinkal">Pinkal</th>
-                <th class="secid-redria">Redria</th>
-                <th class="secid-oran">Oran</th>
-                <th class="secid-yellowboze">Yellowboze</th>
-                <th class="secid-whitill">Whitill</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var where in rareDrops.Normal.Episode1.Normal.Where())
-            {
-                <tr>
-                    <th>@where</th>
-                    @foreach (var sectionId in rareDrops.Normal.Episode1.Normal.SectionsId())
+    @foreach (var episode in rareDrops.Normal.Episodes())
+    {
+        <h3>@episode.Name</h3>
+        @foreach (var difficulty in episode.Value!.Difficulties())
+        {
+            <h4>@difficulty.Name</h4>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <td></td>
+                        <th class="secid-viridia">Viridia</th>
+                        <th class="secid-greennill">Greenill</th>
+                        <th class="secid-skyly">Skyly</th>
+                        <th class="secid-bluefull">Bluefull</th>
+                        <th class="secid-purplenum">Purplenum</th>
+                        <th class="secid-pinkal">Pinkal</th>
+                        <th class="secid-redria">Redria</th>
+                        <th class="secid-oran">Oran</th>
+                        <th class="secid-yellowboze">Yellowboze</th>
+                        <th class="secid-whitill">Whitill</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var where in difficulty.Value!.Where())
                     {
-                        <td>
-                            @if (sectionId.ContainsKey(where))
-                                @foreach (var item in sectionId[where])
-                                {
-                                    <div>
-                                        <span>@item.ItemDescription</span>
-                                        <span class="probability">@item.Probability</span>
-                                    </div>
-                                }
-                            else
+                        <tr>
+                            <th>@where</th>
+                            @foreach (var sectionId in difficulty.Value.SectionsId())
                             {
-                                <span>None</span>
+                                <td>
+                                    @if (sectionId.ContainsKey(where))
+                                        @foreach (var item in sectionId[where])
+                                        {
+                                            <div>
+                                                <span>@GetItemName(item.ItemDescription)</span>
+                                                <span class="probability">@item.Probability</span>
+                                            </div>
+                                        }
+                                    else
+                                    {
+                                        <span>None</span>
+                                    }
+                                </td>
                             }
-                        </td>
+                        </tr>
                     }
-                </tr>
-            }
-        </tbody>
-    </table>
+                </tbody>
+            </table>
+        }
+    }
 }
 
 @code {
-    private RareDropModel? rareDrops;
+    [MaybeNull] private RareDropModel rareDrops;
+    [MaybeNull] private Dictionary<string, ItemModel> items;
 
     protected override async Task OnInitializedAsync()
     {
-        var json = (await http.GetStringAsync("data/rare-table-v4.json")).FixJson();
-        rareDrops = JsonSerializer.Deserialize<RareDropModel>(json, new JsonSerializerOptions { ReadCommentHandling = JsonCommentHandling.Skip, AllowTrailingCommas = true });
+        rareDrops = await rareDropsService.GetRareDropsAsync();
+        items = (await itemsService.GetItemsAsync()).ToDictionary(i => i.Id);
     }
 
-    // The overall data structure is:
-    // {GameMode: {Episode: {Difficulty: {SectionID: {Where: [RareSpec, ...]}}}}}
-    // Most of the keys should be self-explanatory. `Where` can be an enemy type
-    // (which matches the EnemyType enum), or "Box-" suffixed with an area name.
-    // RareSpec entries are lists of 2 items of the form [Probability, ItemDesc].
-    private class RareDropModel
+    private string GetItemName(string itemDescription)
     {
-        public GameModeModel Normal { get; set; } = new();
-    }
-    private class GameModeModel
-    {
-        public EpisodeModel Episode1 { get; set; } = new();
-        public EpisodeModel Episode2 { get; set; } = new();
-        public EpisodeModel Episode4 { get; set; } = new();
-    }
-    private class EpisodeModel
-    {
-        public DifficultyModel Normal { get; set; } = new();
-        public DifficultyModel Hard { get; set; } = new();
-        public DifficultyModel VeryHard { get; set; } = new();
-        public DifficultyModel Ultimate { get; set; } = new();
-    }
-    private class DifficultyModel
-    {
-        public SectionIdModel Viridia { get; set; } = new();
-        public SectionIdModel Greennill { get; set; } = new();
-        public SectionIdModel Skyly { get; set; } = new();
-        public SectionIdModel Bluefull { get; set; } = new();
-        public SectionIdModel Purplenum { get; set; } = new();
-        public SectionIdModel Pinkal { get; set; } = new();
-        public SectionIdModel Redria { get; set; } = new();
-        public SectionIdModel Oran { get; set; } = new();
-        public SectionIdModel Yellowboze { get; set; } = new();
-        public SectionIdModel Whitill { get; set; } = new();
+        if (itemDescription.StartsWith("0x") && items!.TryGetValue(itemDescription.Substring(2), out var itemModel))
+            return itemModel.Name;
 
-        public IEnumerable<string> Where()
-        {
-            return Viridia.Keys.Union(Greennill.Keys.Union(Skyly.Keys.Union(Bluefull.Keys.Union(Purplenum.Keys.Union(Pinkal.Keys.Union(Redria.Keys.Union(Oran.Keys.Union(Yellowboze.Keys.Union(Whitill.Keys)))))))));
-        }
-
-        public IEnumerable<SectionIdModel> SectionsId()
-        {
-            yield return Viridia;
-            yield return Greennill;
-            yield return Skyly;
-            yield return Bluefull;
-            yield return Purplenum;
-            yield return Pinkal;
-            yield return Redria;
-            yield return Oran;
-            yield return Yellowboze;
-            yield return Whitill;
-        }
-    }
-    private class SectionIdModel : Dictionary<string, RareSpecificationModel[]>
-    {
-    }
-    [System.Text.Json.Serialization.JsonConverter(typeof(RareSpecificationModelConverter))]
-    private class RareSpecificationModel
-    {
-        /// <summary>
-        /// <see cref="Probability" /> may be a 32-bit integer specifying the relative frequency of
-        /// finding the item, out of 2^32 (so 0x80000000 means a 50% chance), or it may
-        /// be a fraction represented as a string (e.g. "3/32").
-        /// </summary>
-        public string Probability { get; set; } = "";
-        /// <summary>
-        /// <see cref="ItemDescription" /> may be a
-        /// textual description of the item, the item's data specified as a hex string,
-        /// or an integer specifying the 3-byte item code (in this case, the item code
-        /// may be specified in hex, like 0x009D00). If an item has any extended
-        /// attributes specified (that is, if there are any nonzero bytes in the item's
-        /// data beyond the first three bytes), then the standard random attribute
-        /// logic is disabled for that item and it will drop exactly as specified.
-        /// </summary>
-        public string ItemDescription { get; set; } = "";
-    }
-    private class RareSpecificationModelConverter : System.Text.Json.Serialization.JsonConverter<RareSpecificationModel>
-    {
-        public override RareSpecificationModel Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
-        {
-            reader.Read();// StartArray
-            RareSpecificationModel spec = new();
-            spec.Probability = reader.GetString()!;
-            reader.Read();
-            spec.ItemDescription = reader.GetString()!;
-            reader.Read();
-            return spec;
-        }
-
-        public override void Write(Utf8JsonWriter writer, RareSpecificationModel value, JsonSerializerOptions options) => throw new NotImplementedException();
+        return itemDescription;
     }
 }

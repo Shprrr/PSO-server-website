@@ -1,5 +1,6 @@
 ﻿@page "/items"
-@inject HttpClient http
+@using PSOServerWebsite.Services
+@inject ItemsService itemsService
 
 <PageTitle>Items</PageTitle>
 
@@ -33,14 +34,13 @@ else
 }
 
 @code {
-    private ItemModel[]? items;
+    [MaybeNull] private ItemModel[] items;
     private string filter = "";
     private ItemModel[]? itemsFiltered;
 
     protected override async Task OnInitializedAsync()
     {
-        var names = await http.GetFromJsonAsync<Dictionary<string, string>>("data/names-v4.json");
-        items = names?.Select(n => new ItemModel(n.Key, n.Value)).ToArray();
+        items = (await itemsService.GetItemsAsync()).ToArray();
         OnFilterValueChanged();
     }
 
@@ -50,19 +50,5 @@ else
             itemsFiltered = items;
         else
             itemsFiltered = items?.Where(i => i.Name.Equals(filter, StringComparison.InvariantCultureIgnoreCase)).ToArray();
-    }
-
-    private class ItemModel
-    {
-        public ItemModel(string id, string name)
-        {
-            Id = id;
-            Name = name;
-        }
-
-        public string Id { get; set; } = "";
-        public string Name { get; set; } = "";
-
-        public override string ToString() => $"{Name} ({Id})";
     }
 }
