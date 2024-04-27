@@ -11,5 +11,6 @@ builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.
 
 builder.Services.AddScoped<ItemsService>();
 builder.Services.AddScoped<RareDropsService>();
+builder.Services.AddScoped<ItemPMTService>();
 
 await builder.Build().RunAsync();
