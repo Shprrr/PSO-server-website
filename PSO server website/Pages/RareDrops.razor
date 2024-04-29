@@ -48,7 +48,14 @@ else
                                         @foreach (var item in sectionId[where])
                                         {
                                             <div>
-                                                <span>@GetItemName(item.ItemDescription)</span>
+                                                @if (HasMoreInfo(item.ItemDescription))
+                                                {
+                                                    <a data-bs-toggle="modal" href="#modalInfo" @onclick="@(e => itemMoreInfo = GetItemModel(item.ItemDescription))">@GetItemName(item.ItemDescription)</a>
+                                                }
+                                                else
+                                                {
+                                                    <span>@GetItemName(item.ItemDescription)</span>
+                                                }
                                                 <span class="probability">@item.Probability</span>
                                             </div>
                                         }
@@ -66,9 +73,13 @@ else
     }
 }
 
+<ItemMoreInfoModal @ref="modalMoreInfo" ItemToShow="@itemMoreInfo" />
+
 @code {
     [MaybeNull] private RareDropModel rareDrops;
     [MaybeNull] private Dictionary<string, ItemModel> items;
+    private ItemMoreInfoModal? modalMoreInfo;
+    private ItemModel? itemMoreInfo;
 
     protected override async Task OnInitializedAsync()
     {
@@ -76,11 +87,25 @@ else
         items = (await itemsService.GetItemsAsync()).ToDictionary(i => i.Id);
     }
 
-    private string GetItemName(string itemDescription)
+    private ItemModel? GetItemModel(string itemDescription)
     {
         if (itemDescription.StartsWith("0x") && items!.TryGetValue(itemDescription.Substring(2), out var itemModel))
+            return itemModel;
+
+        return null;
+    }
+
+    private string GetItemName(string itemDescription)
+    {
+        var itemModel = GetItemModel(itemDescription);
+        if (itemModel != null)
             return itemModel.Name;
 
         return itemDescription;
+    }
+
+    private bool HasMoreInfo(string itemDescription)
+    {
+        return (modalMoreInfo?.HasMoreInfo(GetItemModel(itemDescription))).GetValueOrDefault();
     }
 }
