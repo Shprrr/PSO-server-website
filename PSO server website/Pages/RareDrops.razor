@@ -20,27 +20,27 @@ else
         @foreach (var difficulty in episode.Value!.Difficulties())
         {
             <h4>@difficulty.Name</h4>
-            <table class="table">
+            <table class="table table-striped table-hover table-sm">
                 <thead>
                     <tr>
                         <td></td>
-                        <th class="secid-viridia">Viridia</th>
-                        <th class="secid-greennill">Greenill</th>
-                        <th class="secid-skyly">Skyly</th>
-                        <th class="secid-bluefull">Bluefull</th>
-                        <th class="secid-purplenum">Purplenum</th>
-                        <th class="secid-pinkal">Pinkal</th>
-                        <th class="secid-redria">Redria</th>
-                        <th class="secid-oran">Oran</th>
-                        <th class="secid-yellowboze">Yellowboze</th>
-                        <th class="secid-whitill">Whitill</th>
+                        <th class="secid-viridia" scope="col">Viridia</th>
+                        <th class="secid-greennill" scope="col">Greenill</th>
+                        <th class="secid-skyly" scope="col">Skyly</th>
+                        <th class="secid-bluefull" scope="col">Bluefull</th>
+                        <th class="secid-purplenum" scope="col">Purplenum</th>
+                        <th class="secid-pinkal" scope="col">Pinkal</th>
+                        <th class="secid-redria" scope="col">Redria</th>
+                        <th class="secid-oran" scope="col">Oran</th>
+                        <th class="secid-yellowboze" scope="col">Yellowboze</th>
+                        <th class="secid-whitill" scope="col">Whitill</th>
                     </tr>
                 </thead>
                 <tbody>
                     @foreach (var where in difficulty.Value!.Where())
                     {
                         <tr>
-                            <th>@where</th>
+                            <th scope="row">@where</th>
                             @foreach (var sectionId in difficulty.Value.SectionsId())
                             {
                                 <td>
@@ -50,13 +50,13 @@ else
                                             <div>
                                                 @if (HasMoreInfo(item.ItemDescription))
                                                 {
-                                                    <a data-bs-toggle="modal" href="#modalInfo" @onclick="@(e => itemMoreInfo = GetItemModel(item.ItemDescription))">@GetItemName(item.ItemDescription)</a>
+                                                    <a @attributes="@modalMoreInfo!.MoreInfoAttributes" @onclick="@(e => itemMoreInfo = GetItemModel(item.ItemDescription))">@GetItemName(item.ItemDescription)</a>
                                                 }
                                                 else
                                                 {
                                                     <span>@GetItemName(item.ItemDescription)</span>
                                                 }
-                                                <span class="probability">@item.Probability</span>
+                                                &nbsp;<span class="probability">@item.Probability</span>
                                             </div>
                                         }
                                     else

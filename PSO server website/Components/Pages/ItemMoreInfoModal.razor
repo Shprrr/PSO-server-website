@@ -90,6 +90,8 @@
 
     [MaybeNull] private ItemPMTModel itemPMT;
 
+    public Dictionary<string, object> MoreInfoAttributes => new Dictionary<string, object> { { "data-bs-toggle", "modal" }, { "data-bs-target", "#modalInfo" }, { "href", "#modalInfo" } };
+
     protected override void OnParametersSet()
     {
         base.OnParametersSet();
@@ -104,7 +106,7 @@
         itemPMT = await itemPMTService.GetItemsAsync();
     }
 
-    public bool HasMoreInfo([NotNullWhen(true)]ItemModel? item)
+    public bool HasMoreInfo([NotNullWhen(true)] ItemModel? item)
     {
         if (item == null) return false;
         return itemPMT!.Weapons.ContainsKey(item.Id);
