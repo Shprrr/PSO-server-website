@@ -1,13 +1,12 @@
 ﻿@page "/items"
 @using PSOServerWebsite.Services
 @inject ItemsService itemsService
-@inject ItemPMTService itemPMTService
 
 <PageTitle>Items</PageTitle>
 
 <h1>Items</h1>
 
-@if (itemsFiltered == null)
+@if (IsLoading)
 {
     <p><em>Loading...</em></p>
 }
@@ -29,109 +28,40 @@ else
                 <tr>
                     <td scope="row">@item.Id</td>
                     <td>@item.Name</td>
-                    @if (itemPMT!.Weapons.ContainsKey(item.Id))
+                    @if (modalMoreInfo.HasMoreInfo(item))
                     {
-                        <td><button type="button" class="btn btn-link" data-bs-toggle="modal" data-bs-target="#modalInfo" @onclick="@(e => OnClickMoreInfo(item))">More info</button></td>
+                        <td><button type="button" class="btn btn-link" @attributes="@modalMoreInfo.MoreInfoAttributes" @onclick="@(e => itemMoreInfo = item)">More info</button></td>
                     }
                 </tr>
             }
         </tbody>
     </table>
-
-    <div id="modalInfo" class="modal">
-        <div class="modal-dialog modal-dialog-scrollable modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-header"><span>Weapon</span><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button></div>
-                <div class="modal-body">
-                    @if (itemInfo != null)
-                    {
-                        <span class="modal-title h2">@itemInfo.ItemModel.Name</span>
-                        <div class="row">
-                            <div class="col">Type</div>
-                            <div class="col">@itemInfo.WeaponModel.Type</div>
-                        </div>
-                        <div class="row">
-                            <div class="col">Skin Id</div>
-                            <div class="col">@itemInfo.WeaponModel.Skin</div>
-                        </div>
-                        <div class="row">
-                            <div class="col">Team Points</div>
-                            <div class="col">@itemInfo.WeaponModel.TeamPoints</div>
-                        </div>
-                        <div class="row">
-                            <div class="col">Class Can Use</div>
-                            <div class="col">@itemInfo.WeaponModel.ClassFlags</div>
-                        </div>
-                        <div class="row">
-                            <div class="col">ATP Required</div>
-                            <div class="col">@itemInfo.WeaponModel.ATPRequired</div>
-                        </div>
-                        <div class="row">
-                            <div class="col">MST Required</div>
-                            <div class="col">@itemInfo.WeaponModel.MSTRequired</div>
-                        </div>
-                        <div class="row">
-                            <div class="col">ATA Required</div>
-                            <div class="col">@itemInfo.WeaponModel.ATARequired</div>
-                        </div>
-                        <div class="row">
-                            <div class="col">+ATP</div>
-                            <div class="col">@itemInfo.WeaponModel.ATPMin - @itemInfo.WeaponModel.ATPMax</div>
-                        </div>
-                        <div class="row">
-                            <div class="col">+MST</div>
-                            <div class="col">@itemInfo.WeaponModel.MST</div>
-                        </div>
-                        <div class="row">
-                            <div class="col">+ATA</div>
-                            <div class="col">@itemInfo.WeaponModel.ATA</div>
-                        </div>
-                        <div class="row">
-                            <div class="col">Stat Boost</div>
-                            <div class="col">@itemInfo.WeaponModel.StatBoost</div>
-                        </div>
-                        <div class="row">
-                            <div class="col">Tech Boost</div>
-                            <div class="col">@itemInfo.WeaponModel.TechBoost</div>
-                        </div>
-                        <div class="row">
-                            <div class="col">Max Grind</div>
-                            <div class="col">@itemInfo.WeaponModel.MaxGrind</div>
-                        </div>
-                        <div class="row">
-                            <div class="col">Photon Id</div>
-                            <div class="col">@itemInfo.WeaponModel.Photon</div>
-                        </div>
-                        <div class="row">
-                            <div class="col">Special Id</div>
-                            <div class="col">@itemInfo.WeaponModel.Special</div>
-                        </div>
-                        <div class="row">
-                            <div class="col">Projectile Id</div>
-                            <div class="col">@itemInfo.WeaponModel.Projectile</div>
-                        </div>
-                        <div class="row">
-                            <div class="col">Combo Type</div>
-                            <div class="col">@itemInfo.WeaponModel.ComboType</div>
-                        </div>
-                    }
-                </div>
-            </div>
-        </div>
-    </div>
 }
 
+<ItemMoreInfoModal @ref="modalMoreInfo" ItemToShow="@itemMoreInfo" OnLoaded="ModalMoreInfoOnLoaded" />
+
 @code {
-    [MaybeNull] private ItemModel[] items;
+    [DisallowNull] private ItemModel[] items = default!;
     private string filter = "";
     private ItemModel[]? itemsFiltered;
-    [MaybeNull] private ItemPMTModel itemPMT;
+
+    [DisallowNull] private ItemMoreInfoModal modalMoreInfo = default!;
+    private ItemModel? itemMoreInfo;
+
+    [MemberNotNullWhen(false, nameof(itemsFiltered), nameof(modalMoreInfo))]
+    private bool IsLoading => itemsFiltered == null || modalMoreInfo == null || modalMoreInfoIsLoading;
 
     protected override async Task OnInitializedAsync()
     {
         items = (await itemsService.GetItemsAsync()).ToArray();
-        itemPMT = await itemPMTService.GetItemsAsync();
         OnFilterValueChanged();
+    }
+
+    private bool modalMoreInfoIsLoading = true;
+    private void ModalMoreInfoOnLoaded()
+    {
+        modalMoreInfoIsLoading = false;
+        StateHasChanged();
     }
 
     private void OnFilterValueChanged()
@@ -139,18 +69,6 @@ else
         if (string.IsNullOrEmpty(filter))
             itemsFiltered = items;
         else
-            itemsFiltered = items?.Where(i => i.Name.Equals(filter, StringComparison.InvariantCultureIgnoreCase)).ToArray();
-    }
-
-    private ItemInfoModel? itemInfo;
-    private void OnClickMoreInfo(ItemModel itemClicked)
-    {
-        itemInfo = new ItemInfoModel(itemClicked, itemPMT!.Weapons[itemClicked.Id]);
-    }
-
-    private class ItemInfoModel(ItemModel itemModel, WeaponModel weaponModel)
-    {
-        public ItemModel ItemModel { get; set; } = itemModel;
-        public WeaponModel WeaponModel { get; set; } = weaponModel;
+            itemsFiltered = items.Where(i => i.Name.Equals(filter, StringComparison.InvariantCultureIgnoreCase)).ToArray();
     }
 }

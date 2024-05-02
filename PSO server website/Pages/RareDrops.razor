@@ -7,7 +7,7 @@
 
 <h1>Rare Drops</h1>
 
-@if (rareDrops == null)
+@if (IsLoading)
 {
     <p><em>Loading...</em></p>
 }
@@ -50,7 +50,7 @@ else
                                             <div>
                                                 @if (HasMoreInfo(item.ItemDescription))
                                                 {
-                                                    <a @attributes="@modalMoreInfo!.MoreInfoAttributes" @onclick="@(e => itemMoreInfo = GetItemModel(item.ItemDescription))">@GetItemName(item.ItemDescription)</a>
+                                                    <a @attributes="@modalMoreInfo.MoreInfoAttributes" @onclick="@(e => itemMoreInfo = GetItemModel(item.ItemDescription))">@GetItemName(item.ItemDescription)</a>
                                                 }
                                                 else
                                                 {
@@ -73,13 +73,16 @@ else
     }
 }
 
-<ItemMoreInfoModal @ref="modalMoreInfo" ItemToShow="@itemMoreInfo" />
+<ItemMoreInfoModal @ref="modalMoreInfo" ItemToShow="@itemMoreInfo" OnLoaded="ModalMoreInfoOnLoaded" />
 
 @code {
-    [MaybeNull] private RareDropModel rareDrops;
-    [MaybeNull] private Dictionary<string, ItemModel> items;
-    private ItemMoreInfoModal? modalMoreInfo;
+    [DisallowNull] private RareDropModel rareDrops = default!;
+    [DisallowNull] private Dictionary<string, ItemModel> items = default!;
+    [DisallowNull] private ItemMoreInfoModal modalMoreInfo = default!;
     private ItemModel? itemMoreInfo;
+
+    [MemberNotNullWhen(false, nameof(rareDrops), nameof(items), nameof(modalMoreInfo))]
+    private bool IsLoading => rareDrops == null || items == null || modalMoreInfo == null || modalMoreInfoIsLoading;
 
     protected override async Task OnInitializedAsync()
     {
@@ -87,9 +90,16 @@ else
         items = (await itemsService.GetItemsAsync()).ToDictionary(i => i.Id);
     }
 
+    private bool modalMoreInfoIsLoading = true;
+    private void ModalMoreInfoOnLoaded()
+    {
+        modalMoreInfoIsLoading = false;
+        StateHasChanged();
+    }
+
     private ItemModel? GetItemModel(string itemDescription)
     {
-        if (itemDescription.StartsWith("0x") && items!.TryGetValue(itemDescription.Substring(2), out var itemModel))
+        if (itemDescription.StartsWith("0x") && items.TryGetValue(itemDescription.Substring(2), out var itemModel))
             return itemModel;
 
         return null;
@@ -106,6 +116,6 @@ else
 
     private bool HasMoreInfo(string itemDescription)
     {
-        return (modalMoreInfo?.HasMoreInfo(GetItemModel(itemDescription))).GetValueOrDefault();
+        return modalMoreInfo.HasMoreInfo(GetItemModel(itemDescription));
     }
 }

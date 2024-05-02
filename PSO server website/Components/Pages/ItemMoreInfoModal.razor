@@ -4,7 +4,9 @@
 <div id="modalInfo" class="modal">
     <div class="modal-dialog modal-dialog-scrollable modal-dialog-centered">
         <div class="modal-content">
-            <div class="modal-header"><span>Weapon</span><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button></div>
+            <div class="modal-header">
+                <span>Weapon</span><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
             <div class="modal-body">
                 @if (itemInfo != null)
                 {
@@ -86,9 +88,12 @@
 @code {
     [Parameter, EditorRequired]
     public ItemModel? ItemToShow { get; set; } = null;
-    private ItemInfoModel? itemInfo;
 
-    [MaybeNull] private ItemPMTModel itemPMT;
+    [Parameter]
+    public Action? OnLoaded { get; set; } = null;
+
+    private ItemInfoModel? itemInfo;
+    [DisallowNull] private ItemPMTModel itemPMT = default!;
 
     public Dictionary<string, object> MoreInfoAttributes => new Dictionary<string, object> { { "data-bs-toggle", "modal" }, { "data-bs-target", "#modalInfo" }, { "href", "#modalInfo" } };
 
@@ -96,7 +101,7 @@
     {
         base.OnParametersSet();
         if (HasMoreInfo(ItemToShow))
-            itemInfo = new ItemInfoModel(ItemToShow, itemPMT!.Weapons[ItemToShow.Id]);
+            itemInfo = new ItemInfoModel(ItemToShow, itemPMT.Weapons[ItemToShow.Id]);
         else
             itemInfo = null;
     }
@@ -104,12 +109,13 @@
     protected override async Task OnInitializedAsync()
     {
         itemPMT = await itemPMTService.GetItemsAsync();
+        OnLoaded?.Invoke();
     }
 
     public bool HasMoreInfo([NotNullWhen(true)] ItemModel? item)
     {
         if (item == null) return false;
-        return itemPMT!.Weapons.ContainsKey(item.Id);
+        return itemPMT.Weapons.ContainsKey(item.Id);
     }
 
     private class ItemInfoModel(ItemModel itemModel, WeaponModel weaponModel)
