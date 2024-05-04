@@ -11,73 +11,75 @@
                 @if (itemInfo != null)
                 {
                     <span class="modal-title h2">@itemInfo.ItemModel.Name</span>
-                    <div class="row">
-                        <div class="col">Type</div>
-                        <div class="col">@itemInfo.WeaponModel.Type</div>
-                    </div>
-                    <div class="row">
-                        <div class="col">Skin Id</div>
-                        <div class="col">@itemInfo.WeaponModel.Skin</div>
-                    </div>
-                    <div class="row">
-                        <div class="col">Team Points</div>
-                        <div class="col">@itemInfo.WeaponModel.TeamPoints</div>
-                    </div>
-                    <div class="row">
-                        <div class="col">Class Can Use</div>
-                        <div class="col">@itemInfo.WeaponModel.ClassFlags</div>
-                    </div>
-                    <div class="row">
-                        <div class="col">ATP Required</div>
-                        <div class="col">@itemInfo.WeaponModel.ATPRequired</div>
-                    </div>
-                    <div class="row">
-                        <div class="col">MST Required</div>
-                        <div class="col">@itemInfo.WeaponModel.MSTRequired</div>
-                    </div>
-                    <div class="row">
-                        <div class="col">ATA Required</div>
-                        <div class="col">@itemInfo.WeaponModel.ATARequired</div>
-                    </div>
-                    <div class="row">
-                        <div class="col">+ATP</div>
-                        <div class="col">@itemInfo.WeaponModel.ATPMin - @itemInfo.WeaponModel.ATPMax</div>
-                    </div>
-                    <div class="row">
-                        <div class="col">+MST</div>
-                        <div class="col">@itemInfo.WeaponModel.MST</div>
-                    </div>
-                    <div class="row">
-                        <div class="col">+ATA</div>
-                        <div class="col">@itemInfo.WeaponModel.ATA</div>
-                    </div>
-                    <div class="row">
-                        <div class="col">Stat Boost</div>
-                        <div class="col">@itemInfo.WeaponModel.StatBoost</div>
-                    </div>
-                    <div class="row">
-                        <div class="col">Tech Boost</div>
-                        <div class="col">@itemInfo.WeaponModel.TechBoost</div>
-                    </div>
-                    <div class="row">
-                        <div class="col">Max Grind</div>
-                        <div class="col">@itemInfo.WeaponModel.MaxGrind</div>
-                    </div>
-                    <div class="row">
-                        <div class="col">Photon Id</div>
-                        <div class="col">@itemInfo.WeaponModel.Photon</div>
-                    </div>
-                    <div class="row">
-                        <div class="col">Special Id</div>
-                        <div class="col">@itemInfo.WeaponModel.Special</div>
-                    </div>
-                    <div class="row">
-                        <div class="col">Projectile Id</div>
-                        <div class="col">@itemInfo.WeaponModel.Projectile</div>
-                    </div>
-                    <div class="row">
-                        <div class="col">Combo Type</div>
-                        <div class="col">@itemInfo.WeaponModel.ComboType</div>
+                    <div class="container">
+                        <div class="row">
+                            <div class="col">Type</div>
+                            <div class="col">@itemInfo.WeaponModel.Type</div>
+                        </div>
+                        <div class="row">
+                            <div class="col">Skin Id</div>
+                            <div class="col">@itemInfo.WeaponModel.Skin</div>
+                        </div>
+                        <div class="row">
+                            <div class="col">Team Points</div>
+                            <div class="col">@itemInfo.WeaponModel.TeamPoints</div>
+                        </div>
+                        <div class="row">
+                            <div class="col">Class Can Use</div>
+                            <div class="col"><ClassFlags Value="@itemInfo.WeaponModel.ClassFlags" /></div>
+                        </div>
+                        <div class="row">
+                            <div class="col">ATP Required</div>
+                            <div class="col">@itemInfo.WeaponModel.ATPRequired</div>
+                        </div>
+                        <div class="row">
+                            <div class="col">MST Required</div>
+                            <div class="col">@itemInfo.WeaponModel.MSTRequired</div>
+                        </div>
+                        <div class="row">
+                            <div class="col">ATA Required</div>
+                            <div class="col">@itemInfo.WeaponModel.ATARequired</div>
+                        </div>
+                        <div class="row">
+                            <div class="col">+ATP</div>
+                            <div class="col">@itemInfo.WeaponModel.ATPMin - @itemInfo.WeaponModel.ATPMax</div>
+                        </div>
+                        <div class="row">
+                            <div class="col">+MST</div>
+                            <div class="col">@itemInfo.WeaponModel.MST</div>
+                        </div>
+                        <div class="row">
+                            <div class="col">+ATA</div>
+                            <div class="col">@itemInfo.WeaponModel.ATA</div>
+                        </div>
+                        <div class="row">
+                            <div class="col">Stat Boost</div>
+                            <div class="col">@itemInfo.WeaponModel.StatBoost</div>
+                        </div>
+                        <div class="row">
+                            <div class="col">Tech Boost</div>
+                            <div class="col">@itemInfo.WeaponModel.TechBoost</div>
+                        </div>
+                        <div class="row">
+                            <div class="col">Max Grind</div>
+                            <div class="col">@itemInfo.WeaponModel.MaxGrind</div>
+                        </div>
+                        <div class="row">
+                            <div class="col">Photon Id</div>
+                            <div class="col">@itemInfo.WeaponModel.Photon</div>
+                        </div>
+                        <div class="row">
+                            <div class="col">Special Id</div>
+                            <div class="col">@itemInfo.WeaponModel.Special</div>
+                        </div>
+                        <div class="row">
+                            <div class="col">Projectile Id</div>
+                            <div class="col">@itemInfo.WeaponModel.Projectile</div>
+                        </div>
+                        <div class="row">
+                            <div class="col">Combo Type</div>
+                            <div class="col">@itemInfo.WeaponModel.ComboType</div>
+                        </div>
                     </div>
                 }
             </div>

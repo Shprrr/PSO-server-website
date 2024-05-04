@@ -1,0 +1,41 @@
+﻿@using PSOServerWebsite.Services
+@using ClassFlagsEnum = PSOServerWebsite.Services.ClassFlag
+
+<div class="class-flags container px-0">
+    <div class="row row-cols-4">
+        <div class="col"><span class="badge @(IsHumar ? "bg-primary" : "bg-secondary")">HUmr</span></div>
+        <div class="col"><span class="badge @(IsHunewearl ? "bg-primary" : "bg-secondary")">HUnl</span></div>
+        <div class="col"><span class="badge @(IsHucast ? "bg-primary" : "bg-secondary")">HUct</span></div>
+        <div class="col"><span class="badge @(IsHucaseal ? "bg-primary" : "bg-secondary")">HUcl</span></div>
+    </div>
+    <div class="row row-cols-4">
+        <div class="col"><span class="badge @(IsRamar ? "bg-primary" : "bg-secondary")">RAmr</span></div>
+        <div class="col"><span class="badge @(IsRamarl ? "bg-primary" : "bg-secondary")">RAml</span></div>
+        <div class="col"><span class="badge @(IsRacast ? "bg-primary" : "bg-secondary")">RAct</span></div>
+        <div class="col"><span class="badge @(IsRacaseal ? "bg-primary" : "bg-secondary")">RAcl</span></div>
+    </div>
+    <div class="row row-cols-4">
+        <div class="col"><span class="badge @(IsFomar ? "bg-primary" : "bg-secondary")">FOmr</span></div>
+        <div class="col"><span class="badge @(IsFomarl ? "bg-primary" : "bg-secondary")">FOml</span></div>
+        <div class="col"><span class="badge @(IsFonewm ? "bg-primary" : "bg-secondary")">FOnm</span></div>
+        <div class="col"><span class="badge @(IsFonewearl ? "bg-primary" : "bg-secondary")">FOnl</span></div>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public ClassFlagsEnum Value { get; set; }
+
+    public bool IsHumar => Value.HasFlag(ItemPMTService.ClassFlagsByClass[0]);
+    public bool IsHunewearl => Value.HasFlag(ItemPMTService.ClassFlagsByClass[1]);
+    public bool IsHucast => Value.HasFlag(ItemPMTService.ClassFlagsByClass[2]);
+    public bool IsHucaseal => Value.HasFlag(ItemPMTService.ClassFlagsByClass[3]);
+    public bool IsRamar => Value.HasFlag(ItemPMTService.ClassFlagsByClass[4]);
+    public bool IsRamarl => Value.HasFlag(ItemPMTService.ClassFlagsByClass[5]);
+    public bool IsRacast => Value.HasFlag(ItemPMTService.ClassFlagsByClass[6]);
+    public bool IsRacaseal => Value.HasFlag(ItemPMTService.ClassFlagsByClass[7]);
+    public bool IsFomar => Value.HasFlag(ItemPMTService.ClassFlagsByClass[8]);
+    public bool IsFomarl => Value.HasFlag(ItemPMTService.ClassFlagsByClass[9]);
+    public bool IsFonewm => Value.HasFlag(ItemPMTService.ClassFlagsByClass[10]);
+    public bool IsFonewearl => Value.HasFlag(ItemPMTService.ClassFlagsByClass[11]);
+}

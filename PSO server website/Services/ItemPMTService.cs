@@ -4,6 +4,21 @@ namespace PSOServerWebsite.Services;
 
 public class ItemPMTService(HttpClient http)
 {
+    public static readonly ClassFlag[] ClassFlagsByClass = [
+        ClassFlag.HUNTER | ClassFlag.HUMAN | ClassFlag.MALE, // HUmar
+        ClassFlag.HUNTER | ClassFlag.NEWMAN | ClassFlag.FEMALE, // HUnewearl
+        ClassFlag.HUNTER | ClassFlag.ANDROID | ClassFlag.MALE, // HUcast
+        ClassFlag.HUNTER | ClassFlag.ANDROID | ClassFlag.FEMALE, // HUcaseal
+        ClassFlag.RANGER | ClassFlag.HUMAN | ClassFlag.MALE, // RAmar
+        ClassFlag.RANGER | ClassFlag.HUMAN | ClassFlag.FEMALE, // RAmarl
+        ClassFlag.RANGER | ClassFlag.ANDROID | ClassFlag.MALE, // RAcast
+        ClassFlag.RANGER | ClassFlag.ANDROID | ClassFlag.FEMALE, // RAcaseal
+        ClassFlag.FORCE | ClassFlag.HUMAN | ClassFlag.MALE, // FOmar
+        ClassFlag.FORCE | ClassFlag.HUMAN | ClassFlag.FEMALE, // FOmarl
+        ClassFlag.FORCE | ClassFlag.NEWMAN | ClassFlag.MALE, // FOnewm
+        ClassFlag.FORCE | ClassFlag.NEWMAN | ClassFlag.FEMALE, // FOnewearl
+    ];
+
     // Offset from end of ItemPMT.bin file to main pointer table.
     private const int OffsetStart = 16;
 
@@ -103,7 +118,8 @@ public class ItemBaseModel
 
 public class WeaponModel : ItemBaseModel
 {
-    public ushort ClassFlags { get; set; }
+    public ushort ClassFlagsRaw { get; set; }
+    public ClassFlag ClassFlags => (ClassFlag)ClassFlagsRaw;
     public ushort ATPMin { get; set; }
     public ushort ATPMax { get; set; }
     public ushort ATPRequired { get; set; }
@@ -130,6 +146,19 @@ public class WeaponModel : ItemBaseModel
     public byte ComboType { get; set; }
 }
 
+[Flags]
+public enum ClassFlag
+{
+    HUNTER = 0x01,
+    RANGER = 0x02,
+    FORCE = 0x04,
+    HUMAN = 0x08,
+    NEWMAN = 0x10,
+    ANDROID = 0x20,
+    MALE = 0x40,
+    FEMALE = 0x80,
+};
+
 public static class BitConverterExtensions
 {
     private static void ToItemBaseModel(byte[] array, ref int offset, ref ItemBaseModel itemBase)
@@ -150,8 +179,8 @@ public static class BitConverterExtensions
         ItemBaseModel itemBase = item;
         ToItemBaseModel(array, ref offset, ref itemBase);
 
-        item.ClassFlags = BitConverter.ToUInt16(array, offset);
-        offset += Marshal.SizeOf(item.ClassFlags);
+        item.ClassFlagsRaw = BitConverter.ToUInt16(array, offset);
+        offset += Marshal.SizeOf(item.ClassFlagsRaw);
         item.ATPMin = BitConverter.ToUInt16(array, offset);
         offset += Marshal.SizeOf(item.ATPMin);
         item.ATPMax = BitConverter.ToUInt16(array, offset);
