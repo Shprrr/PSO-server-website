@@ -2,6 +2,7 @@
 @using PSOServerWebsite.Services
 @inject RareDropsService rareDropsService
 @inject ItemsService itemsService
+@inject LocationsService locationsService
 
 <PageTitle>Rare Drops</PageTitle>
 
@@ -37,10 +38,10 @@ else
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach (var where in difficulty.Value!.Where())
+                    @foreach (var where in difficulty.Value!.Where().OrderBy(l => OrderByLocations(l, episode.Name)))
                     {
                         <tr>
-                            <th scope="row">@where</th>
+                            <th scope="row">@GetLocationName(where, episode.Name, difficulty.Name)</th>
                             @foreach (var sectionId in difficulty.Value.SectionsId())
                             {
                                 <td>
@@ -78,16 +79,18 @@ else
 @code {
     [DisallowNull] private RareDropModel rareDrops = default!;
     [DisallowNull] private Dictionary<string, ItemModel> items = default!;
+    [DisallowNull] private LocationModel[] locations = default!;
     [DisallowNull] private ItemMoreInfoModal modalMoreInfo = default!;
     private ItemModel? itemMoreInfo;
 
-    [MemberNotNullWhen(false, nameof(rareDrops), nameof(items), nameof(modalMoreInfo))]
-    private bool IsLoading => rareDrops == null || items == null || modalMoreInfo == null || modalMoreInfoIsLoading;
+    [MemberNotNullWhen(false, nameof(rareDrops), nameof(items), nameof(locations), nameof(modalMoreInfo))]
+    private bool IsLoading => rareDrops == null || items == null || locations == null || modalMoreInfo == null || modalMoreInfoIsLoading;
 
     protected override async Task OnInitializedAsync()
     {
         rareDrops = await rareDropsService.GetRareDropsAsync();
         items = (await itemsService.GetItemsAsync()).ToDictionary(i => i.Id);
+        locations = (await locationsService.GetLocationsAsync()).ToArray();
     }
 
     private bool modalMoreInfoIsLoading = true;
@@ -117,5 +120,21 @@ else
     private bool HasMoreInfo(string itemDescription)
     {
         return modalMoreInfo.HasMoreInfo(GetItemModel(itemDescription));
+    }
+
+    private int OrderByLocations(string locationId, string episode)
+    {
+        int episodeNumber = (int)char.GetNumericValue(episode[^1]);
+        return Array.FindIndex(locations.First(l => l.Episode == episodeNumber).Locations, l => l.Id == locationId);
+    }
+
+    private string GetLocationName(string locationId, string episode, string difficulty)
+    {
+        int episodeNumber = (int)char.GetNumericValue(episode[^1]);
+        var location = locations.First(l => l.Episode == episodeNumber).Locations.FirstOrDefault(l => l.Id == locationId);
+        if (location == null) return locationId;
+        if (difficulty == "Ultimate" && !string.IsNullOrEmpty(location.UltimateName))
+            return location.UltimateName;
+        return location.Name;
     }
 }
