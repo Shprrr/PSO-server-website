@@ -21,7 +21,7 @@ else
         @foreach (var difficulty in episode.Value!.Difficulties())
         {
             <h4>@difficulty.Name</h4>
-            <table class="table table-striped table-hover table-sm">
+            <table class="rare-drops table table-striped table-hover table-sm">
                 <thead>
                     <tr>
                         <td></td>
@@ -89,7 +89,7 @@ else
     protected override async Task OnInitializedAsync()
     {
         rareDrops = await rareDropsService.GetRareDropsAsync();
-        items = (await itemsService.GetItemsAsync()).ToDictionary(i => i.Id);
+        items = (await itemsService.GetItemsAsync()).ToDictionary(i => i.Identifier);
         locations = (await locationsService.GetLocationsAsync()).ToArray();
     }
 

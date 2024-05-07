@@ -17,7 +17,7 @@ else
     <table class="table table-striped">
         <thead>
             <tr>
-                <th scope="col">Id</th>
+                <th scope="col">Identifier</th>
                 <th scope="col">Name</th>
                 <td></td>
             </tr>
@@ -26,7 +26,7 @@ else
             @foreach (var item in itemsFiltered)
             {
                 <tr>
-                    <td scope="row">@item.Id</td>
+                    <td scope="row">@item.Identifier</td>
                     <td>@item.Name</td>
                     @if (modalMoreInfo.HasMoreInfo(item))
                     {

@@ -11,10 +11,10 @@ public class ItemsService(HttpClient http)
     }
 }
 
-public class ItemModel(string id, string name)
+public class ItemModel(string identifier, string name)
 {
-    public string Id { get; set; } = id;
+    public string Identifier { get; set; } = identifier;
     public string Name { get; set; } = name;
 
-    public override string ToString() => $"{Name} ({Id})";
+    public override string ToString() => $"{Name} ({Identifier})";
 }

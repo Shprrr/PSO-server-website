@@ -26,8 +26,8 @@ public class ItemPMTService(HttpClient http)
     private static readonly Dictionary<string, int> s_offset = new(){
         { "weapon",            0 },
         { "armor",             4 },
-        { "units",             8 },
-        { "item",              12 },
+        { "unit",              8 },
+        { "tool",              12 },
         { "mag",               16 },
         { "AA",                20 },
         { "photon-color",      24 },
@@ -50,6 +50,15 @@ public class ItemPMTService(HttpClient http)
     };
     private const int WeaponClassesCount = 0xED;
     private const int WeaponSize = 0x2C;
+    private const int ArmorClassesCount = 2;
+    private const int ArmorClassesIdentifierOffset = 0x101;
+    private const int ArmorSize = 0x20;
+    private const int UnitClassesCount = 1;
+    private const int UnitClassesIdentifierOffset = 0x103;
+    private const int UnitSize = 0x14;
+    private const int ToolClassesCount = 0x1A;
+    private const int ToolClassesIdentifierOffset = 0x300;
+    private const int ToolSize = 0x18;
 
     public async Task<ItemPMTModel> GetItemsAsync()
     {
@@ -78,7 +87,52 @@ public class ItemPMTService(HttpClient http)
             }
         }
 
-        return new ItemPMTModel { Weapons = weapons };
+        offset = startAddr + s_offset["armor"];
+        tableAddr = BitConverter.ToInt32(fileBytes, offset);
+
+        Dictionary<string, ArmorModel> armors = new(ArmorClassesCount);
+        for (int i = 0; i < ArmorClassesCount; i++)
+        {
+            int subtableCount = BitConverter.ToInt32(fileBytes, tableAddr + sizeof(int) * i * 2);
+            int subtableOffset = BitConverter.ToInt32(fileBytes, tableAddr + sizeof(int) * (i * 2 + 1));
+
+            for (int j = 0; j < subtableCount; j++)
+            {
+                armors.Add($"{i + ArmorClassesIdentifierOffset:X4}{j:X2}", BitConverterExtensions.ToArmorModel(fileBytes, subtableOffset + ArmorSize * j));
+            }
+        }
+
+        offset = startAddr + s_offset["unit"];
+        tableAddr = BitConverter.ToInt32(fileBytes, offset);
+
+        Dictionary<string, UnitModel> units = new(UnitClassesCount);
+        for (int i = 0; i < UnitClassesCount; i++)
+        {
+            int subtableCount = BitConverter.ToInt32(fileBytes, tableAddr + sizeof(int) * i * 2);
+            int subtableOffset = BitConverter.ToInt32(fileBytes, tableAddr + sizeof(int) * (i * 2 + 1));
+
+            for (int j = 0; j < subtableCount; j++)
+            {
+                units.Add($"{i + UnitClassesIdentifierOffset:X4}{j:X2}", BitConverterExtensions.ToUnitModel(fileBytes, subtableOffset + UnitSize * j));
+            }
+        }
+
+        offset = startAddr + s_offset["tool"];
+        tableAddr = BitConverter.ToInt32(fileBytes, offset);
+
+        Dictionary<string, ToolModel> tools = new(ToolClassesCount);
+        for (int i = 0; i < ToolClassesCount; i++)
+        {
+            int subtableCount = BitConverter.ToInt32(fileBytes, tableAddr + sizeof(int) * i * 2);
+            int subtableOffset = BitConverter.ToInt32(fileBytes, tableAddr + sizeof(int) * (i * 2 + 1));
+
+            for (int j = 0; j < subtableCount; j++)
+            {
+                tools.Add($"{i + ToolClassesIdentifierOffset:X4}{j:X2}", BitConverterExtensions.ToToolModel(fileBytes, subtableOffset + ToolSize * j));
+            }
+        }
+
+        return new ItemPMTModel { Weapons = weapons, Armors = armors, Units = units, Tools = tools };
     }
 }
 
@@ -86,6 +140,9 @@ public class ItemPMTModel
 {
     public ItemCountModel ItemCount { get; set; } = new();
     public Dictionary<string, WeaponModel> Weapons { get; set; } = [];
+    public Dictionary<string, ArmorModel> Armors { get; set; } = [];
+    public Dictionary<string, UnitModel> Units { get; set; } = [];
+    public Dictionary<string, ToolModel> Tools { get; set; } = [];
 }
 
 public class ItemCountModel
@@ -146,6 +203,39 @@ public class WeaponModel : ItemBaseModel
     public byte ComboType { get; set; }
 }
 
+public class ArmorModel : ItemBaseModel
+{
+    public ushort DFP { get; set; }
+    public ushort EVP { get; set; }
+    public byte BlockParticle { get; set; }
+    public byte BlockEffect { get; set; }
+    public ushort ClassFlagsRaw { get; set; }
+    public ClassFlag ClassFlags => (ClassFlag)ClassFlagsRaw;
+    public byte RequiredLevel { get; set; }
+    public byte EFR { get; set; }
+    public byte ETH { get; set; }
+    public byte EIC { get; set; }
+    public byte EDK { get; set; }
+    public byte ELT { get; set; }
+    public byte DFPRange { get; set; }
+    public byte EVPRange { get; set; }
+}
+
+public class UnitModel : ItemBaseModel
+{
+    public ushort Stat { get; set; }
+    public ushort StatAmount { get; set; }
+    public short ModifierAmount { get; set; }
+}
+
+public class ToolModel : ItemBaseModel
+{
+    public ushort Amount { get; set; }
+    public ushort Technique { get; set; }
+    public int Cost { get; set; }
+    public uint ItemFlag { get; set; }
+}
+
 [Flags]
 public enum ClassFlag
 {
@@ -153,8 +243,8 @@ public enum ClassFlag
     RANGER = 0x02,
     FORCE = 0x04,
     HUMAN = 0x08,
-    NEWMAN = 0x10,
-    ANDROID = 0x20,
+    ANDROID = 0x10,
+    NEWMAN = 0x20,
     MALE = 0x40,
     FEMALE = 0x80,
 };
@@ -163,13 +253,13 @@ public static class BitConverterExtensions
 {
     private static void ToItemBaseModel(byte[] array, ref int offset, ref ItemBaseModel itemBase)
     {
-        itemBase.Id = BitConverter.ToUInt16(array, offset);
+        itemBase.Id = BitConverter.ToUInt32(array, offset);
         offset += Marshal.SizeOf(itemBase.Id);
         itemBase.Type = BitConverter.ToUInt16(array, offset);
         offset += Marshal.SizeOf(itemBase.Type);
         itemBase.Skin = BitConverter.ToUInt16(array, offset);
         offset += Marshal.SizeOf(itemBase.Skin);
-        itemBase.TeamPoints = BitConverter.ToUInt16(array, offset);
+        itemBase.TeamPoints = BitConverter.ToUInt32(array, offset);
         offset += Marshal.SizeOf(itemBase.TeamPoints);
     }
 
@@ -229,6 +319,73 @@ public static class BitConverterExtensions
         offset += Marshal.SizeOf(item.TechBoost);
         item.ComboType = array[offset];
         offset += Marshal.SizeOf(item.ComboType);
+        return item;
+    }
+
+    public static ArmorModel ToArmorModel(byte[] array, int offset)
+    {
+        ArmorModel item = new();
+        ItemBaseModel itemBase = item;
+        ToItemBaseModel(array, ref offset, ref itemBase);
+
+        item.DFP = BitConverter.ToUInt16(array, offset);
+        offset += Marshal.SizeOf(item.DFP);
+        item.EVP = BitConverter.ToUInt16(array, offset);
+        offset += Marshal.SizeOf(item.EVP);
+        item.BlockParticle = array[offset];
+        offset += Marshal.SizeOf(item.BlockParticle);
+        item.BlockEffect = array[offset];
+        offset += Marshal.SizeOf(item.BlockEffect);
+        item.ClassFlagsRaw = BitConverter.ToUInt16(array, offset);
+        offset += Marshal.SizeOf(item.ClassFlagsRaw);
+        item.RequiredLevel = array[offset];
+        offset += Marshal.SizeOf(item.RequiredLevel);
+        item.EFR = array[offset];
+        offset += Marshal.SizeOf(item.EFR);
+        item.ETH = array[offset];
+        offset += Marshal.SizeOf(item.ETH);
+        item.EIC = array[offset];
+        offset += Marshal.SizeOf(item.EIC);
+        item.EDK = array[offset];
+        offset += Marshal.SizeOf(item.EDK);
+        item.ELT = array[offset];
+        offset += Marshal.SizeOf(item.ELT);
+        item.DFPRange = array[offset];
+        offset += Marshal.SizeOf(item.DFPRange);
+        item.EVPRange = array[offset];
+        offset += Marshal.SizeOf(item.EVPRange);
+        return item;
+    }
+
+    public static UnitModel ToUnitModel(byte[] array, int offset)
+    {
+        UnitModel item = new();
+        ItemBaseModel itemBase = item;
+        ToItemBaseModel(array, ref offset, ref itemBase);
+
+        item.Stat = BitConverter.ToUInt16(array, offset);
+        offset += Marshal.SizeOf(item.Stat);
+        item.StatAmount = BitConverter.ToUInt16(array, offset);
+        offset += Marshal.SizeOf(item.StatAmount);
+        item.ModifierAmount = BitConverter.ToInt16(array, offset);
+        offset += Marshal.SizeOf(item.ModifierAmount);
+        return item;
+    }
+
+    public static ToolModel ToToolModel(byte[] array, int offset)
+    {
+        ToolModel item = new();
+        ItemBaseModel itemBase = item;
+        ToItemBaseModel(array, ref offset, ref itemBase);
+
+        item.Amount = BitConverter.ToUInt16(array, offset);
+        offset += Marshal.SizeOf(item.Amount);
+        item.Technique = BitConverter.ToUInt16(array, offset);
+        offset += Marshal.SizeOf(item.Technique);
+        item.Cost = BitConverter.ToInt32(array, offset);
+        offset += Marshal.SizeOf(item.Cost);
+        item.ItemFlag = BitConverter.ToUInt32(array, offset);
+        offset += Marshal.SizeOf(item.ItemFlag);
         return item;
     }
 }

@@ -5,84 +5,227 @@
     <div class="modal-dialog modal-dialog-scrollable modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header">
-                <span>Weapon</span><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <span>@GetItemType()</span><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
                 @if (itemInfo != null)
                 {
                     <span class="modal-title h2">@itemInfo.ItemModel.Name</span>
-                    <div class="container">
-                        <div class="row">
-                            <div class="col">Type</div>
-                            <div class="col">@itemInfo.WeaponModel.Type</div>
+                    @if (itemInfo.WeaponModel != null)
+                    {
+                        <div class="container">
+                            <div class="row">
+                                <div class="col">Id</div>
+                                <div class="col">@itemInfo.WeaponModel.Id.ToString("X6") (@(itemInfo.WeaponModel.Id))</div>
+                            </div>
+                            <div class="row">
+                                <div class="col">Type</div>
+                                <div class="col">@itemInfo.WeaponModel.Type</div>
+                            </div>
+                            <div class="row">
+                                <div class="col">Skin Id</div>
+                                <div class="col">@itemInfo.WeaponModel.Skin</div>
+                            </div>
+                            <div class="row">
+                                <div class="col">Team Points</div>
+                                <div class="col">@itemInfo.WeaponModel.TeamPoints</div>
+                            </div>
+                            <div class="row">
+                                <div class="col">Class Can Use</div>
+                                <div class="col"><ClassFlags Value="@itemInfo.WeaponModel.ClassFlags" /></div>
+                            </div>
+                            <div class="row">
+                                <div class="col">ATP Required</div>
+                                <div class="col">@itemInfo.WeaponModel.ATPRequired</div>
+                            </div>
+                            <div class="row">
+                                <div class="col">MST Required</div>
+                                <div class="col">@itemInfo.WeaponModel.MSTRequired</div>
+                            </div>
+                            <div class="row">
+                                <div class="col">ATA Required</div>
+                                <div class="col">@itemInfo.WeaponModel.ATARequired</div>
+                            </div>
+                            <div class="row">
+                                <div class="col">+ATP</div>
+                                <div class="col">@itemInfo.WeaponModel.ATPMin - @itemInfo.WeaponModel.ATPMax</div>
+                            </div>
+                            <div class="row">
+                                <div class="col">+MST</div>
+                                <div class="col">@itemInfo.WeaponModel.MST</div>
+                            </div>
+                            <div class="row">
+                                <div class="col">+ATA</div>
+                                <div class="col">@itemInfo.WeaponModel.ATA</div>
+                            </div>
+                            <div class="row">
+                                <div class="col">Stat Boost</div>
+                                <div class="col">@itemInfo.WeaponModel.StatBoost</div>
+                            </div>
+                            <div class="row">
+                                <div class="col">Tech Boost</div>
+                                <div class="col">@itemInfo.WeaponModel.TechBoost</div>
+                            </div>
+                            <div class="row">
+                                <div class="col">Max Grind</div>
+                                <div class="col">@itemInfo.WeaponModel.MaxGrind</div>
+                            </div>
+                            <div class="row">
+                                <div class="col">Photon Id</div>
+                                <div class="col">@itemInfo.WeaponModel.Photon</div>
+                            </div>
+                            <div class="row">
+                                <div class="col">Special Id</div>
+                                <div class="col">@itemInfo.WeaponModel.Special</div>
+                            </div>
+                            <div class="row">
+                                <div class="col">Projectile Id</div>
+                                <div class="col">@itemInfo.WeaponModel.Projectile</div>
+                            </div>
+                            <div class="row">
+                                <div class="col">Combo Type</div>
+                                <div class="col">@itemInfo.WeaponModel.ComboType</div>
+                            </div>
                         </div>
-                        <div class="row">
-                            <div class="col">Skin Id</div>
-                            <div class="col">@itemInfo.WeaponModel.Skin</div>
+                    }
+                    else if (itemInfo.ArmorModel != null)
+                    {
+                        <div class="container">
+                            <div class="row">
+                                <div class="col">Id</div>
+                                <div class="col">@itemInfo.ArmorModel.Id.ToString("X6") (@(itemInfo.ArmorModel.Id))</div>
+                            </div>
+                            <div class="row">
+                                <div class="col">Type</div>
+                                <div class="col">@itemInfo.ArmorModel.Type</div>
+                            </div>
+                            <div class="row">
+                                <div class="col">Skin Id</div>
+                                <div class="col">@itemInfo.ArmorModel.Skin</div>
+                            </div>
+                            <div class="row">
+                                <div class="col">Team Points</div>
+                                <div class="col">@itemInfo.ArmorModel.TeamPoints</div>
+                            </div>
+                            <div class="row">
+                                <div class="col">Class Can Use</div>
+                                <div class="col"><ClassFlags Value="@itemInfo.ArmorModel.ClassFlags" /></div>
+                            </div>
+                            <div class="row">
+                                <div class="col">Level Required</div>
+                                <div class="col">@itemInfo.ArmorModel.RequiredLevel</div>
+                            </div>
+                            <div class="row">
+                                <div class="col">+DFP</div>
+                                <div class="col">@itemInfo.ArmorModel.DFP - @(itemInfo.ArmorModel.DFP + itemInfo.ArmorModel.DFPRange)</div>
+                            </div>
+                            <div class="row">
+                                <div class="col">+EVP</div>
+                                <div class="col">@itemInfo.ArmorModel.EVP - @(itemInfo.ArmorModel.EVP + itemInfo.ArmorModel.EVPRange)</div>
+                            </div>
+                            <div class="row">
+                                <div class="col">+EFR</div>
+                                <div class="col">@itemInfo.ArmorModel.EFR</div>
+                            </div>
+                            <div class="row">
+                                <div class="col">+ETH</div>
+                                <div class="col">@itemInfo.ArmorModel.ETH</div>
+                            </div>
+                            <div class="row">
+                                <div class="col">+EIC</div>
+                                <div class="col">@itemInfo.ArmorModel.EIC</div>
+                            </div>
+                            <div class="row">
+                                <div class="col">+EDK</div>
+                                <div class="col">@itemInfo.ArmorModel.EDK</div>
+                            </div>
+                            <div class="row">
+                                <div class="col">+ELT</div>
+                                <div class="col">@itemInfo.ArmorModel.ELT</div>
+                            </div>
+                            <div class="row">
+                                <div class="col">Block Particle</div>
+                                <div class="col">@itemInfo.ArmorModel.BlockParticle</div>
+                            </div>
+                            <div class="row">
+                                <div class="col">Block Effect</div>
+                                <div class="col">@itemInfo.ArmorModel.BlockEffect</div>
+                            </div>
                         </div>
-                        <div class="row">
-                            <div class="col">Team Points</div>
-                            <div class="col">@itemInfo.WeaponModel.TeamPoints</div>
+                    }
+                    else if (itemInfo.UnitModel != null)
+                    {
+                        <div class="container">
+                            <div class="row">
+                                <div class="col">Id</div>
+                                <div class="col">@itemInfo.UnitModel.Id.ToString("X6") (@(itemInfo.UnitModel.Id))</div>
+                            </div>
+                            <div class="row">
+                                <div class="col">Type</div>
+                                <div class="col">@itemInfo.UnitModel.Type</div>
+                            </div>
+                            <div class="row">
+                                <div class="col">Skin Id</div>
+                                <div class="col">@itemInfo.UnitModel.Skin</div>
+                            </div>
+                            <div class="row">
+                                <div class="col">Team Points</div>
+                                <div class="col">@itemInfo.UnitModel.TeamPoints</div>
+                            </div>
+                            <div class="row">
+                                <div class="col">Stat</div>
+                                <div class="col">@itemInfo.UnitModel.Stat</div>
+                            </div>
+                            <div class="row">
+                                <div class="col">Stat Amount</div>
+                                <div class="col">@itemInfo.UnitModel.StatAmount</div>
+                            </div>
+                            <div class="row">
+                                <div class="col">Modifier Amount</div>
+                                <div class="col">@itemInfo.UnitModel.ModifierAmount</div>
+                            </div>
                         </div>
-                        <div class="row">
-                            <div class="col">Class Can Use</div>
-                            <div class="col"><ClassFlags Value="@itemInfo.WeaponModel.ClassFlags" /></div>
+                    }
+                    else if (itemInfo.ToolModel != null)
+                    {
+                        <div class="container">
+                            <div class="row">
+                                <div class="col">Id</div>
+                                <div class="col">@itemInfo.ToolModel.Id.ToString("X6") (@(itemInfo.ToolModel.Id))</div>
+                            </div>
+                            <div class="row">
+                                <div class="col">Type</div>
+                                <div class="col">@itemInfo.ToolModel.Type</div>
+                            </div>
+                            <div class="row">
+                                <div class="col">Skin Id</div>
+                                <div class="col">@itemInfo.ToolModel.Skin</div>
+                            </div>
+                            <div class="row">
+                                <div class="col">Team Points</div>
+                                <div class="col">@itemInfo.ToolModel.TeamPoints</div>
+                            </div>
+                            <div class="row">
+                                <div class="col">Amount</div>
+                                <div class="col">@itemInfo.ToolModel.Amount</div>
+                            </div>
+                            <div class="row">
+                                <div class="col">Technique</div>
+                                <div class="col">@itemInfo.ToolModel.Technique</div>
+                            </div>
+                            <div class="row">
+                                <div class="col">Cost</div>
+                                <div class="col">@itemInfo.ToolModel.Cost</div>
+                            </div>
+                            <div class="row">
+                                <div class="col">Item Flag</div>
+                                <div class="col">@itemInfo.ToolModel.ItemFlag</div>
+                            </div>
                         </div>
-                        <div class="row">
-                            <div class="col">ATP Required</div>
-                            <div class="col">@itemInfo.WeaponModel.ATPRequired</div>
-                        </div>
-                        <div class="row">
-                            <div class="col">MST Required</div>
-                            <div class="col">@itemInfo.WeaponModel.MSTRequired</div>
-                        </div>
-                        <div class="row">
-                            <div class="col">ATA Required</div>
-                            <div class="col">@itemInfo.WeaponModel.ATARequired</div>
-                        </div>
-                        <div class="row">
-                            <div class="col">+ATP</div>
-                            <div class="col">@itemInfo.WeaponModel.ATPMin - @itemInfo.WeaponModel.ATPMax</div>
-                        </div>
-                        <div class="row">
-                            <div class="col">+MST</div>
-                            <div class="col">@itemInfo.WeaponModel.MST</div>
-                        </div>
-                        <div class="row">
-                            <div class="col">+ATA</div>
-                            <div class="col">@itemInfo.WeaponModel.ATA</div>
-                        </div>
-                        <div class="row">
-                            <div class="col">Stat Boost</div>
-                            <div class="col">@itemInfo.WeaponModel.StatBoost</div>
-                        </div>
-                        <div class="row">
-                            <div class="col">Tech Boost</div>
-                            <div class="col">@itemInfo.WeaponModel.TechBoost</div>
-                        </div>
-                        <div class="row">
-                            <div class="col">Max Grind</div>
-                            <div class="col">@itemInfo.WeaponModel.MaxGrind</div>
-                        </div>
-                        <div class="row">
-                            <div class="col">Photon Id</div>
-                            <div class="col">@itemInfo.WeaponModel.Photon</div>
-                        </div>
-                        <div class="row">
-                            <div class="col">Special Id</div>
-                            <div class="col">@itemInfo.WeaponModel.Special</div>
-                        </div>
-                        <div class="row">
-                            <div class="col">Projectile Id</div>
-                            <div class="col">@itemInfo.WeaponModel.Projectile</div>
-                        </div>
-                        <div class="row">
-                            <div class="col">Combo Type</div>
-                            <div class="col">@itemInfo.WeaponModel.ComboType</div>
-                        </div>
-                    </div>
+                    }
                 }
             </div>
+            <div class="modal-footer">@itemInfo?.ItemModel.Identifier</div>
         </div>
     </div>
 </div>
@@ -103,7 +246,13 @@
     {
         base.OnParametersSet();
         if (HasMoreInfo(ItemToShow))
-            itemInfo = new ItemInfoModel(ItemToShow, itemPMT.Weapons[ItemToShow.Id]);
+        {
+            itemPMT.Weapons.TryGetValue(ItemToShow.Identifier, out var weaponModel);
+            itemPMT.Armors.TryGetValue(ItemToShow.Identifier, out var armorModel);
+            itemPMT.Units.TryGetValue(ItemToShow.Identifier, out var unitModel);
+            itemPMT.Tools.TryGetValue(ItemToShow.Identifier, out var toolModel);
+            itemInfo = new ItemInfoModel(ItemToShow, weaponModel, armorModel, unitModel, toolModel);
+        }
         else
             itemInfo = null;
     }
@@ -117,12 +266,25 @@
     public bool HasMoreInfo([NotNullWhen(true)] ItemModel? item)
     {
         if (item == null) return false;
-        return itemPMT.Weapons.ContainsKey(item.Id);
+        return itemPMT.Weapons.ContainsKey(item.Identifier) || itemPMT.Armors.ContainsKey(item.Identifier) || itemPMT.Units.ContainsKey(item.Identifier) || itemPMT.Tools.ContainsKey(item.Identifier);
     }
 
-    private class ItemInfoModel(ItemModel itemModel, WeaponModel weaponModel)
+    public string GetItemType()
+    {
+        if (itemInfo == null) return "";
+        if (itemInfo.WeaponModel != null) return "Weapon";
+        if (itemInfo.ArmorModel != null) return "Armor";
+        if (itemInfo.UnitModel != null) return "Unit";
+        if (itemInfo.ToolModel != null) return "Item";
+        return "";
+    }
+
+    private class ItemInfoModel(ItemModel itemModel, WeaponModel? weaponModel, ArmorModel? armorModel, UnitModel? unitModel, ToolModel? toolModel)
     {
         public ItemModel ItemModel { get; set; } = itemModel;
-        public WeaponModel WeaponModel { get; set; } = weaponModel;
+        public WeaponModel? WeaponModel { get; set; } = weaponModel;
+        public ArmorModel? ArmorModel { get; set; } = armorModel;
+        public UnitModel? UnitModel { get; set; } = unitModel;
+        public ToolModel? ToolModel { get; set; } = toolModel;
     }
 }

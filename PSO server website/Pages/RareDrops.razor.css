@@ -47,9 +47,12 @@ h3 {
 h4 {
     top: 5.5rem;
 }
-.table thead {
+.rare-drops {
+    font-size: x-small;
+}
+.rare-drops thead {
     position: sticky;
-    top: 5.25rem;
+    top: 5.9rem;
 }
 
 .probability {
