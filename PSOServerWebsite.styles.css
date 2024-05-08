@@ -193,9 +193,12 @@ h3[b-ifimzlxf9d] {
 h4[b-ifimzlxf9d] {
     top: 5.5rem;
 }
-.table thead[b-ifimzlxf9d] {
+.rare-drops[b-ifimzlxf9d] {
+    font-size: x-small;
+}
+.rare-drops thead[b-ifimzlxf9d] {
     position: sticky;
-    top: 5.25rem;
+    top: 5.9rem;
 }
 
 .probability[b-ifimzlxf9d] {
