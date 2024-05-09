@@ -36,14 +36,14 @@ public class ItemPMTService(HttpClient http)
         { "sales-div",         36 },
         { "mag-feed",          40 },
         { "star-value",        44 },
-        { "special-data",      48 },
+        { "special",           48 },
         { "weapon-SFX",        52 },
         { "stat-boost",        56 },
         { "shield-sfx",        60 },
         { "tech-use",          64 },
         { "combination",       68 },
         //{ "unknown-table",     72 },
-        { "tech-bosts",        76 },
+        { "tech-boost",        76 },
         { "unwrap",            80 },
         { "unsealable",        84 },
         { "ranged-special",    88 },
@@ -59,6 +59,10 @@ public class ItemPMTService(HttpClient http)
     private const int ToolClassesCount = 0x1A;
     private const int ToolClassesIdentifierOffset = 0x300;
     private const int ToolSize = 0x18;
+    private const int SpecialCount = 0x29;
+    private const int SpecialSize = 0x4;
+    private const int StatBoostCount = 52;
+    private const int StatBoostSize = 0x6;
 
     public async Task<ItemPMTModel> GetItemsAsync()
     {
@@ -132,7 +136,25 @@ public class ItemPMTService(HttpClient http)
             }
         }
 
-        return new ItemPMTModel { Weapons = weapons, Armors = armors, Units = units, Tools = tools };
+        offset = startAddr + s_offset["special"];
+        tableAddr = BitConverter.ToInt32(fileBytes, offset);
+
+        List<SpecialModel> specials = [];
+        for (int j = 0; j < SpecialCount; j++)
+        {
+            specials.Add(BitConverterExtensions.ToSpecialModel(fileBytes, tableAddr + SpecialSize * j));
+        }
+
+        offset = startAddr + s_offset["stat-boost"];
+        tableAddr = BitConverter.ToInt32(fileBytes, offset);
+
+        List<StatBoostModel> statBoosts = [];
+        for (int j = 0; j < StatBoostCount; j++)
+        {
+            statBoosts.Add(BitConverterExtensions.ToStatBoostModel(fileBytes, tableAddr + StatBoostSize * j));
+        }
+
+        return new ItemPMTModel { Weapons = weapons, Armors = armors, Units = units, Tools = tools, Specials = [.. specials], StatBoosts = [.. statBoosts] };
     }
 }
 
@@ -143,6 +165,8 @@ public class ItemPMTModel
     public Dictionary<string, ArmorModel> Armors { get; set; } = [];
     public Dictionary<string, UnitModel> Units { get; set; } = [];
     public Dictionary<string, ToolModel> Tools { get; set; } = [];
+    public SpecialModel[] Specials { get; set; } = [];
+    public StatBoostModel[] StatBoosts { get; set; } = [];
 }
 
 public class ItemCountModel
@@ -234,6 +258,20 @@ public class ToolModel : ItemBaseModel
     public ushort Technique { get; set; }
     public int Cost { get; set; }
     public uint ItemFlag { get; set; }
+}
+
+public class SpecialModel
+{
+    public ushort Type { get; set; }
+    public ushort Amount { get; set; }
+}
+
+public class StatBoostModel
+{
+    public byte Stat1 { get; set; }
+    public byte Stat2 { get; set; }
+    public ushort Amount1 { get; set; }
+    public ushort Amount2 { get; set; }
 }
 
 [Flags]
@@ -387,5 +425,33 @@ public static class BitConverterExtensions
         item.ItemFlag = BitConverter.ToUInt32(array, offset);
         offset += Marshal.SizeOf(item.ItemFlag);
         return item;
+    }
+
+    public static SpecialModel ToSpecialModel(byte[] array, int offset)
+    {
+        SpecialModel special = new()
+        {
+            Type = BitConverter.ToUInt16(array, offset)
+        };
+        offset += Marshal.SizeOf(special.Type);
+        special.Amount = BitConverter.ToUInt16(array, offset);
+        _ = Marshal.SizeOf(special.Amount);
+        return special;
+    }
+
+    public static StatBoostModel ToStatBoostModel(byte[] array, int offset)
+    {
+        StatBoostModel special = new()
+        {
+            Stat1 = array[offset]
+        };
+        offset += Marshal.SizeOf(special.Stat1);
+        special.Stat2 = array[offset];
+        offset += Marshal.SizeOf(special.Stat2);
+        special.Amount1 = BitConverter.ToUInt16(array, offset);
+        offset += Marshal.SizeOf(special.Amount1);
+        special.Amount2 = BitConverter.ToUInt16(array, offset);
+        _ = Marshal.SizeOf(special.Amount2);
+        return special;
     }
 }

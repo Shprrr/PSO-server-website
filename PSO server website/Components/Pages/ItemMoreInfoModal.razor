@@ -58,10 +58,13 @@
                                 <div class="col">+ATA</div>
                                 <div class="col">@itemInfo.WeaponModel.ATA</div>
                             </div>
-                            <div class="row">
-                                <div class="col">Stat Boost</div>
-                                <div class="col">@itemInfo.WeaponModel.StatBoost</div>
-                            </div>
+                            @foreach (var statBoost in GetStatBoosts())
+                            {
+                                <div class="row">
+                                    <div class="col">@statBoost.Key</div>
+                                    <div class="col">@statBoost.Value</div>
+                                </div>
+                            }
                             <div class="row">
                                 <div class="col">Tech Boost</div>
                                 <div class="col">@itemInfo.WeaponModel.TechBoost</div>
@@ -75,8 +78,8 @@
                                 <div class="col">@itemInfo.WeaponModel.Photon</div>
                             </div>
                             <div class="row">
-                                <div class="col">Special Id</div>
-                                <div class="col">@itemInfo.WeaponModel.Special</div>
+                                <div class="col">Special</div>
+                                <div class="col">@GetSpecialName()</div>
                             </div>
                             <div class="row">
                                 <div class="col">Projectile Id</div>
@@ -277,6 +280,26 @@
         if (itemInfo.UnitModel != null) return "Unit";
         if (itemInfo.ToolModel != null) return "Item";
         return "";
+    }
+
+    public string GetSpecialName()
+    {
+        if (itemInfo?.WeaponModel == null)
+            return "";
+
+        string[] names = ["None", "Draw", "Drain", "Fill", "Gush", "Heart", "Mind", "Soul", "Geist", "Master's", "Lord's", "King's", "Charge", "Spirit", "Berserk", "Ice", "Frost", "Freeze", "Blizzard", "Bind", "Hold", "Seize", "Arrest", "Heat", "Fire", "Flame", "Burning", "Shock", "Thunder", "Storm", "Tempest", "Dim", "Shadow", "Dark", "Hell", "Panic", "Riot", "Havoc", "Chaos", "Devil's", "Demon's"];
+        return names[itemInfo.WeaponModel.Special];
+    }
+
+    public IEnumerable<KeyValuePair<string, ushort>> GetStatBoosts()
+    {
+        if (itemInfo?.WeaponModel == null)
+            yield break;
+
+        string[] statNames = ["None", "+ATP", "+ATA", "+EVP", "+DFP", "+MST", "+HP", "+LCK", "+All", "-ATP", "-ATA", "-EVP", "-DFP", "-MST", "-HP", "-LCK", "-All"];
+        var statBoost = itemPMT.StatBoosts[itemInfo.WeaponModel.StatBoost];
+        if (statBoost.Stat1 != 0) yield return new KeyValuePair<string, ushort>(statNames[statBoost.Stat1], statBoost.Amount1);
+        if (statBoost.Stat2 != 0) yield return new KeyValuePair<string, ushort>(statNames[statBoost.Stat2], statBoost.Amount2);
     }
 
     private class ItemInfoModel(ItemModel itemModel, WeaponModel? weaponModel, ArmorModel? armorModel, UnitModel? unitModel, ToolModel? toolModel)
