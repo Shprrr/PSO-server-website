@@ -13,5 +13,6 @@ builder.Services.AddScoped<ItemsService>();
 builder.Services.AddScoped<RareDropsService>();
 builder.Services.AddScoped<ItemPMTService>();
 builder.Services.AddScoped<LocationsService>();
+builder.Services.AddScoped<LevelTableService>();
 
 await builder.Build().RunAsync();

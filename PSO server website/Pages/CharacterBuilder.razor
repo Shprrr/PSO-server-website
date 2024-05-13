@@ -1,4 +1,6 @@
 ﻿@page "/characterBuilder"
+@using PSOServerWebsite.Services
+@inject LevelTableService levelTableService
 
 <PageTitle>Character Builder</PageTitle>
 
@@ -210,6 +212,12 @@
 
 @code {
     public CharacterModel Character { get; set; } = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await levelTableService.GetLevelTableAsync();
+        await base.OnInitializedAsync();
+    }
 
     public enum ClassRace
     {

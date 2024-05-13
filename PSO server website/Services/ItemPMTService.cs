@@ -287,7 +287,7 @@ public enum ClassFlag
     FEMALE = 0x80,
 };
 
-public static class BitConverterExtensions
+public static partial class BitConverterExtensions
 {
     private static void ToItemBaseModel(byte[] array, ref int offset, ref ItemBaseModel itemBase)
     {
