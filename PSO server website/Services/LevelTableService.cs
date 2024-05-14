@@ -14,14 +14,20 @@ public class LevelTableService(HttpClient http)
     {
         byte[] fileBytes = await http.GetByteArrayAsync("data/PlyLevelTbl.bin");
 
-        int readOffset = fileBytes.Length - OffsetStart;
-        OffsetModel offsetModel = new() { LevelDeltas = BitConverter.ToUInt32(fileBytes, readOffset), BaseStats = BitConverter.ToUInt32(fileBytes, readOffset + sizeof(uint)) };
+        //int readOffset = fileBytes.Length - OffsetStart;
+        //OffsetModel offsetModel = new() { BaseStats = BitConverter.ToUInt32(fileBytes, readOffset), LevelDeltas = BitConverter.ToUInt32(fileBytes, readOffset + sizeof(uint)) };
+        OffsetModel offsetModel = new() { BaseStats = 0, LevelDeltas = 216 }; // These are pointers we need after following all pointers.
 
         LevelTableModel levelTable = new();
 
         for (int i = 0; i < NumberClasses; i++)
         {
             levelTable.BaseStats[i] = BitConverterExtensions.ToCharacterStatsModel(fileBytes, (int)offsetModel.BaseStats + i * CharacterStatsSize);
+            levelTable.LevelDeltas[i] = new LevelStatsDeltaModel[MaxLevel];
+            for (int j = 0; j < MaxLevel; j++)
+            {
+                levelTable.LevelDeltas[i][j] = BitConverterExtensions.ToLevelStatsDeltaModel(fileBytes, (int)offsetModel.LevelDeltas + i * MaxLevel * LevelStatsDeltaSize + j * LevelStatsDeltaSize);
+            }
         }
 
         SortClasses(levelTable);
@@ -41,6 +47,12 @@ public class LevelTableService(HttpClient http)
             levelTable.BaseStats[0], levelTable.BaseStats[1], levelTable.BaseStats[2], levelTable.BaseStats[9],
             levelTable.BaseStats[3], levelTable.BaseStats[11], levelTable.BaseStats[4], levelTable.BaseStats[5],
             levelTable.BaseStats[10], levelTable.BaseStats[6], levelTable.BaseStats[7], levelTable.BaseStats[8],
+        ];
+
+        levelTable.LevelDeltas = [
+            levelTable.LevelDeltas[0], levelTable.LevelDeltas[1], levelTable.LevelDeltas[2], levelTable.LevelDeltas[9],
+            levelTable.LevelDeltas[3], levelTable.LevelDeltas[11], levelTable.LevelDeltas[4], levelTable.LevelDeltas[5],
+            levelTable.LevelDeltas[10], levelTable.LevelDeltas[6], levelTable.LevelDeltas[7], levelTable.LevelDeltas[8],
         ];
     }
 }
@@ -80,23 +92,49 @@ public static partial class BitConverterExtensions
 {
     public static CharacterStatsModel ToCharacterStatsModel(byte[] array, int offset)
     {
-        CharacterStatsModel item = new()
+        CharacterStatsModel model = new()
         {
             ATP = BitConverter.ToUInt16(array, offset)
         };
-        offset += Marshal.SizeOf(item.ATP);
-        item.MST = BitConverter.ToUInt16(array, offset);
-        offset += Marshal.SizeOf(item.MST);
-        item.EVP = BitConverter.ToUInt16(array, offset);
-        offset += Marshal.SizeOf(item.EVP);
-        item.HP = BitConverter.ToUInt16(array, offset);
-        offset += Marshal.SizeOf(item.HP);
-        item.DFP = BitConverter.ToUInt16(array, offset);
-        offset += Marshal.SizeOf(item.DFP);
-        item.ATA = BitConverter.ToUInt16(array, offset);
-        offset += Marshal.SizeOf(item.ATA);
-        item.LCK = BitConverter.ToUInt16(array, offset);
-        _ = Marshal.SizeOf(item.LCK);
-        return item;
+        offset += Marshal.SizeOf(model.ATP);
+        model.MST = BitConverter.ToUInt16(array, offset);
+        offset += Marshal.SizeOf(model.MST);
+        model.EVP = BitConverter.ToUInt16(array, offset);
+        offset += Marshal.SizeOf(model.EVP);
+        model.HP = BitConverter.ToUInt16(array, offset);
+        offset += Marshal.SizeOf(model.HP);
+        model.DFP = BitConverter.ToUInt16(array, offset);
+        offset += Marshal.SizeOf(model.DFP);
+        model.ATA = BitConverter.ToUInt16(array, offset);
+        offset += Marshal.SizeOf(model.ATA);
+        model.LCK = BitConverter.ToUInt16(array, offset);
+        _ = Marshal.SizeOf(model.LCK);
+        return model;
+    }
+
+    public static LevelStatsDeltaModel ToLevelStatsDeltaModel(byte[] array, int offset)
+    {
+        LevelStatsDeltaModel model = new()
+        {
+            ATP = array[offset]
+        };
+        offset += Marshal.SizeOf(model.ATP);
+        model.MST = array[offset];
+        offset += Marshal.SizeOf(model.MST);
+        model.EVP = array[offset];
+        offset += Marshal.SizeOf(model.EVP);
+        model.HP = array[offset];
+        offset += Marshal.SizeOf(model.HP);
+        model.DFP = array[offset];
+        offset += Marshal.SizeOf(model.DFP);
+        model.ATA = array[offset];
+        offset += Marshal.SizeOf(model.ATA);
+        model.LCK = array[offset];
+        offset += Marshal.SizeOf(model.LCK);
+        model.TP = array[offset];
+        offset += Marshal.SizeOf(model.TP);
+        model.Experience = BitConverter.ToUInt32(array, offset);
+        _ = Marshal.SizeOf(model.Experience);
+        return model;
     }
 }

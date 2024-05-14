@@ -6,216 +6,229 @@
 
 <h1>Character Builder</h1>
 
-<form class="container border rounded">
-    <div class="row">
-        <div class="col">
-            <label class="form-label">
-                Class
-                <InputSelect @bind-Value="Character. ClassRaceSelection" class="form-select" aria-label="Select a class">
-                    <option value="">Select a class ...</option>
-                    <option checked="@(Character.ClassRaceSelection== ClassRace.Humar)" value="@ClassRace.Humar">HUmar</option>
-                    <option checked="@(Character.ClassRaceSelection== ClassRace.Hunewearl)" value="@ClassRace.Hunewearl">HUnewearl</option>
-                    <option checked="@(Character.ClassRaceSelection== ClassRace.Hucast)" value="@ClassRace.Hucast">HUcast</option>
-                    <option checked="@(Character.ClassRaceSelection== ClassRace.Hucaseal)" value="@ClassRace.Hucaseal">HUcaseal</option>
-                    <option checked="@(Character.ClassRaceSelection== ClassRace.Ramar)" value="@ClassRace.Ramar">RAmar</option>
-                    <option checked="@(Character.ClassRaceSelection== ClassRace.Ramarl)" value="@ClassRace.Ramarl">RAmarl</option>
-                    <option checked="@(Character.ClassRaceSelection== ClassRace.Racast)" value="@ClassRace.Racast">RAcast</option>
-                    <option checked="@(Character.ClassRaceSelection== ClassRace.Racaseal)" value="@ClassRace.Racaseal">RAcaseal</option>
-                    <option checked="@(Character.ClassRaceSelection== ClassRace.Fomar)" value="@ClassRace.Fomar">FOmar</option>
-                    <option checked="@(Character.ClassRaceSelection== ClassRace.Fomarl)" value="@ClassRace.Fomarl">FOmarl</option>
-                    <option checked="@(Character.ClassRaceSelection== ClassRace.Fonewm)" value="@ClassRace.Fonewm">FOnewm</option>
-                    <option checked="@(Character.ClassRaceSelection== ClassRace.Fonewearl)" value="@ClassRace.Fonewearl">FOnewearl</option>
-                </InputSelect>
-            </label>
+@if (IsLoading)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <form class="container border rounded">
+        <div class="row">
+            <div class="col">
+                <label class="form-label">
+                    Class
+                    <InputSelect @bind-Value="Character. ClassRaceSelection" class="form-select" aria-label="Select a class">
+                        <option value="">Select a class ...</option>
+                        <option checked="@(Character.ClassRaceSelection== ClassRace.Humar)" value="@ClassRace.Humar">HUmar</option>
+                        <option checked="@(Character.ClassRaceSelection== ClassRace.Hunewearl)" value="@ClassRace.Hunewearl">HUnewearl</option>
+                        <option checked="@(Character.ClassRaceSelection== ClassRace.Hucast)" value="@ClassRace.Hucast">HUcast</option>
+                        <option checked="@(Character.ClassRaceSelection== ClassRace.Hucaseal)" value="@ClassRace.Hucaseal">HUcaseal</option>
+                        <option checked="@(Character.ClassRaceSelection== ClassRace.Ramar)" value="@ClassRace.Ramar">RAmar</option>
+                        <option checked="@(Character.ClassRaceSelection== ClassRace.Ramarl)" value="@ClassRace.Ramarl">RAmarl</option>
+                        <option checked="@(Character.ClassRaceSelection== ClassRace.Racast)" value="@ClassRace.Racast">RAcast</option>
+                        <option checked="@(Character.ClassRaceSelection== ClassRace.Racaseal)" value="@ClassRace.Racaseal">RAcaseal</option>
+                        <option checked="@(Character.ClassRaceSelection== ClassRace.Fomar)" value="@ClassRace.Fomar">FOmar</option>
+                        <option checked="@(Character.ClassRaceSelection== ClassRace.Fomarl)" value="@ClassRace.Fomarl">FOmarl</option>
+                        <option checked="@(Character.ClassRaceSelection== ClassRace.Fonewm)" value="@ClassRace.Fonewm">FOnewm</option>
+                        <option checked="@(Character.ClassRaceSelection== ClassRace.Fonewearl)" value="@ClassRace.Fonewearl">FOnewearl</option>
+                    </InputSelect>
+                </label>
+            </div>
+            <div class="col">
+                <label class="form-label">
+                    Level
+                    <InputNumber @bind-Value="Character.Level" DisplayName="Level" class="form-control"></InputNumber>
+                </label>
+            </div>
         </div>
-        <div class="col">
-            <label class="form-label">
-                Level
-                <InputNumber @bind-Value="Character.Level" DisplayName="Level" class="form-control"></InputNumber>
-            </label>
+        <div class="row">
+            <div class="col">
+                <label class="form-label">
+                    HP
+                    <InputNumber @bind-Value="Character.HP" DisplayName="HP" class="form-control" disabled></InputNumber>
+                </label>
+            </div>
+            <div class="col">
+                <label class="form-label">
+                    TP
+                    <InputNumber @bind-Value="Character.TP" DisplayName="TP" class="form-control" disabled></InputNumber>
+                </label>
+            </div>
+            <div class="col">
+                <label class="form-label">
+                    ATP
+                    <InputNumber @bind-Value="Character.ATP" DisplayName="ATP" class="form-control" disabled></InputNumber>
+                </label>
+            </div>
+            <div class="col">
+                <label class="form-label">
+                    DFP
+                    <InputNumber @bind-Value="Character.DFP" DisplayName="DFP" class="form-control" disabled></InputNumber>
+                </label>
+            </div>
+            <div class="col">
+                <label class="form-label">
+                    MST
+                    <InputNumber @bind-Value="Character.MST" DisplayName="MST" class="form-control" disabled></InputNumber>
+                </label>
+            </div>
+            <div class="col">
+                <label class="form-label">
+                    ATA
+                    <InputNumber @bind-Value="Character.ATA" DisplayName="ATA" class="form-control" disabled></InputNumber>
+                </label>
+            </div>
+            <div class="col">
+                <label class="form-label">
+                    EVP
+                    <InputNumber @bind-Value="Character.EVP" DisplayName="EVP" class="form-control" disabled></InputNumber>
+                </label>
+            </div>
+            <div class="col">
+                <label class="form-label">
+                    LCK
+                    <InputNumber @bind-Value="Character.LCK" DisplayName="LCK" class="form-control" disabled></InputNumber>
+                </label>
+            </div>
         </div>
-    </div>
-    <div class="row">
-        <div class="col">
-            <label class="form-label">
-                HP
-                <InputNumber @bind-Value="Character.HP" DisplayName="HP" class="form-control" disabled></InputNumber>
-            </label>
+        <div class="row">
+            <div class="col">
+                <label class="form-label">
+                    HP Material
+                    <InputNumber @bind-Value="Character.HPMaterial" DisplayName="HP Material" class="form-control"></InputNumber>
+                </label>
+            </div>
+            <div class="col">
+                <label class="form-label">
+                    TP Material
+                    <InputNumber @bind-Value="Character.TPMaterial" DisplayName="TP Material" class="form-control"></InputNumber>
+                </label>
+            </div>
+            <div class="col">
+                <label class="form-label">
+                    Power Material
+                    <InputNumber @bind-Value="Character.PowerMaterial" DisplayName="Power Material" class="form-control"></InputNumber>
+                </label>
+            </div>
+            <div class="col">
+                <label class="form-label">
+                    Def Material
+                    <InputNumber @bind-Value="Character.DefMaterial" DisplayName="Def Material" class="form-control"></InputNumber>
+                </label>
+            </div>
+            <div class="col">
+                <label class="form-label">
+                    Mind Material
+                    <InputNumber @bind-Value="Character.MindMaterial" DisplayName="Mind Material" class="form-control"></InputNumber>
+                </label>
+            </div>
+            <div class="col">
+                <label class="form-label">
+                    Evade Material
+                    <InputNumber @bind-Value="Character.EvadeMaterial" DisplayName="Evade Material" class="form-control"></InputNumber>
+                </label>
+            </div>
+            <div class="col">
+                <label class="form-label">
+                    Luck Material
+                    <InputNumber @bind-Value="Character.LuckMaterial" DisplayName="Luck Material" class="form-control"></InputNumber>
+                </label>
+            </div>
         </div>
-        <div class="col">
-            <label class="form-label">
-                TP
-                <InputNumber @bind-Value="Character.TP" DisplayName="TP" class="form-control" disabled></InputNumber>
-            </label>
+        <div class="row">
+            <div class="col">
+                <label class="form-label">
+                    Weapon
+                    <input class="form-control-plaintext form-text" disabled value="@Character.WeaponName" />
+                    <button class="btn btn-outline-secondary btn-sm">Edit</button>
+                </label>
+            </div>
+            <div class="col">
+                <label class="form-label">
+                    Armor
+                    <input class="form-control-plaintext form-text" disabled value="@Character.ArmorName" />
+                    <button class="btn btn-outline-secondary btn-sm">Edit</button>
+                </label>
+            </div>
+            <div class="col">
+                <label class="form-label">
+                    Unit 1
+                    <input class="form-control-plaintext form-text" disabled value="@Character.Unit1Name" />
+                    <button class="btn btn-outline-secondary btn-sm">Edit</button>
+                </label>
+            </div>
+            <div class="col">
+                <label class="form-label">
+                    Unit 2
+                    <input class="form-control-plaintext form-text" disabled value="@Character.Unit2Name" />
+                    <button class="btn btn-outline-secondary btn-sm">Edit</button>
+                </label>
+            </div>
+            <div class="col">
+                <label class="form-label">
+                    Unit 3
+                    <input class="form-control-plaintext form-text" disabled value="@Character.Unit3Name" />
+                    <button class="btn btn-outline-secondary btn-sm">Edit</button>
+                </label>
+            </div>
+            <div class="col">
+                <label class="form-label">
+                    Unit 4
+                    <input class="form-control-plaintext form-text" disabled value="@Character.Unit4Name" />
+                    <button class="btn btn-outline-secondary btn-sm">Edit</button>
+                </label>
+            </div>
+            <div class="col">
+                <label class="form-label">
+                    Shield
+                    <input class="form-control-plaintext form-text" disabled value="@Character.ShieldName" />
+                    <button class="btn btn-outline-secondary btn-sm">Edit</button>
+                </label>
+            </div>
+            <div class="col">
+                <label class="form-label">
+                    Mag
+                    <input class="form-control-plaintext form-text" disabled value="@Character.MagName" />
+                    <button class="btn btn-outline-secondary btn-sm">Edit</button>
+                </label>
+            </div>
         </div>
-        <div class="col">
-            <label class="form-label">
-                ATP
-                <InputNumber @bind-Value="Character.ATP" DisplayName="ATP" class="form-control" disabled></InputNumber>
-            </label>
+        <div class="row">
+            <div class="col">
+                <label class="form-label">
+                    Shifta Level
+                    <InputNumber @bind-Value="Character.ShiftaLevel" DisplayName="Shifta Level" class="form-control"></InputNumber>
+                </label>
+            </div>
+            <div class="col">
+                <label class="form-label">
+                    Deband Level
+                    <InputNumber @bind-Value="Character.DebandLevel" DisplayName="Deband Level" class="form-control"></InputNumber>
+                </label>
+            </div>
         </div>
-        <div class="col">
-            <label class="form-label">
-                DFP
-                <InputNumber @bind-Value="Character.DFP" DisplayName="DFP" class="form-control" disabled></InputNumber>
-            </label>
-        </div>
-        <div class="col">
-            <label class="form-label">
-                MST
-                <InputNumber @bind-Value="Character.MST" DisplayName="MST" class="form-control" disabled></InputNumber>
-            </label>
-        </div>
-        <div class="col">
-            <label class="form-label">
-                ATA
-                <InputNumber @bind-Value="Character.ATA" DisplayName="ATA" class="form-control" disabled></InputNumber>
-            </label>
-        </div>
-        <div class="col">
-            <label class="form-label">
-                EVP
-                <InputNumber @bind-Value="Character.EVP" DisplayName="EVP" class="form-control" disabled></InputNumber>
-            </label>
-        </div>
-        <div class="col">
-            <label class="form-label">
-                LCK
-                <InputNumber @bind-Value="Character.LCK" DisplayName="LCK" class="form-control" disabled></InputNumber>
-            </label>
-        </div>
-    </div>
-    <div class="row">
-        <div class="col">
-            <label class="form-label">
-                HP Material
-                <InputNumber @bind-Value="Character.HPMaterial" DisplayName="HP Material" class="form-control"></InputNumber>
-            </label>
-        </div>
-        <div class="col">
-            <label class="form-label">
-                TP Material
-                <InputNumber @bind-Value="Character.TPMaterial" DisplayName="TP Material" class="form-control"></InputNumber>
-            </label>
-        </div>
-        <div class="col">
-            <label class="form-label">
-                Power Material
-                <InputNumber @bind-Value="Character.PowerMaterial" DisplayName="Power Material" class="form-control"></InputNumber>
-            </label>
-        </div>
-        <div class="col">
-            <label class="form-label">
-                Def Material
-                <InputNumber @bind-Value="Character.DefMaterial" DisplayName="Def Material" class="form-control"></InputNumber>
-            </label>
-        </div>
-        <div class="col">
-            <label class="form-label">
-                Mind Material
-                <InputNumber @bind-Value="Character.MindMaterial" DisplayName="Mind Material" class="form-control"></InputNumber>
-            </label>
-        </div>
-        <div class="col">
-            <label class="form-label">
-                Evade Material
-                <InputNumber @bind-Value="Character.EvadeMaterial" DisplayName="Evade Material" class="form-control"></InputNumber>
-            </label>
-        </div>
-        <div class="col">
-            <label class="form-label">
-                Luck Material
-                <InputNumber @bind-Value="Character.LuckMaterial" DisplayName="Luck Material" class="form-control"></InputNumber>
-            </label>
-        </div>
-    </div>
-    <div class="row">
-        <div class="col">
-            <label class="form-label">
-                Weapon
-                <input class="form-control-plaintext form-text" disabled value="@Character.WeaponName" />
-                <button class="btn btn-outline-secondary btn-sm">Edit</button>
-            </label>
-        </div>
-        <div class="col">
-            <label class="form-label">
-                Armor
-                <input class="form-control-plaintext form-text" disabled value="@Character.ArmorName" />
-                <button class="btn btn-outline-secondary btn-sm">Edit</button>
-            </label>
-        </div>
-        <div class="col">
-            <label class="form-label">
-                Unit 1
-                <input class="form-control-plaintext form-text" disabled value="@Character.Unit1Name" />
-                <button class="btn btn-outline-secondary btn-sm">Edit</button>
-            </label>
-        </div>
-        <div class="col">
-            <label class="form-label">
-                Unit 2
-                <input class="form-control-plaintext form-text" disabled value="@Character.Unit2Name" />
-                <button class="btn btn-outline-secondary btn-sm">Edit</button>
-            </label>
-        </div>
-        <div class="col">
-            <label class="form-label">
-                Unit 3
-                <input class="form-control-plaintext form-text" disabled value="@Character.Unit3Name" />
-                <button class="btn btn-outline-secondary btn-sm">Edit</button>
-            </label>
-        </div>
-        <div class="col">
-            <label class="form-label">
-                Unit 4
-                <input class="form-control-plaintext form-text" disabled value="@Character.Unit4Name" />
-                <button class="btn btn-outline-secondary btn-sm">Edit</button>
-            </label>
-        </div>
-        <div class="col">
-            <label class="form-label">
-                Shield
-                <input class="form-control-plaintext form-text" disabled value="@Character.ShieldName" />
-                <button class="btn btn-outline-secondary btn-sm">Edit</button>
-            </label>
-        </div>
-        <div class="col">
-            <label class="form-label">
-                Mag
-                <input class="form-control-plaintext form-text" disabled value="@Character.MagName" />
-                <button class="btn btn-outline-secondary btn-sm">Edit</button>
-            </label>
-        </div>
-    </div>
-    <div class="row">
-        <div class="col">
-            <label class="form-label">
-                Shifta Level
-                <InputNumber @bind-Value="Character.ShiftaLevel" DisplayName="Shifta Level" class="form-control"></InputNumber>
-            </label>
-        </div>
-        <div class="col">
-            <label class="form-label">
-                Deband Level
-                <InputNumber @bind-Value="Character.DebandLevel" DisplayName="Deband Level" class="form-control"></InputNumber>
-            </label>
-        </div>
-    </div>
-    <div class="row">
-        <div class="col">
-            <label class="form-label">
+        <div class="row">
+            <div class="col">
+                <label class="form-label">
 
-            </label>
+                </label>
+            </div>
         </div>
-    </div>
-</form>
+    </form>
+}
 
 @code {
-    public CharacterModel Character { get; set; } = new();
+    [DisallowNull] private LevelTableModel levelTable = default!;
+
+    [DisallowNull] public CharacterModel Character { get; set; } = default!;
+
+    [MemberNotNullWhen(false, nameof(levelTable))]
+    private bool IsLoading => levelTable == null;
 
     protected override async Task OnInitializedAsync()
     {
-        await levelTableService.GetLevelTableAsync();
+        levelTable = await levelTableService.GetLevelTableAsync();
+        Character = new(levelTable);
         await base.OnInitializedAsync();
     }
 
@@ -235,10 +248,28 @@
         Fonewearl
     }
 
-    public class CharacterModel
+    public class CharacterModel(LevelTableModel levelTable)
     {
-        public ClassRace? ClassRaceSelection { get; set; }
-        public int Level { get; set; } = 1;
+        private ClassRace? classRaceSelection;
+        private int level = 1;
+
+        public ClassRace? ClassRaceSelection
+        {
+            get { return classRaceSelection; }
+            set { classRaceSelection = value; RefreshStats(); }
+        }
+
+        public int Level
+        {
+            get { return level; }
+            set
+            {
+                if (value < 1) value = 1;
+                if (value > 200) value = 200;
+                level = value; RefreshStats();
+            }
+        }
+
         public int HP { get; set; }
         public int TP { get; set; }
         public int ATP { get; set; }
@@ -264,5 +295,52 @@
         public string Unit4Name { get; set; } = "";
         public string ShieldName { get; set; } = "";
         public string MagName { get; set; } = "Mag 5/0/0/0";
+
+        public void RefreshStats()
+        {
+            if (!ClassRaceSelection.HasValue)
+            {
+                // Reset values.
+                if (Level != 1) Level = 1;
+                HP = 0;
+                TP = 0;
+                ATP = 0;
+                DFP = 0;
+                MST = 0;
+                ATA = 0;
+                EVP = 0;
+                LCK = 0;
+                HPMaterial = 0;
+                TPMaterial = 0;
+                PowerMaterial = 0;
+                DefMaterial = 0;
+                MindMaterial = 0;
+                EvadeMaterial = 0;
+                LuckMaterial = 0;
+                ShiftaLevel = 0;
+                DebandLevel = 0;
+                WeaponName = "";
+                ArmorName = "";
+                Unit1Name = "";
+                Unit2Name = "";
+                Unit3Name = "";
+                Unit4Name = "";
+                ShieldName = "";
+                MagName = "Mag 5/0/0/0";
+                return;
+            }
+
+            int indexClass = (int)ClassRaceSelection;
+            var baseStats = levelTable.BaseStats[indexClass];
+            var levelDeltas = levelTable.LevelDeltas[indexClass].Take(Level);
+            HP = baseStats.HP + levelDeltas.Sum(l => l.HP);
+            TP = baseStats.MST + levelDeltas.Sum(l => l.MST);
+            ATP = baseStats.ATP + levelDeltas.Sum(l => l.ATP);
+            DFP = baseStats.DFP + levelDeltas.Sum(l => l.DFP);
+            MST = baseStats.MST + levelDeltas.Sum(l => l.MST);
+            ATA = baseStats.ATA + levelDeltas.Sum(l => l.ATA);
+            EVP = baseStats.EVP + levelDeltas.Sum(l => l.EVP);
+            LCK = baseStats.LCK + levelDeltas.Sum(l => l.LCK);
+        }
     }
 }
