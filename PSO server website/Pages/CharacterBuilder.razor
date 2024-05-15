@@ -275,7 +275,7 @@ else
         public int ATP { get; set; }
         public int DFP { get; set; }
         public int MST { get; set; }
-        public int ATA { get; set; }
+        public double ATA { get; set; }
         public int EVP { get; set; }
         public int LCK { get; set; }
         public int HPMaterial { get; set; }
@@ -333,14 +333,31 @@ else
             int indexClass = (int)ClassRaceSelection;
             var baseStats = levelTable.BaseStats[indexClass];
             var levelDeltas = levelTable.LevelDeltas[indexClass].Take(Level);
-            HP = baseStats.HP + levelDeltas.Sum(l => l.HP);
-            TP = baseStats.MST + levelDeltas.Sum(l => l.MST);
+            HP = (int)Math.Floor((baseStats.HP + levelDeltas.Sum(l => l.HP) + Level - 1) * GetHPMultiplier());
+            TP = ClassRaceSelection switch
+            {
+                ClassRace.Humar or ClassRace.Hunewearl or ClassRace.Ramar or ClassRace.Ramarl
+                    => baseStats.MST + levelDeltas.Sum(l => l.MST) + Level - 1,
+                ClassRace.Fomar or ClassRace.Fomarl or ClassRace.Fonewm or ClassRace.Fonewearl
+                    => (int)Math.Floor((baseStats.MST + levelDeltas.Sum(l => l.MST) + Level - 1) * 1.5),
+                _ => 0
+            };
             ATP = baseStats.ATP + levelDeltas.Sum(l => l.ATP);
             DFP = baseStats.DFP + levelDeltas.Sum(l => l.DFP);
             MST = baseStats.MST + levelDeltas.Sum(l => l.MST);
-            ATA = baseStats.ATA + levelDeltas.Sum(l => l.ATA);
+            ATA = baseStats.ATA + levelDeltas.Sum(l => l.ATA) / 10d + 38;
             EVP = baseStats.EVP + levelDeltas.Sum(l => l.EVP);
             LCK = baseStats.LCK + levelDeltas.Sum(l => l.LCK);
+        }
+
+        private double GetHPMultiplier()
+        {
+            return ClassRaceSelection switch
+            {
+                ClassRace.Ramar or ClassRace.Ramarl or ClassRace.Racast or ClassRace.Racaseal => 1.85,
+                ClassRace.Fomar or ClassRace.Fomarl or ClassRace.Fonewm or ClassRace.Fonewearl => 1.45,
+                _ => 2
+            };
         }
     }
 }
