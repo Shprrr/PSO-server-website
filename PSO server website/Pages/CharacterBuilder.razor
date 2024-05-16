@@ -12,7 +12,7 @@
 }
 else
 {
-    <form class="container border rounded">
+    <div class="container border rounded">
         <div class="row">
             <div class="col">
                 <label class="form-label">
@@ -214,7 +214,7 @@ else
                 </label>
             </div>
         </div>
-    </form>
+    </div>
 }
 
 @code {
@@ -342,10 +342,10 @@ else
                     => (int)Math.Floor((baseStats.MST + levelDeltas.Sum(l => l.MST) + Level - 1) * 1.5),
                 _ => 0
             };
-            ATP = baseStats.ATP + levelDeltas.Sum(l => l.ATP);
+            ATP = baseStats.ATP + levelDeltas.Sum(l => l.ATP) + GetATPBonus();
             DFP = baseStats.DFP + levelDeltas.Sum(l => l.DFP);
             MST = baseStats.MST + levelDeltas.Sum(l => l.MST);
-            ATA = baseStats.ATA + levelDeltas.Sum(l => l.ATA) / 10d + 38;
+            ATA = baseStats.ATA + levelDeltas.Sum(l => l.ATA) / 10d + GetATABonus();
             EVP = baseStats.EVP + levelDeltas.Sum(l => l.EVP);
             LCK = baseStats.LCK + levelDeltas.Sum(l => l.LCK);
         }
@@ -357,6 +357,34 @@ else
                 ClassRace.Ramar or ClassRace.Ramarl or ClassRace.Racast or ClassRace.Racaseal => 1.85,
                 ClassRace.Fomar or ClassRace.Fomarl or ClassRace.Fonewm or ClassRace.Fonewearl => 1.45,
                 _ => 2
+            };
+        }
+
+        private int GetATPBonus()
+        {
+            return ClassRaceSelection switch
+            {
+                ClassRace.Humar or ClassRace.Hunewearl or ClassRace.Hucast or ClassRace.Hucaseal => 10,
+                ClassRace.Ramar or ClassRace.Ramarl or ClassRace.Racast or ClassRace.Racaseal => 5,
+                ClassRace.Fomar or ClassRace.Fomarl or ClassRace.Fonewm or ClassRace.Fonewearl => 3,
+                _ => 0
+            };
+        }
+
+        private int GetATABonus()
+        {
+            return ClassRaceSelection switch
+            {
+                ClassRace.Humar or ClassRace.Hunewearl => 38,
+                ClassRace.Hucast => 29,
+                ClassRace.Hucaseal => 36,
+                ClassRace.Ramar => 40,
+                ClassRace.Ramarl or ClassRace.Racaseal => 32,
+                ClassRace.Racast => 30,
+                ClassRace.Fomar or ClassRace.Fomarl => 48,
+                ClassRace.Fonewm => 49,
+                ClassRace.Fonewearl => 51,
+                _ => 0
             };
         }
     }
