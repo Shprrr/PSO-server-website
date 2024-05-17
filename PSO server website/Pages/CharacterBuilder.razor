@@ -250,8 +250,17 @@ else
 
     public class CharacterModel(LevelTableModel levelTable)
     {
+        private static readonly int[] maxMats = [250, 150, 150, 150, 250, 250, 150, 150, 250, 250, 150, 150];
+
         private ClassRace? classRaceSelection;
         private int level = 1;
+        private int hpMaterial;
+        private int tpMaterial;
+        private int powerMaterial;
+        private int defMaterial;
+        private int mindMaterial;
+        private int evadeMaterial;
+        private int luckMaterial;
 
         public ClassRace? ClassRaceSelection
         {
@@ -278,13 +287,102 @@ else
         public double ATA { get; set; }
         public int EVP { get; set; }
         public int LCK { get; set; }
-        public int HPMaterial { get; set; }
-        public int TPMaterial { get; set; }
-        public int PowerMaterial { get; set; }
-        public int DefMaterial { get; set; }
-        public int MindMaterial { get; set; }
-        public int EvadeMaterial { get; set; }
-        public int LuckMaterial { get; set; }
+        public int HPMaterial
+        {
+            get { return hpMaterial; }
+            set
+            {
+                if (value < 0) value = 0;
+                if (value > 125) value = 125;
+                hpMaterial = value; RefreshStats();
+            }
+        }
+
+        public int TPMaterial
+        {
+            get { return tpMaterial; }
+            set
+            {
+                if (value < 0) value = 0;
+                if (value > MaxTPMaterial()) value = MaxTPMaterial();
+                tpMaterial = value; RefreshStats();
+            }
+        }
+
+        public int PowerMaterial
+        {
+            get { return powerMaterial; }
+            set
+            {
+                if (value < 0) value = 0;
+                var maxMaterial = MaxPowerDefEvadeMaterial();
+                if (value > maxMaterial) value = maxMaterial;
+                var totalMaterial = value + DefMaterial + MindMaterial + EvadeMaterial + LuckMaterial;
+                if (totalMaterial > maxMaterial)
+                    value -= totalMaterial - maxMaterial;
+                powerMaterial = value; RefreshStats();
+            }
+        }
+
+        public int DefMaterial
+        {
+            get { return defMaterial; }
+            set
+            {
+                if (value < 0) value = 0;
+                var maxMaterial = MaxPowerDefEvadeMaterial();
+                if (value > maxMaterial) value = maxMaterial;
+                var totalMaterial = value + PowerMaterial + MindMaterial + EvadeMaterial + LuckMaterial;
+                if (totalMaterial > maxMaterial)
+                    value -= totalMaterial - maxMaterial;
+                defMaterial = value; RefreshStats();
+            }
+        }
+
+        public int MindMaterial
+        {
+            get { return mindMaterial; }
+            set
+            {
+                if (value < 0) value = 0;
+                var maxMaterial = MaxMindMaterial();
+                if (value > maxMaterial) value = maxMaterial;
+                var totalMaterial = value + PowerMaterial + DefMaterial + EvadeMaterial + LuckMaterial;
+                if (totalMaterial > maxMaterial)
+                    value -= totalMaterial - maxMaterial;
+                mindMaterial = value; RefreshStats();
+            }
+        }
+
+        public int EvadeMaterial
+        {
+            get { return evadeMaterial; }
+            set
+            {
+                if (value < 0) value = 0;
+                var maxMaterial = MaxPowerDefEvadeMaterial();
+                if (value > maxMaterial) value = maxMaterial;
+                var totalMaterial = value + PowerMaterial + DefMaterial + MindMaterial + LuckMaterial;
+                if (totalMaterial > maxMaterial)
+                    value -= totalMaterial - maxMaterial;
+                evadeMaterial = value; RefreshStats();
+            }
+        }
+
+        public int LuckMaterial
+        {
+            get { return luckMaterial; }
+            set
+            {
+                if (value < 0) value = 0;
+                if (value > 45) value = 45;
+                var totalMaterial = value + PowerMaterial + DefMaterial + MindMaterial + EvadeMaterial;
+                if (totalMaterial > MaxPowerDefEvadeMaterial())
+                    value -= totalMaterial - MaxPowerDefEvadeMaterial();
+                luckMaterial = value; RefreshStats();
+            }
+        }
+
         public int ShiftaLevel { get; set; }
         public int DebandLevel { get; set; }
         public string WeaponName { get; set; } = "";
@@ -310,15 +408,15 @@ else
                 ATA = 0;
                 EVP = 0;
                 LCK = 0;
-                HPMaterial = 0;
-                TPMaterial = 0;
-                PowerMaterial = 0;
-                DefMaterial = 0;
-                MindMaterial = 0;
-                EvadeMaterial = 0;
-                LuckMaterial = 0;
-                ShiftaLevel = 0;
-                DebandLevel = 0;
+                if (HPMaterial != 0) HPMaterial = 0;
+                if (TPMaterial != 0) TPMaterial = 0;
+                if (PowerMaterial != 0) PowerMaterial = 0;
+                if (DefMaterial != 0) DefMaterial = 0;
+                if (MindMaterial != 0) MindMaterial = 0;
+                if (EvadeMaterial != 0) EvadeMaterial = 0;
+                if (LuckMaterial != 0) LuckMaterial = 0;
+                if (ShiftaLevel != 0) ShiftaLevel = 0;
+                if (DebandLevel != 0) DebandLevel = 0;
                 WeaponName = "";
                 ArmorName = "";
                 Unit1Name = "";
@@ -331,9 +429,27 @@ else
             }
 
             int indexClass = (int)ClassRaceSelection;
+
+            // Clamp materials numbers that can change with class selection.
+            var maxMaterial = MaxPowerDefEvadeMaterial();
+            if (TPMaterial > MaxTPMaterial()) TPMaterial = MaxTPMaterial();
+            if (PowerMaterial > maxMaterial) PowerMaterial = maxMaterial;
+            if (DefMaterial > maxMaterial) DefMaterial = maxMaterial;
+            if (MindMaterial > MaxMindMaterial()) MindMaterial = MaxMindMaterial();
+            if (EvadeMaterial > maxMaterial) EvadeMaterial = maxMaterial;
+            if (PowerMaterial + DefMaterial + MindMaterial + EvadeMaterial + LuckMaterial > maxMaterial)
+            {
+                PowerMaterial = 0;
+                DefMaterial = 0;
+                MindMaterial = 0;
+                EvadeMaterial = 0;
+                LuckMaterial = 0;
+            }
+
+            // Calculate stats.
             var baseStats = levelTable.BaseStats[indexClass];
             var levelDeltas = levelTable.LevelDeltas[indexClass].Take(Level);
-            HP = (int)Math.Floor((baseStats.HP + levelDeltas.Sum(l => l.HP) + Level - 1) * GetHPMultiplier());
+            HP = (int)Math.Floor((baseStats.HP + levelDeltas.Sum(l => l.HP) + Level - 1) * GetHPMultiplier()) + HPMaterial * 2;
             TP = ClassRaceSelection switch
             {
                 ClassRace.Humar or ClassRace.Hunewearl or ClassRace.Ramar or ClassRace.Ramarl
@@ -341,51 +457,56 @@ else
                 ClassRace.Fomar or ClassRace.Fomarl or ClassRace.Fonewm or ClassRace.Fonewearl
                     => (int)Math.Floor((baseStats.MST + levelDeltas.Sum(l => l.MST) + Level - 1) * 1.5),
                 _ => 0
-            };
-            ATP = baseStats.ATP + levelDeltas.Sum(l => l.ATP) + GetATPBonus();
-            DFP = baseStats.DFP + levelDeltas.Sum(l => l.DFP);
-            MST = baseStats.MST + levelDeltas.Sum(l => l.MST);
+            } + TPMaterial * 2;
+            ATP = baseStats.ATP + levelDeltas.Sum(l => l.ATP) + GetATPBonus() + PowerMaterial * 2;
+            DFP = baseStats.DFP + levelDeltas.Sum(l => l.DFP) + DefMaterial * 2;
+            MST = baseStats.MST + levelDeltas.Sum(l => l.MST) + MindMaterial * 2;
             ATA = baseStats.ATA + levelDeltas.Sum(l => l.ATA) / 10d + GetATABonus();
-            EVP = baseStats.EVP + levelDeltas.Sum(l => l.EVP);
-            LCK = baseStats.LCK + levelDeltas.Sum(l => l.LCK);
+            EVP = baseStats.EVP + levelDeltas.Sum(l => l.EVP) + EvadeMaterial * 2;
+            LCK = baseStats.LCK + levelDeltas.Sum(l => l.LCK) + LuckMaterial * 2;
         }
 
-        private double GetHPMultiplier()
+        private double GetHPMultiplier() => ClassRaceSelection switch
         {
-            return ClassRaceSelection switch
-            {
-                ClassRace.Ramar or ClassRace.Ramarl or ClassRace.Racast or ClassRace.Racaseal => 1.85,
-                ClassRace.Fomar or ClassRace.Fomarl or ClassRace.Fonewm or ClassRace.Fonewearl => 1.45,
-                _ => 2
-            };
-        }
+            ClassRace.Ramar or ClassRace.Ramarl or ClassRace.Racast or ClassRace.Racaseal => 1.85,
+            ClassRace.Fomar or ClassRace.Fomarl or ClassRace.Fonewm or ClassRace.Fonewearl => 1.45,
+            _ => 2
+        };
 
-        private int GetATPBonus()
+        private int GetATPBonus() => ClassRaceSelection switch
         {
-            return ClassRaceSelection switch
-            {
-                ClassRace.Humar or ClassRace.Hunewearl or ClassRace.Hucast or ClassRace.Hucaseal => 10,
-                ClassRace.Ramar or ClassRace.Ramarl or ClassRace.Racast or ClassRace.Racaseal => 5,
-                ClassRace.Fomar or ClassRace.Fomarl or ClassRace.Fonewm or ClassRace.Fonewearl => 3,
-                _ => 0
-            };
-        }
+            ClassRace.Humar or ClassRace.Hunewearl or ClassRace.Hucast or ClassRace.Hucaseal => 10,
+            ClassRace.Ramar or ClassRace.Ramarl or ClassRace.Racast or ClassRace.Racaseal => 5,
+            ClassRace.Fomar or ClassRace.Fomarl or ClassRace.Fonewm or ClassRace.Fonewearl => 3,
+            _ => 0
+        };
 
-        private int GetATABonus()
+        private int GetATABonus() => ClassRaceSelection switch
         {
-            return ClassRaceSelection switch
-            {
-                ClassRace.Humar or ClassRace.Hunewearl => 38,
-                ClassRace.Hucast => 29,
-                ClassRace.Hucaseal => 36,
-                ClassRace.Ramar => 40,
-                ClassRace.Ramarl or ClassRace.Racaseal => 32,
-                ClassRace.Racast => 30,
-                ClassRace.Fomar or ClassRace.Fomarl => 48,
-                ClassRace.Fonewm => 49,
-                ClassRace.Fonewearl => 51,
-                _ => 0
-            };
-        }
+            ClassRace.Humar or ClassRace.Hunewearl => 38,
+            ClassRace.Hucast => 29,
+            ClassRace.Hucaseal => 36,
+            ClassRace.Ramar => 40,
+            ClassRace.Ramarl or ClassRace.Racaseal => 32,
+            ClassRace.Racast => 30,
+            ClassRace.Fomar or ClassRace.Fomarl => 48,
+            ClassRace.Fonewm => 49,
+            ClassRace.Fonewearl => 51,
+            _ => 0
+        };
+
+        private int MaxTPMaterial() => ClassRaceSelection switch
+        {
+            null or ClassRace.Hucast or ClassRace.Hucaseal or ClassRace.Racast or ClassRace.Racaseal => 0,
+            _ => 125
+        };
+
+        private int MaxPowerDefEvadeMaterial() => ClassRaceSelection.HasValue ? maxMats[(int)ClassRaceSelection] : 0;
+
+        private int MaxMindMaterial() => ClassRaceSelection switch
+        {
+            null or ClassRace.Hucast or ClassRace.Hucaseal or ClassRace.Racast or ClassRace.Racaseal => 0,
+            _ => maxMats[(int)ClassRaceSelection]
+        };
     }
 }
