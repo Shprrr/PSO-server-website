@@ -464,19 +464,21 @@ else
             // Calculate stats.
             var baseStats = levelTable.BaseStats[indexClass];
             var levelDeltas = levelTable.LevelDeltas[indexClass].Take(Level);
+            var baseATP = baseStats.ATP + levelDeltas.Sum(l => l.ATP) + GetATPBonus() + PowerMaterial * 2;
+            var baseDFP = baseStats.DFP + levelDeltas.Sum(l => l.DFP) + DefMaterial * 2;
+            var baseMST = baseStats.MST + levelDeltas.Sum(l => l.MST) + MindMaterial * 2;
             HP = (int)Math.Floor((baseStats.HP + levelDeltas.Sum(l => l.HP) + Level - 1) * GetHPMultiplier()) + HPMaterial * 2;
             TP = ClassRaceSelection switch
             {
                 ClassRace.Humar or ClassRace.Hunewearl or ClassRace.Ramar or ClassRace.Ramarl
-                    => baseStats.MST + levelDeltas.Sum(l => l.MST) + Level - 1,
+                    => baseMST + Level - 1,
                 ClassRace.Fomar or ClassRace.Fomarl or ClassRace.Fonewm or ClassRace.Fonewearl
-                    => (int)Math.Floor((baseStats.MST + levelDeltas.Sum(l => l.MST) + Level - 1) * 1.5),
+                    => (int)Math.Floor((baseMST + Level - 1) * 1.5),
                 _ => 0
             } + TPMaterial * 2;
-            var baseATP = (baseStats.ATP + levelDeltas.Sum(l => l.ATP) + GetATPBonus() + PowerMaterial * 2);
             ATP = (int)Math.Floor(baseATP + baseATP * GetShiftaDebandMultiplier(ShiftaLevel));
-            DFP = (int)Math.Floor((baseStats.DFP + levelDeltas.Sum(l => l.DFP) + DefMaterial * 2) * GetShiftaDebandMultiplier(DebandLevel));
-            MST = baseStats.MST + levelDeltas.Sum(l => l.MST) + MindMaterial * 2;
+            DFP = (int)Math.Floor(baseDFP + baseDFP * GetShiftaDebandMultiplier(DebandLevel));
+            MST = baseMST;
             ATA = baseStats.ATA + levelDeltas.Sum(l => l.ATA) / 10d + GetATABonus();
             EVP = baseStats.EVP + levelDeltas.Sum(l => l.EVP) + EvadeMaterial * 2;
             LCK = baseStats.LCK + levelDeltas.Sum(l => l.LCK) + LuckMaterial * 2;
