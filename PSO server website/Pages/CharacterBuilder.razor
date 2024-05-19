@@ -1,6 +1,8 @@
 ﻿@page "/characterBuilder"
 @using PSOServerWebsite.Services
+@using System.Text.RegularExpressions
 @inject LevelTableService levelTableService
+@inject ItemsService itemsService
 
 <PageTitle>Character Builder</PageTitle>
 
@@ -17,7 +19,7 @@ else
             <div class="col">
                 <label class="form-label">
                     Class
-                    <InputSelect @bind-Value="Character. ClassRaceSelection" class="form-select" aria-label="Select a class">
+                    <InputSelect @bind-Value="Character.ClassRaceSelection" class="form-select" aria-label="Select a class">
                         <option value="">Select a class ...</option>
                         <option checked="@(Character.ClassRaceSelection== ClassRace.Humar)" value="@ClassRace.Humar">HUmar</option>
                         <option checked="@(Character.ClassRaceSelection== ClassRace.Hunewearl)" value="@ClassRace.Hunewearl">HUnewearl</option>
@@ -189,7 +191,7 @@ else
                 <label class="form-label">
                     Mag
                     <input class="form-control-plaintext form-text" disabled value="@Character.MagName" />
-                    <button class="btn btn-outline-secondary btn-sm">Edit</button>
+                    <button class="btn btn-outline-secondary btn-sm" data-bs-toggle="modal" data-bs-target="#modalEditMag">Edit</button>
                 </label>
             </div>
         </div>
@@ -217,19 +219,74 @@ else
             </div>
         </div>
     </div>
+
+    <div id="modalEditMag" class="modal" onhidden.bs.modal="@(() => Character.RefreshStats())">
+        <div class="modal-dialog modal-dialog-scrollable modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <span>Mag</span><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <label class="form-label">
+                        Mag
+                        <InputSelect @bind-Value="Character.Mag.Name" class="form-select" aria-label="Select a mag">
+                            <option value=""><i>~ None ~</i></option>
+                            @foreach (var mag in mags)
+                            {
+                                <option value="@mag.Name">@mag.Name</option>
+                            }
+                        </InputSelect>
+                    </label>
+                    <label class="form-label">
+                        Level
+                        <InputNumber Value="@Character.Mag.Level" ValueExpression="@(() => Character.Mag.Level)" DisplayName="Level" class="form-control" disabled></InputNumber>
+                    </label>
+                    <label class="form-label">
+                        DEF
+                        <InputNumber @bind-Value="Character.Mag.Def" DisplayName="DEF" class="form-control"></InputNumber>
+                    </label>
+                    <label class="form-label">
+                        POW
+                        <InputNumber @bind-Value="Character.Mag.Pow" DisplayName="POW" class="form-control"></InputNumber>
+                    </label>
+                    <label class="form-label">
+                        DEX
+                        <InputNumber @bind-Value="Character.Mag.Dex" DisplayName="DEX" class="form-control"></InputNumber>
+                    </label>
+                    <label class="form-label">
+                        MIND
+                        <InputNumber @bind-Value="Character.Mag.Mind" DisplayName="MIND" class="form-control"></InputNumber>
+                    </label>
+                    <label class="form-label visually-hidden">
+                        Syncro
+                    </label>
+                    <label class="form-label visually-hidden">
+                        IQ
+                    </label>
+                    <label class="form-label visually-hidden">
+                        PB
+                    </label>
+                </div>
+                <div class="modal-footer">@Character.MagName</div>
+            </div>
+        </div>
+    </div>
 }
 
 @code {
     [DisallowNull] private LevelTableModel levelTable = default!;
+    [DisallowNull] private ItemModel[] mags = default!;
 
     [DisallowNull] public CharacterModel Character { get; set; } = default!;
 
-    [MemberNotNullWhen(false, nameof(levelTable))]
-    private bool IsLoading => levelTable == null;
+    [MemberNotNullWhen(false, nameof(levelTable), nameof(mags))]
+    private bool IsLoading => levelTable == null || mags == null;
 
     protected override async Task OnInitializedAsync()
     {
         levelTable = await levelTableService.GetLevelTableAsync();
+        var items = (await itemsService.GetItemsAsync()).ToArray();
+        mags = items.Where(i => i.Identifier.StartsWith("02")).ToArray();
         Character = new(levelTable);
         await base.OnInitializedAsync();
     }
@@ -265,6 +322,7 @@ else
         private int luckMaterial;
         private int shiftaLevel;
         private int debandLevel;
+        private MagModel mag = MagModel.Parse("Mag 5/0/0/0");
 
         public ClassRace? ClassRaceSelection
         {
@@ -323,8 +381,7 @@ else
                 var maxMaterial = MaxPowerDefEvadeMaterial();
                 if (value > maxMaterial) value = maxMaterial;
                 var totalMaterial = value + DefMaterial + MindMaterial + EvadeMaterial + LuckMaterial;
-                if (totalMaterial > maxMaterial)
-                    value -= totalMaterial - maxMaterial;
+                if (totalMaterial > maxMaterial) value -= totalMaterial - maxMaterial;
                 powerMaterial = value; RefreshStats();
             }
         }
@@ -338,8 +395,7 @@ else
                 var maxMaterial = MaxPowerDefEvadeMaterial();
                 if (value > maxMaterial) value = maxMaterial;
                 var totalMaterial = value + PowerMaterial + MindMaterial + EvadeMaterial + LuckMaterial;
-                if (totalMaterial > maxMaterial)
-                    value -= totalMaterial - maxMaterial;
+                if (totalMaterial > maxMaterial) value -= totalMaterial - maxMaterial;
                 defMaterial = value; RefreshStats();
             }
         }
@@ -353,8 +409,7 @@ else
                 var maxMaterial = MaxMindMaterial();
                 if (value > maxMaterial) value = maxMaterial;
                 var totalMaterial = value + PowerMaterial + DefMaterial + EvadeMaterial + LuckMaterial;
-                if (totalMaterial > maxMaterial)
-                    value -= totalMaterial - maxMaterial;
+                if (totalMaterial > maxMaterial) value -= totalMaterial - maxMaterial;
                 mindMaterial = value; RefreshStats();
             }
         }
@@ -368,8 +423,7 @@ else
                 var maxMaterial = MaxPowerDefEvadeMaterial();
                 if (value > maxMaterial) value = maxMaterial;
                 var totalMaterial = value + PowerMaterial + DefMaterial + MindMaterial + LuckMaterial;
-                if (totalMaterial > maxMaterial)
-                    value -= totalMaterial - maxMaterial;
+                if (totalMaterial > maxMaterial) value -= totalMaterial - maxMaterial;
                 evadeMaterial = value; RefreshStats();
             }
         }
@@ -382,8 +436,7 @@ else
                 if (value < 0) value = 0;
                 if (value > 45) value = 45;
                 var totalMaterial = value + PowerMaterial + DefMaterial + MindMaterial + EvadeMaterial;
-                if (totalMaterial > MaxPowerDefEvadeMaterial())
-                    value -= totalMaterial - MaxPowerDefEvadeMaterial();
+                if (totalMaterial > MaxPowerDefEvadeMaterial()) value -= totalMaterial - MaxPowerDefEvadeMaterial();
                 luckMaterial = value; RefreshStats();
             }
         }
@@ -407,7 +460,13 @@ else
         public string Unit3Name { get; set; } = "";
         public string Unit4Name { get; set; } = "";
         public string ShieldName { get; set; } = "";
-        public string MagName { get; set; } = "Mag 5/0/0/0";
+
+        public string MagName => Mag.ToString();
+        public MagModel Mag
+        {
+            get { return mag; }
+            set { mag = value; RefreshStats(); }
+        }
 
         public void RefreshStats()
         {
@@ -439,7 +498,7 @@ else
                 Unit3Name = "";
                 Unit4Name = "";
                 ShieldName = "";
-                MagName = "Mag 5/0/0/0";
+                if (MagName != "Mag 5/0/0/0") Mag = MagModel.Parse("Mag 5/0/0/0");
                 return;
             }
 
@@ -464,9 +523,9 @@ else
             // Calculate stats.
             var baseStats = levelTable.BaseStats[indexClass];
             var levelDeltas = levelTable.LevelDeltas[indexClass].Take(Level);
-            var baseATP = baseStats.ATP + levelDeltas.Sum(l => l.ATP) + GetATPBonus() + PowerMaterial * 2;
-            var baseDFP = baseStats.DFP + levelDeltas.Sum(l => l.DFP) + DefMaterial * 2;
-            var baseMST = baseStats.MST + levelDeltas.Sum(l => l.MST) + MindMaterial * 2;
+            var baseATP = baseStats.ATP + levelDeltas.Sum(l => l.ATP) + GetATPBonus() + (PowerMaterial + Mag.Pow) * 2;
+            var baseDFP = baseStats.DFP + levelDeltas.Sum(l => l.DFP) + DefMaterial * 2 + Mag.Def;
+            var baseMST = baseStats.MST + levelDeltas.Sum(l => l.MST) + (MindMaterial + Mag.Mind) * 2;
             HP = (int)Math.Floor((baseStats.HP + levelDeltas.Sum(l => l.HP) + Level - 1) * GetHPMultiplier()) + HPMaterial * 2;
             TP = ClassRaceSelection switch
             {
@@ -479,7 +538,7 @@ else
             ATP = (int)Math.Floor(baseATP + baseATP * GetShiftaDebandMultiplier(ShiftaLevel));
             DFP = (int)Math.Floor(baseDFP + baseDFP * GetShiftaDebandMultiplier(DebandLevel));
             MST = baseMST;
-            ATA = baseStats.ATA + levelDeltas.Sum(l => l.ATA) / 10d + GetATABonus();
+            ATA = baseStats.ATA + levelDeltas.Sum(l => l.ATA) / 10d + GetATABonus() + Mag.Dex / 2;
             EVP = baseStats.EVP + levelDeltas.Sum(l => l.EVP) + EvadeMaterial * 2;
             LCK = baseStats.LCK + levelDeltas.Sum(l => l.LCK) + LuckMaterial * 2;
         }
@@ -531,5 +590,83 @@ else
             => shiftaDebandLevel == 0 ? 0 : Math.Sign(shiftaDebandLevel) * (1.3 * (Math.Abs(shiftaDebandLevel) - 1) + 10) / 100;
         public TimeSpan GetShiftaDebandDuration(int shiftaDebandLevel)
             => shiftaDebandLevel == 0 ? TimeSpan.Zero : new TimeSpan(0, 0, 10 * (Math.Abs(shiftaDebandLevel) - 1) + 40);
+    }
+
+    public class MagModel
+    {
+        private int def = 5;
+        private int pow;
+        private int dex;
+        private int mind;
+
+        public string Name { get; set; } = "";
+        public int Level => Def + Pow + Dex + Mind;
+
+        public int Def
+        {
+            get { return def; }
+            set
+            {
+                if (value < 5) value = 5;
+                if (value > 200) value = 200;
+                var total = value + Pow + Dex + Mind;
+                if (total > 200) value -= total - 200;
+                def = value;
+            }
+        }
+
+        public int Pow
+        {
+            get { return pow; }
+            set
+            {
+                if (value < 0) value = 0;
+                if (value > 195) value = 195;
+                var total = value + Def + Dex + Mind;
+                if (total > 200) value -= total - 200;
+                pow = value;
+            }
+        }
+
+        public int Dex
+        {
+            get { return dex; }
+            set
+            {
+                if (value < 0) value = 0;
+                if (value > 195) value = 195;
+                var total = value + Def + Pow + Mind;
+                if (total > 200) value -= total - 200;
+                dex = value;
+            }
+        }
+
+        public int Mind
+        {
+            get { return mind; }
+            set
+            {
+                if (value < 0) value = 0;
+                if (value > 195) value = 195;
+                var total = value + Def + Pow + Dex;
+                if (total > 200) value -= total - 200;
+                mind = value;
+            }
+        }
+
+        public override string ToString() => string.IsNullOrEmpty(Name) ? "None" : $"{Name} {Def}/{Pow}/{Dex}/{Mind}";
+
+        public static MagModel Parse(string mag)
+        {
+            MagModel magModel = new();
+            Match m = Regex.Match(mag, @"^(.+?) (\d+?)/(\d+?)/(\d+?)/(\d+?)$", RegexOptions.Singleline);
+            if (!m.Success) throw new FormatException();
+            magModel.Name = m.Groups[1].Value;
+            magModel.Def = int.Parse(m.Groups[2].Value);
+            magModel.Pow = int.Parse(m.Groups[3].Value);
+            magModel.Dex = int.Parse(m.Groups[4].Value);
+            magModel.Mind = int.Parse(m.Groups[5].Value);
+            return magModel;
+        }
     }
 }
