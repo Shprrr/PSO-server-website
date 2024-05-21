@@ -243,6 +243,9 @@ public class ArmorModel : ItemBaseModel
     public byte ELT { get; set; }
     public byte DFPRange { get; set; }
     public byte EVPRange { get; set; }
+    public byte StatBoost { get; set; }
+    public byte TechBoost { get; set; }
+    public ushort Unknown2 { get; set; }
 }
 
 public class UnitModel : ItemBaseModel
@@ -392,6 +395,12 @@ public static partial class BitConverterExtensions
         offset += Marshal.SizeOf(item.DFPRange);
         item.EVPRange = array[offset];
         offset += Marshal.SizeOf(item.EVPRange);
+        item.StatBoost = array[offset];
+        offset += Marshal.SizeOf(item.StatBoost);
+        item.TechBoost = array[offset];
+        offset += Marshal.SizeOf(item.TechBoost);
+        item.Unknown2 = BitConverter.ToUInt16(array, offset);
+        offset += Marshal.SizeOf(item.Unknown2);
         return item;
     }
 

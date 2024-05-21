@@ -254,6 +254,13 @@ else
                         EVP Bonus
                         <InputNumber @bind-Value="Character.Shield.EvpBonus" DisplayName="EVP Bonus" class="form-control"></InputNumber>
                     </label>
+                    @foreach (var statBoost in Character.Shield.GetStatBoosts())
+                    {
+                        <label class="form-label">
+                            @statBoost.Item1
+                            <InputNumber Value="@statBoost.Item2" ValueExpression="@(() => statBoost.Item2)" DisplayName="@statBoost.Item1" class="form-control" disabled></InputNumber>
+                        </label>
+                    }
                 </div>
                 <div class="modal-footer">@Character.ShieldName</div>
             </div>
@@ -575,10 +582,10 @@ else
             // Calculate stats.
             var baseStats = levelTable.BaseStats[indexClass];
             var levelDeltas = levelTable.LevelDeltas[indexClass].Take(Level);
-            var baseATP = baseStats.ATP + levelDeltas.Sum(l => l.ATP) + GetATPBonus() + (PowerMaterial + Mag.Pow) * 2;
-            var baseDFP = baseStats.DFP + levelDeltas.Sum(l => l.DFP) + DefMaterial * 2 + Shield.Dfp + Mag.Def;
-            var baseMST = baseStats.MST + levelDeltas.Sum(l => l.MST) + (MindMaterial + Mag.Mind) * 2;
-            HP = (int)Math.Floor((baseStats.HP + levelDeltas.Sum(l => l.HP) + Level - 1) * GetHPMultiplier()) + HPMaterial * 2;
+            var baseATP = baseStats.ATP + levelDeltas.Sum(l => l.ATP) + GetATPBonus() + (PowerMaterial + Mag.Pow) * 2 + Shield.GetStatBoosts().Sum(s => CalculateStatBoost("ATP", s.Item1, s.Item2));
+            var baseDFP = baseStats.DFP + levelDeltas.Sum(l => l.DFP) + DefMaterial * 2 + Shield.Dfp + Shield.GetStatBoosts().Sum(s => CalculateStatBoost("DFP", s.Item1, s.Item2)) + Mag.Def;
+            var baseMST = baseStats.MST + levelDeltas.Sum(l => l.MST) + (MindMaterial + Mag.Mind) * 2 + Shield.GetStatBoosts().Sum(s => CalculateStatBoost("MST", s.Item1, s.Item2));
+            HP = (int)Math.Floor((baseStats.HP + levelDeltas.Sum(l => l.HP) + Level - 1) * GetHPMultiplier()) + HPMaterial * 2 + Shield.GetStatBoosts().Sum(s => CalculateStatBoost("HP", s.Item1, s.Item2));
             TP = ClassRaceSelection switch
             {
                 ClassRace.Humar or ClassRace.Hunewearl or ClassRace.Ramar or ClassRace.Ramarl
@@ -590,9 +597,9 @@ else
             ATP = (int)Math.Floor(baseATP + baseATP * GetShiftaDebandMultiplier(ShiftaLevel));
             DFP = (int)Math.Floor(baseDFP + baseDFP * GetShiftaDebandMultiplier(DebandLevel));
             MST = baseMST;
-            ATA = baseStats.ATA + levelDeltas.Sum(l => l.ATA) / 10d + GetATABonus() + Mag.Dex / 2;
-            EVP = baseStats.EVP + levelDeltas.Sum(l => l.EVP) + EvadeMaterial * 2 + Shield.Evp;
-            LCK = baseStats.LCK + levelDeltas.Sum(l => l.LCK) + LuckMaterial * 2;
+            ATA = baseStats.ATA + levelDeltas.Sum(l => l.ATA) / 10d + GetATABonus() + Shield.GetStatBoosts().Sum(s => CalculateStatBoost("ATA", s.Item1, s.Item2)) + Mag.Dex / 2;
+            EVP = baseStats.EVP + levelDeltas.Sum(l => l.EVP) + EvadeMaterial * 2 + Shield.Evp + Shield.GetStatBoosts().Sum(s => CalculateStatBoost("EVP", s.Item1, s.Item2));
+            LCK = baseStats.LCK + levelDeltas.Sum(l => l.LCK) + LuckMaterial * 2 + Shield.GetStatBoosts().Sum(s => CalculateStatBoost("LCK", s.Item1, s.Item2));
         }
 
         private double GetHPMultiplier() => ClassRaceSelection switch
@@ -623,6 +630,13 @@ else
             ClassRace.Fonewearl => 51,
             _ => 0
         };
+
+        private int CalculateStatBoost(string stat, string statBoost, int amount)
+        {
+            if (statBoost == $"+{stat}" || statBoost == "+All" && stat != "HP") return amount;
+            if (statBoost == $"-{stat}" || statBoost == "-All" && stat != "HP") return -1 * amount;
+            return 0;
+        }
 
         private int MaxTPMaterial() => ClassRaceSelection switch
         {
@@ -694,6 +708,17 @@ else
                 if (value > evpBonusMax) value = evpBonusMax;
                 evpBonus = value;
             }
+        }
+
+        public IEnumerable<Tuple<string, int>> GetStatBoosts()
+        {
+            if (string.IsNullOrEmpty(Identifier))
+                yield break;
+
+            string[] statNames = ["None", "+ATP", "+ATA", "+EVP", "+DFP", "+MST", "+HP", "+LCK", "+All", "-ATP", "-ATA", "-EVP", "-DFP", "-MST", "-HP", "-LCK", "-All"];
+            var statBoost = itemPMT.StatBoosts[itemPMT.Armors[Identifier].StatBoost];
+            if (statBoost.Stat1 != 0) yield return Tuple.Create<string, int>(statNames[statBoost.Stat1], statBoost.Amount1);
+            if (statBoost.Stat2 != 0) yield return Tuple.Create<string, int>(statNames[statBoost.Stat2], statBoost.Amount2);
         }
 
         public override string ToString()
