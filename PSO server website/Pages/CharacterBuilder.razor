@@ -3,6 +3,7 @@
 @using System.Text.RegularExpressions
 @inject LevelTableService levelTableService
 @inject ItemsService itemsService
+@inject ItemPMTService itemPMTService
 
 <PageTitle>Character Builder</PageTitle>
 
@@ -137,60 +138,60 @@ else
                 </label>
             </div>
         </div>
-        <div class="row">
+        <div class="row mb-2">
             <div class="col">
-                <label class="form-label">
+                <label class="form-label d-flex flex-column justify-content-between h-100">
                     Weapon
-                    <input class="form-control-plaintext form-text" disabled value="@Character.WeaponName" />
+                    <span class="form-control-plaintext form-text">@Character.WeaponName</span>
                     <button class="btn btn-outline-secondary btn-sm">Edit</button>
                 </label>
             </div>
             <div class="col">
-                <label class="form-label">
+                <label class="form-label d-flex flex-column justify-content-between h-100">
                     Armor
-                    <input class="form-control-plaintext form-text" disabled value="@Character.ArmorName" />
+                    <span class="form-control-plaintext form-text">@Character.ArmorName</span>
                     <button class="btn btn-outline-secondary btn-sm">Edit</button>
                 </label>
             </div>
             <div class="col">
-                <label class="form-label">
+                <label class="form-label d-flex flex-column justify-content-between h-100">
                     Unit 1
-                    <input class="form-control-plaintext form-text" disabled value="@Character.Unit1Name" />
+                    <span class="form-control-plaintext form-text">@Character.Unit1Name</span>
                     <button class="btn btn-outline-secondary btn-sm">Edit</button>
                 </label>
             </div>
             <div class="col">
-                <label class="form-label">
+                <label class="form-label d-flex flex-column justify-content-between h-100">
                     Unit 2
-                    <input class="form-control-plaintext form-text" disabled value="@Character.Unit2Name" />
+                    <span class="form-control-plaintext form-text">@Character.Unit2Name</span>
                     <button class="btn btn-outline-secondary btn-sm">Edit</button>
                 </label>
             </div>
             <div class="col">
-                <label class="form-label">
+                <label class="form-label d-flex flex-column justify-content-between h-100">
                     Unit 3
-                    <input class="form-control-plaintext form-text" disabled value="@Character.Unit3Name" />
+                    <span class="form-control-plaintext form-text">@Character.Unit3Name</span>
                     <button class="btn btn-outline-secondary btn-sm">Edit</button>
                 </label>
             </div>
             <div class="col">
-                <label class="form-label">
+                <label class="form-label d-flex flex-column justify-content-between h-100">
                     Unit 4
-                    <input class="form-control-plaintext form-text" disabled value="@Character.Unit4Name" />
+                    <span class="form-control-plaintext form-text">@Character.Unit4Name</span>
                     <button class="btn btn-outline-secondary btn-sm">Edit</button>
                 </label>
             </div>
             <div class="col">
-                <label class="form-label">
+                <label class="form-label d-flex flex-column justify-content-between h-100">
                     Shield
-                    <input class="form-control-plaintext form-text" disabled value="@Character.ShieldName" />
-                    <button class="btn btn-outline-secondary btn-sm">Edit</button>
+                    <span class="form-control-plaintext form-text">@Character.ShieldName</span>
+                    <button class="btn btn-outline-secondary btn-sm" data-bs-toggle="modal" data-bs-target="#modalEditShield">Edit</button>
                 </label>
             </div>
             <div class="col">
-                <label class="form-label">
+                <label class="form-label d-flex flex-column justify-content-between h-100">
                     Mag
-                    <input class="form-control-plaintext form-text" disabled value="@Character.MagName" />
+                    <span class="form-control-plaintext form-text">@Character.MagName</span>
                     <button class="btn btn-outline-secondary btn-sm" data-bs-toggle="modal" data-bs-target="#modalEditMag">Edit</button>
                 </label>
             </div>
@@ -216,6 +217,45 @@ else
                 <label class="form-label">
 
                 </label>
+            </div>
+        </div>
+    </div>
+
+    <div id="modalEditShield" class="modal" onhidden.bs.modal="@(() => Character.RefreshStats())">
+        <div class="modal-dialog modal-dialog-scrollable modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <span>Shield</span><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <label class="form-label">
+                        Shield
+                        <InputSelect @bind-Value="Character.Shield.Model" class="form-select" aria-label="Select a shield">
+                            <option value=""><i>~ None ~</i></option>
+                            @foreach (var shield in shields)
+                            {
+                                <option value="@shield">@shield.Name</option>
+                            }
+                        </InputSelect>
+                    </label>
+                    <label class="form-label">
+                        DFP
+                        <InputNumber Value="@Character.Shield.Dfp" ValueExpression="@(() => Character.Shield.Dfp)" DisplayName="DFP" class="form-control" disabled></InputNumber>
+                    </label>
+                    <label class="form-label">
+                        DFP Bonus
+                        <InputNumber @bind-Value="Character.Shield.DfpBonus" DisplayName="DFP Bonus" class="form-control"></InputNumber>
+                    </label>
+                    <label class="form-label">
+                        EVP
+                        <InputNumber Value="@Character.Shield.Evp" ValueExpression="@(() => Character.Shield.Evp)" DisplayName="EVP" class="form-control" disabled></InputNumber>
+                    </label>
+                    <label class="form-label">
+                        EVP Bonus
+                        <InputNumber @bind-Value="Character.Shield.EvpBonus" DisplayName="EVP Bonus" class="form-control"></InputNumber>
+                    </label>
+                </div>
+                <div class="modal-footer">@Character.ShieldName</div>
             </div>
         </div>
     </div>
@@ -275,19 +315,23 @@ else
 
 @code {
     [DisallowNull] private LevelTableModel levelTable = default!;
+    [DisallowNull] private ItemPMTModel itemPMT = default!;
+    [DisallowNull] private ItemModel[] shields = default!;
     [DisallowNull] private ItemModel[] mags = default!;
 
     [DisallowNull] public CharacterModel Character { get; set; } = default!;
 
-    [MemberNotNullWhen(false, nameof(levelTable), nameof(mags))]
-    private bool IsLoading => levelTable == null || mags == null;
+    [MemberNotNullWhen(false, nameof(levelTable), nameof(itemPMT), nameof(shields), nameof(mags))]
+    private bool IsLoading => levelTable == null || itemPMT == null || shields == null || mags == null;
 
     protected override async Task OnInitializedAsync()
     {
         levelTable = await levelTableService.GetLevelTableAsync();
+        itemPMT = await itemPMTService.GetItemsAsync();
         var items = (await itemsService.GetItemsAsync()).ToArray();
+        shields = items.Where(i => i.Identifier.StartsWith("0102")).ToArray();
         mags = items.Where(i => i.Identifier.StartsWith("02")).ToArray();
-        Character = new(levelTable);
+        Character = new(levelTable, itemPMT);
         await base.OnInitializedAsync();
     }
 
@@ -307,7 +351,7 @@ else
         Fonewearl
     }
 
-    public class CharacterModel(LevelTableModel levelTable)
+    public class CharacterModel(LevelTableModel levelTable, ItemPMTModel itemPMT)
     {
         private static readonly int[] maxMats = [250, 150, 150, 150, 250, 250, 150, 150, 250, 250, 150, 150];
 
@@ -322,6 +366,7 @@ else
         private int luckMaterial;
         private int shiftaLevel;
         private int debandLevel;
+        private ShieldModel shield = new(itemPMT);
         private MagModel mag = MagModel.Parse("Mag 5/0/0/0");
 
         public ClassRace? ClassRaceSelection
@@ -459,7 +504,14 @@ else
         public string Unit2Name { get; set; } = "";
         public string Unit3Name { get; set; } = "";
         public string Unit4Name { get; set; } = "";
-        public string ShieldName { get; set; } = "";
+
+        public string ShieldName => Shield.ToString();
+        public ShieldModel Shield
+        {
+            get { return shield; }
+            set { shield = value; RefreshStats(); }
+        }
+
 
         public string MagName => Mag.ToString();
         public MagModel Mag
@@ -497,7 +549,7 @@ else
                 Unit2Name = "";
                 Unit3Name = "";
                 Unit4Name = "";
-                ShieldName = "";
+                if (ShieldName != "") Shield = new(itemPMT);
                 if (MagName != "Mag 5/0/0/0") Mag = MagModel.Parse("Mag 5/0/0/0");
                 return;
             }
@@ -524,7 +576,7 @@ else
             var baseStats = levelTable.BaseStats[indexClass];
             var levelDeltas = levelTable.LevelDeltas[indexClass].Take(Level);
             var baseATP = baseStats.ATP + levelDeltas.Sum(l => l.ATP) + GetATPBonus() + (PowerMaterial + Mag.Pow) * 2;
-            var baseDFP = baseStats.DFP + levelDeltas.Sum(l => l.DFP) + DefMaterial * 2 + Mag.Def;
+            var baseDFP = baseStats.DFP + levelDeltas.Sum(l => l.DFP) + DefMaterial * 2 + Shield.Dfp + Mag.Def;
             var baseMST = baseStats.MST + levelDeltas.Sum(l => l.MST) + (MindMaterial + Mag.Mind) * 2;
             HP = (int)Math.Floor((baseStats.HP + levelDeltas.Sum(l => l.HP) + Level - 1) * GetHPMultiplier()) + HPMaterial * 2;
             TP = ClassRaceSelection switch
@@ -539,7 +591,7 @@ else
             DFP = (int)Math.Floor(baseDFP + baseDFP * GetShiftaDebandMultiplier(DebandLevel));
             MST = baseMST;
             ATA = baseStats.ATA + levelDeltas.Sum(l => l.ATA) / 10d + GetATABonus() + Mag.Dex / 2;
-            EVP = baseStats.EVP + levelDeltas.Sum(l => l.EVP) + EvadeMaterial * 2;
+            EVP = baseStats.EVP + levelDeltas.Sum(l => l.EVP) + EvadeMaterial * 2 + Shield.Evp;
             LCK = baseStats.LCK + levelDeltas.Sum(l => l.LCK) + LuckMaterial * 2;
         }
 
@@ -590,6 +642,68 @@ else
             => shiftaDebandLevel == 0 ? 0 : Math.Sign(shiftaDebandLevel) * (1.3 * (Math.Abs(shiftaDebandLevel) - 1) + 10) / 100;
         public TimeSpan GetShiftaDebandDuration(int shiftaDebandLevel)
             => shiftaDebandLevel == 0 ? TimeSpan.Zero : new TimeSpan(0, 0, 10 * (Math.Abs(shiftaDebandLevel) - 1) + 40);
+    }
+
+    public class ShieldModel(ItemPMTModel itemPMT)
+    {
+        private int dfpBonus;
+        private int evpBonus;
+
+        private ItemModel? model;
+
+        public ItemModel? Model
+        {
+            get { return model; }
+            set
+            {
+                model = value;
+                if (Identifier == null) return;
+                var dfpBonusMax = itemPMT.Armors[Identifier].DFPRange;
+                if (DfpBonus > dfpBonusMax) DfpBonus = dfpBonusMax;
+                var evpBonusMax = itemPMT.Armors[Identifier].EVPRange;
+                if (EvpBonus > evpBonusMax) EvpBonus = evpBonusMax;
+            }
+        }
+
+        public string? Identifier => Model?.Identifier;
+        public string Name => Model?.Name ?? "";
+
+        public int Dfp => string.IsNullOrEmpty(Identifier) ? 0 : itemPMT.Armors[Identifier].DFP + DfpBonus;
+        public int DfpBonus
+        {
+            get { return dfpBonus; }
+            set
+            {
+                if (string.IsNullOrEmpty(Identifier)) return;
+                if (value < 0) value = 0;
+                var dfpBonusMax = itemPMT.Armors[Identifier].DFPRange;
+                if (value > dfpBonusMax) value = dfpBonusMax;
+                dfpBonus = value;
+            }
+        }
+
+        public int Evp => string.IsNullOrEmpty(Identifier) ? 0 : itemPMT.Armors[Identifier].EVP + EvpBonus;
+        public int EvpBonus
+        {
+            get { return evpBonus; }
+            set
+            {
+                if (string.IsNullOrEmpty(Identifier)) return;
+                if (value < 0) value = 0;
+                var evpBonusMax = itemPMT.Armors[Identifier].EVPRange;
+                if (value > evpBonusMax) value = evpBonusMax;
+                evpBonus = value;
+            }
+        }
+
+        public override string ToString()
+        {
+            if (string.IsNullOrEmpty(Name)) return "";
+            var s = $"{Name}";
+            if (DfpBonus != 0) s += $" +{DfpBonus}DFP";
+            if (EvpBonus != 0) s += $" +{EvpBonus}EVP";
+            return s;
+        }
     }
 
     public class MagModel
@@ -654,7 +768,7 @@ else
             }
         }
 
-        public override string ToString() => string.IsNullOrEmpty(Name) ? "None" : $"{Name} {Def}/{Pow}/{Dex}/{Mind}";
+        public override string ToString() => string.IsNullOrEmpty(Name) ? "" : $"{Name} {Def}/{Pow}/{Dex}/{Mind}";
 
         public static MagModel Parse(string mag)
         {
