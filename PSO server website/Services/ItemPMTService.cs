@@ -4,7 +4,8 @@ namespace PSOServerWebsite.Services;
 
 public class ItemPMTService(HttpClient http)
 {
-    public static readonly ClassFlag[] ClassFlagsByClass = [
+    public static readonly ClassFlag[] ClassFlagsByClass =
+    [
         ClassFlag.HUNTER | ClassFlag.HUMAN | ClassFlag.MALE, // HUmar
         ClassFlag.HUNTER | ClassFlag.NEWMAN | ClassFlag.FEMALE, // HUnewearl
         ClassFlag.HUNTER | ClassFlag.ANDROID | ClassFlag.MALE, // HUcast

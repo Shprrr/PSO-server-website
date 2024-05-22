@@ -22,18 +22,18 @@ else
                     Class
                     <InputSelect @bind-Value="Character.ClassRaceSelection" class="form-select" aria-label="Select a class">
                         <option value="">Select a class ...</option>
-                        <option checked="@(Character.ClassRaceSelection== ClassRace.Humar)" value="@ClassRace.Humar">HUmar</option>
-                        <option checked="@(Character.ClassRaceSelection== ClassRace.Hunewearl)" value="@ClassRace.Hunewearl">HUnewearl</option>
-                        <option checked="@(Character.ClassRaceSelection== ClassRace.Hucast)" value="@ClassRace.Hucast">HUcast</option>
-                        <option checked="@(Character.ClassRaceSelection== ClassRace.Hucaseal)" value="@ClassRace.Hucaseal">HUcaseal</option>
-                        <option checked="@(Character.ClassRaceSelection== ClassRace.Ramar)" value="@ClassRace.Ramar">RAmar</option>
-                        <option checked="@(Character.ClassRaceSelection== ClassRace.Ramarl)" value="@ClassRace.Ramarl">RAmarl</option>
-                        <option checked="@(Character.ClassRaceSelection== ClassRace.Racast)" value="@ClassRace.Racast">RAcast</option>
-                        <option checked="@(Character.ClassRaceSelection== ClassRace.Racaseal)" value="@ClassRace.Racaseal">RAcaseal</option>
-                        <option checked="@(Character.ClassRaceSelection== ClassRace.Fomar)" value="@ClassRace.Fomar">FOmar</option>
-                        <option checked="@(Character.ClassRaceSelection== ClassRace.Fomarl)" value="@ClassRace.Fomarl">FOmarl</option>
-                        <option checked="@(Character.ClassRaceSelection== ClassRace.Fonewm)" value="@ClassRace.Fonewm">FOnewm</option>
-                        <option checked="@(Character.ClassRaceSelection== ClassRace.Fonewearl)" value="@ClassRace.Fonewearl">FOnewearl</option>
+                        <option selected="@(Character.ClassRaceSelection == ClassRace.Humar)" value="@ClassRace.Humar">HUmar</option>
+                        <option selected="@(Character.ClassRaceSelection == ClassRace.Hunewearl)" value="@ClassRace.Hunewearl">HUnewearl</option>
+                        <option selected="@(Character.ClassRaceSelection == ClassRace.Hucast)" value="@ClassRace.Hucast">HUcast</option>
+                        <option selected="@(Character.ClassRaceSelection == ClassRace.Hucaseal)" value="@ClassRace.Hucaseal">HUcaseal</option>
+                        <option selected="@(Character.ClassRaceSelection == ClassRace.Ramar)" value="@ClassRace.Ramar">RAmar</option>
+                        <option selected="@(Character.ClassRaceSelection == ClassRace.Ramarl)" value="@ClassRace.Ramarl">RAmarl</option>
+                        <option selected="@(Character.ClassRaceSelection == ClassRace.Racast)" value="@ClassRace.Racast">RAcast</option>
+                        <option selected="@(Character.ClassRaceSelection == ClassRace.Racaseal)" value="@ClassRace.Racaseal">RAcaseal</option>
+                        <option selected="@(Character.ClassRaceSelection == ClassRace.Fomar)" value="@ClassRace.Fomar">FOmar</option>
+                        <option selected="@(Character.ClassRaceSelection == ClassRace.Fomarl)" value="@ClassRace.Fomarl">FOmarl</option>
+                        <option selected="@(Character.ClassRaceSelection == ClassRace.Fonewm)" value="@ClassRace.Fonewm">FOnewm</option>
+                        <option selected="@(Character.ClassRaceSelection == ClassRace.Fonewearl)" value="@ClassRace.Fonewearl">FOnewearl</option>
                     </InputSelect>
                 </label>
             </div>
@@ -227,36 +227,36 @@ else
                 <div class="modal-header">
                     <span>Shield</span><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <div class="modal-body">
-                    <label class="form-label">
+                <div class="modal-body container row">
+                    <label class="form-label col col-12">
                         Shield
                         <InputSelect @bind-Value="Character.Shield.Model" class="form-select" aria-label="Select a shield">
-                            <option value=""><i>~ None ~</i></option>
-                            @foreach (var shield in shields)
+                            <option selected="@(Character.Shield.Identifier == null)" value=""><i>~ None ~</i></option>
+                            @foreach (var shield in Character.GetItemWithRequirements(shields))
                             {
-                                <option value="@shield">@shield.Name</option>
+                                <option selected="@(Character.Shield.Identifier == shield.Identifier)" value="@shield">@shield.Name</option>
                             }
                         </InputSelect>
                     </label>
-                    <label class="form-label">
+                    <label class="form-label col col-3">
                         DFP
                         <InputNumber Value="@Character.Shield.Dfp" ValueExpression="@(() => Character.Shield.Dfp)" DisplayName="DFP" class="form-control" disabled></InputNumber>
                     </label>
-                    <label class="form-label">
+                    <label class="form-label col col-3">
                         DFP Bonus
                         <InputNumber @bind-Value="Character.Shield.DfpBonus" DisplayName="DFP Bonus" class="form-control"></InputNumber>
                     </label>
-                    <label class="form-label">
+                    <label class="form-label col col-3">
                         EVP
                         <InputNumber Value="@Character.Shield.Evp" ValueExpression="@(() => Character.Shield.Evp)" DisplayName="EVP" class="form-control" disabled></InputNumber>
                     </label>
-                    <label class="form-label">
+                    <label class="form-label col col-3">
                         EVP Bonus
                         <InputNumber @bind-Value="Character.Shield.EvpBonus" DisplayName="EVP Bonus" class="form-control"></InputNumber>
                     </label>
                     @foreach (var statBoost in Character.Shield.GetStatBoosts())
                     {
-                        <label class="form-label">
+                        <label class="form-label col col-3">
                             @statBoost.Item1
                             <InputNumber Value="@statBoost.Item2" ValueExpression="@(() => statBoost.Item2)" DisplayName="@statBoost.Item1" class="form-control" disabled></InputNumber>
                         </label>
@@ -273,8 +273,8 @@ else
                 <div class="modal-header">
                     <span>Mag</span><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <div class="modal-body">
-                    <label class="form-label">
+                <div class="modal-body container row">
+                    <label class="form-label col col-6">
                         Mag
                         <InputSelect @bind-Value="Character.Mag.Name" class="form-select" aria-label="Select a mag">
                             <option value=""><i>~ None ~</i></option>
@@ -284,33 +284,33 @@ else
                             }
                         </InputSelect>
                     </label>
-                    <label class="form-label">
+                    <label class="form-label col col-6">
                         Level
                         <InputNumber Value="@Character.Mag.Level" ValueExpression="@(() => Character.Mag.Level)" DisplayName="Level" class="form-control" disabled></InputNumber>
                     </label>
-                    <label class="form-label">
+                    <label class="form-label col col-3">
                         DEF
                         <InputNumber @bind-Value="Character.Mag.Def" DisplayName="DEF" class="form-control"></InputNumber>
                     </label>
-                    <label class="form-label">
+                    <label class="form-label col col-3">
                         POW
                         <InputNumber @bind-Value="Character.Mag.Pow" DisplayName="POW" class="form-control"></InputNumber>
                     </label>
-                    <label class="form-label">
+                    <label class="form-label col col-3">
                         DEX
                         <InputNumber @bind-Value="Character.Mag.Dex" DisplayName="DEX" class="form-control"></InputNumber>
                     </label>
-                    <label class="form-label">
+                    <label class="form-label col col-3">
                         MIND
                         <InputNumber @bind-Value="Character.Mag.Mind" DisplayName="MIND" class="form-control"></InputNumber>
                     </label>
-                    <label class="form-label visually-hidden">
+                    <label class="form-label col col-6 visually-hidden">
                         Syncro
                     </label>
-                    <label class="form-label visually-hidden">
+                    <label class="form-label col col-6 visually-hidden">
                         IQ
                     </label>
-                    <label class="form-label visually-hidden">
+                    <label class="form-label col col-6 visually-hidden">
                         PB
                     </label>
                 </div>
@@ -579,6 +579,9 @@ else
                 LuckMaterial = 0;
             }
 
+            // Reset equipement that don't meet requirements.
+            if (Shield.Model != null && !GetItemWithRequirements(Shield.Model).Any()) Shield = new(itemPMT);
+
             // Calculate stats.
             var baseStats = levelTable.BaseStats[indexClass];
             var levelDeltas = levelTable.LevelDeltas[indexClass].Take(Level);
@@ -630,6 +633,18 @@ else
             ClassRace.Fonewearl => 51,
             _ => 0
         };
+
+        public IEnumerable<ItemModel> GetItemWithRequirements(params ItemModel[] items)
+        {
+            if (!ClassRaceSelection.HasValue) yield break;
+
+            foreach (var (item, armor) in items.Join(itemPMT.Armors, i => i.Identifier, a => a.Key, (i, a) => (item: i, armor: a.Value)))
+            {
+                bool meetRequirement = armor.ClassFlags.HasFlag(ItemPMTService.ClassFlagsByClass[(int)ClassRaceSelection]);
+                meetRequirement &= Level >= armor.RequiredLevel;
+                if (meetRequirement) yield return item;
+            }
+        }
 
         private int CalculateStatBoost(string stat, string statBoost, int amount)
         {
