@@ -150,7 +150,7 @@ else
                 <label class="form-label d-flex flex-column justify-content-between h-100">
                     Armor
                     <span class="form-control-plaintext form-text">@Character.ArmorName</span>
-                    <button class="btn btn-outline-secondary btn-sm">Edit</button>
+                    <button class="btn btn-outline-secondary btn-sm" data-bs-toggle="modal" data-bs-target="#modalEditArmor">Edit</button>
                 </label>
             </div>
             <div class="col">
@@ -217,6 +217,56 @@ else
                 <label class="form-label">
 
                 </label>
+            </div>
+        </div>
+    </div>
+
+    <div id="modalEditArmor" class="modal" onhidden.bs.modal="@(() => Character.RefreshStats())">
+        <div class="modal-dialog modal-dialog-scrollable modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <span>Armor</span><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body container row">
+                    <label class="form-label col col-12">
+                        Armor
+                        <InputSelect @bind-Value="Character.Armor.Model" class="form-select" aria-label="Select an armor">
+                            <option selected="@(Character.Armor.Identifier == null)" value=""><i>~ None ~</i></option>
+                            @foreach (var armor in Character.GetItemWithRequirements(armors))
+                            {
+                                <option selected="@(Character.Armor.Identifier == armor.Identifier)" value="@armor">@armor.Name</option>
+                            }
+                        </InputSelect>
+                    </label>
+                    <label class="form-label col col-3">
+                        DFP
+                        <InputNumber Value="@Character.Armor.Dfp" ValueExpression="@(() => Character.Armor.Dfp)" DisplayName="DFP" class="form-control" disabled></InputNumber>
+                    </label>
+                    <label class="form-label col col-3">
+                        DFP Bonus
+                        <InputNumber @bind-Value="Character.Armor.DfpBonus" DisplayName="DFP Bonus" class="form-control"></InputNumber>
+                    </label>
+                    <label class="form-label col col-3">
+                        EVP
+                        <InputNumber Value="@Character.Armor.Evp" ValueExpression="@(() => Character.Armor.Evp)" DisplayName="EVP" class="form-control" disabled></InputNumber>
+                    </label>
+                    <label class="form-label col col-3">
+                        EVP Bonus
+                        <InputNumber @bind-Value="Character.Armor.EvpBonus" DisplayName="EVP Bonus" class="form-control"></InputNumber>
+                    </label>
+                    @foreach (var statBoost in Character.Armor.GetStatBoosts())
+                    {
+                        <label class="form-label col col-3">
+                            @statBoost.Item1
+                            <InputNumber Value="@statBoost.Item2" ValueExpression="@(() => statBoost.Item2)" DisplayName="@statBoost.Item1" class="form-control" disabled></InputNumber>
+                        </label>
+                    }
+                    <label class="form-label col col-12">
+                        Slots
+                        <InputNumber @bind-Value="Character.Armor.NumberSlots" DisplayName="Slots" class="form-control"></InputNumber>
+                    </label>
+                </div>
+                <div class="modal-footer">@Character.ArmorName</div>
             </div>
         </div>
     </div>
@@ -323,19 +373,21 @@ else
 @code {
     [DisallowNull] private LevelTableModel levelTable = default!;
     [DisallowNull] private ItemPMTModel itemPMT = default!;
+    [DisallowNull] private ItemModel[] armors = default!;
     [DisallowNull] private ItemModel[] shields = default!;
     [DisallowNull] private ItemModel[] mags = default!;
 
     [DisallowNull] public CharacterModel Character { get; set; } = default!;
 
-    [MemberNotNullWhen(false, nameof(levelTable), nameof(itemPMT), nameof(shields), nameof(mags))]
-    private bool IsLoading => levelTable == null || itemPMT == null || shields == null || mags == null;
+    [MemberNotNullWhen(false, nameof(levelTable), nameof(itemPMT), nameof(armors), nameof(shields), nameof(mags))]
+    private bool IsLoading => levelTable == null || itemPMT == null || armors == null || shields == null || mags == null;
 
     protected override async Task OnInitializedAsync()
     {
         levelTable = await levelTableService.GetLevelTableAsync();
         itemPMT = await itemPMTService.GetItemsAsync();
         var items = (await itemsService.GetItemsAsync()).ToArray();
+        armors = items.Where(i => i.Identifier.StartsWith("0101")).ToArray();
         shields = items.Where(i => i.Identifier.StartsWith("0102")).ToArray();
         mags = items.Where(i => i.Identifier.StartsWith("02")).ToArray();
         Character = new(levelTable, itemPMT);
@@ -373,6 +425,7 @@ else
         private int luckMaterial;
         private int shiftaLevel;
         private int debandLevel;
+        private ArmorModel armor = new(itemPMT);
         private ShieldModel shield = new(itemPMT);
         private MagModel mag = MagModel.Parse("Mag 5/0/0/0");
 
@@ -398,7 +451,7 @@ else
         public int ATP { get; set; }
         public int DFP { get; set; }
         public int MST { get; set; }
-        public double ATA { get; set; }
+        public float ATA { get; set; }
         public int EVP { get; set; }
         public int LCK { get; set; }
 
@@ -506,7 +559,14 @@ else
         }
 
         public string WeaponName { get; set; } = "";
-        public string ArmorName { get; set; } = "";
+
+        public string ArmorName => Armor.ToString();
+        public ArmorModel Armor
+        {
+            get { return armor; }
+            set { armor = value; RefreshStats(); }
+        }
+
         public string Unit1Name { get; set; } = "";
         public string Unit2Name { get; set; } = "";
         public string Unit3Name { get; set; } = "";
@@ -518,7 +578,6 @@ else
             get { return shield; }
             set { shield = value; RefreshStats(); }
         }
-
 
         public string MagName => Mag.ToString();
         public MagModel Mag
@@ -551,7 +610,7 @@ else
                 if (ShiftaLevel != 0) ShiftaLevel = 0;
                 if (DebandLevel != 0) DebandLevel = 0;
                 WeaponName = "";
-                ArmorName = "";
+                if (ArmorName != "") Armor = new(itemPMT);
                 Unit1Name = "";
                 Unit2Name = "";
                 Unit3Name = "";
@@ -580,15 +639,20 @@ else
             }
 
             // Reset equipement that don't meet requirements.
+            if (Armor.Model != null && !GetItemWithRequirements(Armor.Model).Any()) Armor = new(itemPMT);
             if (Shield.Model != null && !GetItemWithRequirements(Shield.Model).Any()) Shield = new(itemPMT);
 
             // Calculate stats.
             var baseStats = levelTable.BaseStats[indexClass];
             var levelDeltas = levelTable.LevelDeltas[indexClass].Take(Level);
-            var baseATP = baseStats.ATP + levelDeltas.Sum(l => l.ATP) + GetATPBonus() + (PowerMaterial + Mag.Pow) * 2 + Shield.GetStatBoosts().Sum(s => CalculateStatBoost("ATP", s.Item1, s.Item2));
-            var baseDFP = baseStats.DFP + levelDeltas.Sum(l => l.DFP) + DefMaterial * 2 + Shield.Dfp + Shield.GetStatBoosts().Sum(s => CalculateStatBoost("DFP", s.Item1, s.Item2)) + Mag.Def;
-            var baseMST = baseStats.MST + levelDeltas.Sum(l => l.MST) + (MindMaterial + Mag.Mind) * 2 + Shield.GetStatBoosts().Sum(s => CalculateStatBoost("MST", s.Item1, s.Item2));
-            HP = (int)Math.Floor((baseStats.HP + levelDeltas.Sum(l => l.HP) + Level - 1) * GetHPMultiplier()) + HPMaterial * 2 + Shield.GetStatBoosts().Sum(s => CalculateStatBoost("HP", s.Item1, s.Item2));
+            var baseATP = baseStats.ATP + levelDeltas.Sum(l => l.ATP) + GetATPBonus() + (PowerMaterial + Mag.Pow) * 2
+                + Armor.GetStatBoosts().Concat(Shield.GetStatBoosts()).Sum(s => CalculateStatBoost("ATP", s.Item1, s.Item2));
+            var baseDFP = baseStats.DFP + levelDeltas.Sum(l => l.DFP) + DefMaterial * 2 + Armor.Dfp + Shield.Dfp
+                + Armor.GetStatBoosts().Concat(Shield.GetStatBoosts()).Sum(s => CalculateStatBoost("DFP", s.Item1, s.Item2)) + Mag.Def;
+            var baseMST = baseStats.MST + levelDeltas.Sum(l => l.MST) + (MindMaterial + Mag.Mind) * 2
+                + Armor.GetStatBoosts().Concat(Shield.GetStatBoosts()).Sum(s => CalculateStatBoost("MST", s.Item1, s.Item2));
+            HP = (int)Math.Floor((baseStats.HP + levelDeltas.Sum(l => l.HP) + Level - 1) * GetHPMultiplier()) + HPMaterial * 2
+                + Armor.GetStatBoosts().Concat(Shield.GetStatBoosts()).Sum(s => CalculateStatBoost("HP", s.Item1, s.Item2));
             TP = ClassRaceSelection switch
             {
                 ClassRace.Humar or ClassRace.Hunewearl or ClassRace.Ramar or ClassRace.Ramarl
@@ -600,9 +664,12 @@ else
             ATP = (int)Math.Floor(baseATP + baseATP * GetShiftaDebandMultiplier(ShiftaLevel));
             DFP = (int)Math.Floor(baseDFP + baseDFP * GetShiftaDebandMultiplier(DebandLevel));
             MST = baseMST;
-            ATA = baseStats.ATA + levelDeltas.Sum(l => l.ATA) / 10d + GetATABonus() + Shield.GetStatBoosts().Sum(s => CalculateStatBoost("ATA", s.Item1, s.Item2)) + Mag.Dex / 2;
-            EVP = baseStats.EVP + levelDeltas.Sum(l => l.EVP) + EvadeMaterial * 2 + Shield.Evp + Shield.GetStatBoosts().Sum(s => CalculateStatBoost("EVP", s.Item1, s.Item2));
-            LCK = baseStats.LCK + levelDeltas.Sum(l => l.LCK) + LuckMaterial * 2 + Shield.GetStatBoosts().Sum(s => CalculateStatBoost("LCK", s.Item1, s.Item2));
+            ATA = baseStats.ATA + levelDeltas.Sum(l => l.ATA) / 10f + GetATABonus()
+                + Armor.GetStatBoosts().Concat(Shield.GetStatBoosts()).Sum(s => CalculateStatBoost("ATA", s.Item1, s.Item2)) + Mag.Dex / 2;
+            EVP = baseStats.EVP + levelDeltas.Sum(l => l.EVP) + EvadeMaterial * 2 + Armor.Evp + Shield.Evp
+                + Armor.GetStatBoosts().Concat(Shield.GetStatBoosts()).Sum(s => CalculateStatBoost("EVP", s.Item1, s.Item2));
+            LCK = baseStats.LCK + levelDeltas.Sum(l => l.LCK) + LuckMaterial * 2
+                + Armor.GetStatBoosts().Concat(Shield.GetStatBoosts()).Sum(s => CalculateStatBoost("LCK", s.Item1, s.Item2));
         }
 
         private double GetHPMultiplier() => ClassRaceSelection switch
@@ -673,7 +740,7 @@ else
             => shiftaDebandLevel == 0 ? TimeSpan.Zero : new TimeSpan(0, 0, 10 * (Math.Abs(shiftaDebandLevel) - 1) + 40);
     }
 
-    public class ShieldModel(ItemPMTModel itemPMT)
+    public class BaseArmorModel(ItemPMTModel itemPMT)
     {
         private int dfpBonus;
         private int evpBonus;
@@ -745,6 +812,34 @@ else
             return s;
         }
     }
+
+    public class ArmorModel(ItemPMTModel itemPMT) : BaseArmorModel(itemPMT)
+    {
+        private int numberSlots;
+
+        public int NumberSlots
+        {
+            get { return numberSlots; }
+            set
+            {
+                if (value < 0) value = 0;
+                if (value > 4) value = 4;
+                numberSlots = value;
+            }
+        }
+
+        public override string ToString()
+        {
+            if (string.IsNullOrEmpty(Name)) return "";
+            var s = $"{Name}";
+            if (NumberSlots != 0) s += $" ({NumberSlots} slot{(NumberSlots > 1 ? "s" : "")})";
+            if (DfpBonus != 0) s += $" +{DfpBonus}DFP";
+            if (EvpBonus != 0) s += $" +{EvpBonus}EVP";
+            return s;
+        }
+    }
+
+    public class ShieldModel(ItemPMTModel itemPMT) : BaseArmorModel(itemPMT) { }
 
     public class MagModel
     {
