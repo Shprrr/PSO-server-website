@@ -153,34 +153,46 @@ else
                     <button class="btn btn-outline-secondary btn-sm" data-bs-toggle="modal" data-bs-target="#modalEditArmor">Edit</button>
                 </label>
             </div>
-            <div class="col">
-                <label class="form-label d-flex flex-column justify-content-between h-100">
-                    Unit 1
-                    <span class="form-control-plaintext form-text">@Character.Unit1Name</span>
-                    <button class="btn btn-outline-secondary btn-sm">Edit</button>
-                </label>
-            </div>
-            <div class="col">
-                <label class="form-label d-flex flex-column justify-content-between h-100">
-                    Unit 2
-                    <span class="form-control-plaintext form-text">@Character.Unit2Name</span>
-                    <button class="btn btn-outline-secondary btn-sm">Edit</button>
-                </label>
-            </div>
-            <div class="col">
-                <label class="form-label d-flex flex-column justify-content-between h-100">
-                    Unit 3
-                    <span class="form-control-plaintext form-text">@Character.Unit3Name</span>
-                    <button class="btn btn-outline-secondary btn-sm">Edit</button>
-                </label>
-            </div>
-            <div class="col">
-                <label class="form-label d-flex flex-column justify-content-between h-100">
-                    Unit 4
-                    <span class="form-control-plaintext form-text">@Character.Unit4Name</span>
-                    <button class="btn btn-outline-secondary btn-sm">Edit</button>
-                </label>
-            </div>
+            @if (Character.Armor.NumberSlots > 0)
+            {
+                <div class="col">
+                    <label class="form-label d-flex flex-column justify-content-between h-100">
+                        Unit 1
+                        <span class="form-control-plaintext form-text">@Character.Unit1Name</span>
+                        <button class="btn btn-outline-secondary btn-sm" data-bs-toggle="modal" data-bs-target="#modalEditUnit" @onclick="@(()=> EditUnit = 1)">Edit</button>
+                    </label>
+                </div>
+            }
+            @if (Character.Armor.NumberSlots > 1)
+            {
+                <div class="col">
+                    <label class="form-label d-flex flex-column justify-content-between h-100">
+                        Unit 2
+                        <span class="form-control-plaintext form-text">@Character.Unit2Name</span>
+                        <button class="btn btn-outline-secondary btn-sm" data-bs-toggle="modal" data-bs-target="#modalEditUnit" @onclick="@(()=> EditUnit = 2)">Edit</button>
+                    </label>
+                </div>
+            }
+            @if (Character.Armor.NumberSlots > 2)
+            {
+                <div class="col">
+                    <label class="form-label d-flex flex-column justify-content-between h-100">
+                        Unit 3
+                        <span class="form-control-plaintext form-text">@Character.Unit3Name</span>
+                        <button class="btn btn-outline-secondary btn-sm" data-bs-toggle="modal" data-bs-target="#modalEditUnit" @onclick="@(()=> EditUnit = 3)">Edit</button>
+                    </label>
+                </div>
+            }
+            @if (Character.Armor.NumberSlots > 3)
+            {
+                <div class="col">
+                    <label class="form-label d-flex flex-column justify-content-between h-100">
+                        Unit 4
+                        <span class="form-control-plaintext form-text">@Character.Unit4Name</span>
+                        <button class="btn btn-outline-secondary btn-sm" data-bs-toggle="modal" data-bs-target="#modalEditUnit" @onclick="@(()=> EditUnit = 4)">Edit</button>
+                    </label>
+                </div>
+            }
             <div class="col">
                 <label class="form-label d-flex flex-column justify-content-between h-100">
                     Shield
@@ -268,6 +280,43 @@ else
                 </div>
                 <div class="modal-footer">@Character.ArmorName</div>
             </div>
+        </div>
+    </div>
+
+    <div id="modalEditUnit" class="modal" onhidden.bs.modal="@(() => Character.RefreshStats())">
+        <div class="modal-dialog modal-dialog-scrollable modal-dialog-centered">
+            @if (EditUnit > 0)
+            {
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <span>Unit</span><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body container row">
+                        <label class="form-label col col-12">
+                            Unit
+                            <InputSelect @bind-Value="EditUnitModel.Model" class="form-select" aria-label="Select a unit">
+                                <option selected="@(EditUnitModel.Identifier == null)" value=""><i>~ None ~</i></option>
+                                @foreach (var unit in Character.GetItemWithRequirements(units))
+                                {
+                                    <option selected="@(EditUnitModel.Identifier == unit.Identifier)" value="@unit">@unit.Name</option>
+                                }
+                            </InputSelect>
+                        </label>
+                        <label class="form-label col col-3 visually-hidden">
+                            +/-
+                            <InputNumber @bind-Value="EditUnitModel.Modifier" DisplayName="+/-" class="form-control"></InputNumber>
+                        </label>
+                        @foreach (var statBoost in EditUnitModel.GetStatBoosts())
+                        {
+                            <label class="form-label col col-3">
+                                @statBoost.Item1
+                                <InputNumber Value="@statBoost.Item2" ValueExpression="@(() => statBoost.Item2)" DisplayName="@statBoost.Item1" class="form-control" disabled></InputNumber>
+                            </label>
+                        }
+                    </div>
+                    <div class="modal-footer">@EditUnitModel.ToString()</div>
+                </div>
+            }
         </div>
     </div>
 
@@ -374,13 +423,23 @@ else
     [DisallowNull] private LevelTableModel levelTable = default!;
     [DisallowNull] private ItemPMTModel itemPMT = default!;
     [DisallowNull] private ItemModel[] armors = default!;
+    [DisallowNull] private ItemModel[] units = default!;
     [DisallowNull] private ItemModel[] shields = default!;
     [DisallowNull] private ItemModel[] mags = default!;
 
     [DisallowNull] public CharacterModel Character { get; set; } = default!;
+    private int EditUnit { get; set; }
+    private UnitModel EditUnitModel => EditUnit switch
+    {
+        1 => Character.Unit1,
+        2 => Character.Unit2,
+        3 => Character.Unit3,
+        4 => Character.Unit4,
+        _ => throw new NotSupportedException()
+    };
 
-    [MemberNotNullWhen(false, nameof(levelTable), nameof(itemPMT), nameof(armors), nameof(shields), nameof(mags))]
-    private bool IsLoading => levelTable == null || itemPMT == null || armors == null || shields == null || mags == null;
+    [MemberNotNullWhen(false, nameof(levelTable), nameof(itemPMT), nameof(armors), nameof(units), nameof(shields), nameof(mags))]
+    private bool IsLoading => levelTable == null || itemPMT == null || armors == null || units == null || shields == null || mags == null;
 
     protected override async Task OnInitializedAsync()
     {
@@ -389,6 +448,7 @@ else
         var items = (await itemsService.GetItemsAsync()).ToArray();
         armors = items.Where(i => i.Identifier.StartsWith("0101")).ToArray();
         shields = items.Where(i => i.Identifier.StartsWith("0102")).ToArray();
+        units = items.Where(i => i.Identifier.StartsWith("0103")).ToArray();
         mags = items.Where(i => i.Identifier.StartsWith("02")).ToArray();
         Character = new(levelTable, itemPMT);
         await base.OnInitializedAsync();
@@ -426,6 +486,10 @@ else
         private int shiftaLevel;
         private int debandLevel;
         private ArmorModel armor = new(itemPMT);
+        private UnitModel unit1 = new(itemPMT);
+        private UnitModel unit2 = new(itemPMT);
+        private UnitModel unit3 = new(itemPMT);
+        private UnitModel unit4 = new(itemPMT);
         private ShieldModel shield = new(itemPMT);
         private MagModel mag = MagModel.Parse("Mag 5/0/0/0");
 
@@ -567,10 +631,33 @@ else
             set { armor = value; RefreshStats(); }
         }
 
-        public string Unit1Name { get; set; } = "";
-        public string Unit2Name { get; set; } = "";
-        public string Unit3Name { get; set; } = "";
-        public string Unit4Name { get; set; } = "";
+        public string Unit1Name => Unit1.ToString();
+        public UnitModel Unit1
+        {
+            get { return unit1; }
+            set { unit1 = value; RefreshStats(); }
+        }
+
+        public string Unit2Name => Unit2.ToString();
+        public UnitModel Unit2
+        {
+            get { return unit2; }
+            set { unit2 = value; RefreshStats(); }
+        }
+
+        public string Unit3Name => Unit3.ToString();
+        public UnitModel Unit3
+        {
+            get { return unit3; }
+            set { unit3 = value; RefreshStats(); }
+        }
+
+        public string Unit4Name => Unit4.ToString();
+        public UnitModel Unit4
+        {
+            get { return unit4; }
+            set { unit4 = value; RefreshStats(); }
+        }
 
         public string ShieldName => Shield.ToString();
         public ShieldModel Shield
@@ -611,10 +698,10 @@ else
                 if (DebandLevel != 0) DebandLevel = 0;
                 WeaponName = "";
                 if (ArmorName != "") Armor = new(itemPMT);
-                Unit1Name = "";
-                Unit2Name = "";
-                Unit3Name = "";
-                Unit4Name = "";
+                if (Unit1Name != "") Unit1 = new(itemPMT);
+                if (Unit2Name != "") Unit2 = new(itemPMT);
+                if (Unit3Name != "") Unit3 = new(itemPMT);
+                if (Unit4Name != "") Unit4 = new(itemPMT);
                 if (ShieldName != "") Shield = new(itemPMT);
                 if (MagName != "Mag 5/0/0/0") Mag = MagModel.Parse("Mag 5/0/0/0");
                 return;
@@ -640,36 +727,40 @@ else
 
             // Reset equipement that don't meet requirements.
             if (Armor.Model != null && !GetItemWithRequirements(Armor.Model).Any()) Armor = new(itemPMT);
+            if (Armor.NumberSlots < 1 && Unit1.Model != null) Unit1 = new(itemPMT);
+            if (Armor.NumberSlots < 2 && Unit2.Model != null) Unit2 = new(itemPMT);
+            if (Armor.NumberSlots < 3 && Unit3.Model != null) Unit3 = new(itemPMT);
+            if (Armor.NumberSlots < 4 && Unit4.Model != null) Unit4 = new(itemPMT);
             if (Shield.Model != null && !GetItemWithRequirements(Shield.Model).Any()) Shield = new(itemPMT);
 
             // Calculate stats.
             var baseStats = levelTable.BaseStats[indexClass];
             var levelDeltas = levelTable.LevelDeltas[indexClass].Take(Level);
             var baseATP = baseStats.ATP + levelDeltas.Sum(l => l.ATP) + GetATPBonus() + (PowerMaterial + Mag.Pow) * 2
-                + Armor.GetStatBoosts().Concat(Shield.GetStatBoosts()).Sum(s => CalculateStatBoost("ATP", s.Item1, s.Item2));
+                + GetEveryStatBoost().Sum(s => CalculateStatBoost("ATP", s.Item1, s.Item2));
             var baseDFP = baseStats.DFP + levelDeltas.Sum(l => l.DFP) + DefMaterial * 2 + Armor.Dfp + Shield.Dfp
-                + Armor.GetStatBoosts().Concat(Shield.GetStatBoosts()).Sum(s => CalculateStatBoost("DFP", s.Item1, s.Item2)) + Mag.Def;
+                + GetEveryStatBoost().Sum(s => CalculateStatBoost("DFP", s.Item1, s.Item2)) + Mag.Def;
             var baseMST = baseStats.MST + levelDeltas.Sum(l => l.MST) + (MindMaterial + Mag.Mind) * 2
-                + Armor.GetStatBoosts().Concat(Shield.GetStatBoosts()).Sum(s => CalculateStatBoost("MST", s.Item1, s.Item2));
+                + GetEveryStatBoost().Sum(s => CalculateStatBoost("MST", s.Item1, s.Item2));
             HP = (int)Math.Floor((baseStats.HP + levelDeltas.Sum(l => l.HP) + Level - 1) * GetHPMultiplier()) + HPMaterial * 2
-                + Armor.GetStatBoosts().Concat(Shield.GetStatBoosts()).Sum(s => CalculateStatBoost("HP", s.Item1, s.Item2));
+                + GetEveryStatBoost().Sum(s => CalculateStatBoost("HP", s.Item1, s.Item2));
             TP = ClassRaceSelection switch
             {
                 ClassRace.Humar or ClassRace.Hunewearl or ClassRace.Ramar or ClassRace.Ramarl
-                    => baseMST + Level - 1,
+                    => baseMST + Level - 1 + GetEveryStatBoost().Sum(s => CalculateStatBoost("TP", s.Item1, s.Item2)),
                 ClassRace.Fomar or ClassRace.Fomarl or ClassRace.Fonewm or ClassRace.Fonewearl
-                    => (int)Math.Floor((baseMST + Level - 1) * 1.5),
+                    => (int)Math.Floor((baseMST + Level - 1) * 1.5 + GetEveryStatBoost().Sum(s => CalculateStatBoost("TP", s.Item1, s.Item2))),
                 _ => 0
             } + TPMaterial * 2;
             ATP = (int)Math.Floor(baseATP + baseATP * GetShiftaDebandMultiplier(ShiftaLevel));
             DFP = (int)Math.Floor(baseDFP + baseDFP * GetShiftaDebandMultiplier(DebandLevel));
             MST = baseMST;
             ATA = baseStats.ATA + levelDeltas.Sum(l => l.ATA) / 10f + GetATABonus()
-                + Armor.GetStatBoosts().Concat(Shield.GetStatBoosts()).Sum(s => CalculateStatBoost("ATA", s.Item1, s.Item2)) + Mag.Dex / 2;
+                + GetEveryStatBoost().Sum(s => CalculateStatBoost("ATA", s.Item1, s.Item2)) + Mag.Dex / 2;
             EVP = baseStats.EVP + levelDeltas.Sum(l => l.EVP) + EvadeMaterial * 2 + Armor.Evp + Shield.Evp
-                + Armor.GetStatBoosts().Concat(Shield.GetStatBoosts()).Sum(s => CalculateStatBoost("EVP", s.Item1, s.Item2));
+                + GetEveryStatBoost().Sum(s => CalculateStatBoost("EVP", s.Item1, s.Item2));
             LCK = baseStats.LCK + levelDeltas.Sum(l => l.LCK) + LuckMaterial * 2
-                + Armor.GetStatBoosts().Concat(Shield.GetStatBoosts()).Sum(s => CalculateStatBoost("LCK", s.Item1, s.Item2));
+                + GetEveryStatBoost().Sum(s => CalculateStatBoost("LCK", s.Item1, s.Item2));
         }
 
         private double GetHPMultiplier() => ClassRaceSelection switch
@@ -711,11 +802,20 @@ else
                 meetRequirement &= Level >= armor.RequiredLevel;
                 if (meetRequirement) yield return item;
             }
+
+            foreach (var (item, unit) in items.Join(itemPMT.Units, i => i.Identifier, u => u.Key, (i, u) => (item: i, unit: u.Value)))
+            {
+                yield return item;
+            }
         }
+
+        private IEnumerable<Tuple<string, int>> GetEveryStatBoost()
+            => Armor.GetStatBoosts().Concat(Unit1.GetStatBoosts().Concat(Unit2.GetStatBoosts().Concat(Unit3.GetStatBoosts().Concat(Unit4.GetStatBoosts().Concat(Shield.GetStatBoosts())))));
 
         private int CalculateStatBoost(string stat, string statBoost, int amount)
         {
-            if (statBoost == $"+{stat}" || statBoost == "+All" && stat != "HP") return amount;
+            if (ClassRaceSelection is ClassRace.Hucast or ClassRace.Hucaseal or ClassRace.Racast or ClassRace.Racaseal && stat is "MST" or "TP") return 0;
+            if (statBoost == stat || statBoost == $"+{stat}" || statBoost == "+All" && stat != "HP") return amount;
             if (statBoost == $"-{stat}" || statBoost == "-All" && stat != "HP") return -1 * amount;
             return 0;
         }
@@ -822,7 +922,7 @@ else
             get { return numberSlots; }
             set
             {
-                if (value < 0) value = 0;
+                if (Identifier == null || value < 0) value = 0;
                 if (value > 4) value = 4;
                 numberSlots = value;
             }
@@ -835,6 +935,94 @@ else
             if (NumberSlots != 0) s += $" ({NumberSlots} slot{(NumberSlots > 1 ? "s" : "")})";
             if (DfpBonus != 0) s += $" +{DfpBonus}DFP";
             if (EvpBonus != 0) s += $" +{EvpBonus}EVP";
+            return s;
+        }
+    }
+
+    public class UnitModel(ItemPMTModel itemPMT)
+    {
+        private int modifier;
+        private ItemModel? model;
+
+        public ItemModel? Model
+        {
+            get { return model; }
+            set
+            {
+                model = value;
+                if (Identifier == null) return;
+            }
+        }
+
+        public string? Identifier => Model?.Identifier;
+        public string Name => Model?.Name ?? "";
+
+        public int Modifier
+        {
+            get { return modifier; }
+            set
+            {
+                if (string.IsNullOrEmpty(Identifier)) return;
+                if (value < -2) value = -2;
+                if (value > 2) value = 2;
+                modifier = value;
+            }
+        }
+
+        public IEnumerable<Tuple<string, int>> GetStatBoosts()
+        {
+            if (string.IsNullOrEmpty(Identifier))
+                yield break;
+
+            string[] statNames = ["ATP", "MST", "ATA", "EVP", "HP", "TP", "DFP", "LCK", "All", "EFR", "EIC", "ETH", "ELT", "EDK", "EAll", "ResHP", "ResTP", "ResPB", "Tech", "AtkSpeed", "CureAll", "TrapV", "CurePoison", "CurePara", "CureShock", "CureSlow", "CureConfuse", "CureFreeze", "Unknown28", "Unknown29", "Unknown30", "Unknown31", "Unknown32", "Unknown33", "Unknown34", "Unknown35", "Unknown36", "Unknown37", "Unknown38", "None"];
+
+            switch (statNames[itemPMT.Units[Identifier].Stat])
+            {
+                case "All":
+                    yield return Tuple.Create<string, int>("ATP", itemPMT.Units[Identifier].StatAmount);
+                    yield return Tuple.Create<string, int>("DFP", itemPMT.Units[Identifier].StatAmount);
+                    yield return Tuple.Create<string, int>("MST", itemPMT.Units[Identifier].StatAmount);
+                    yield return Tuple.Create<string, int>("ATA", itemPMT.Units[Identifier].StatAmount / 10);
+                    yield return Tuple.Create<string, int>("EVP", itemPMT.Units[Identifier].StatAmount);
+                    yield return Tuple.Create<string, int>("LCK", itemPMT.Units[Identifier].StatAmount);
+                    break;
+
+                case "EAll":
+                    yield return Tuple.Create<string, int>("EFR", itemPMT.Units[Identifier].StatAmount);
+                    yield return Tuple.Create<string, int>("EIC", itemPMT.Units[Identifier].StatAmount);
+                    yield return Tuple.Create<string, int>("ETH", itemPMT.Units[Identifier].StatAmount);
+                    yield return Tuple.Create<string, int>("ELT", itemPMT.Units[Identifier].StatAmount);
+                    yield return Tuple.Create<string, int>("EDK", itemPMT.Units[Identifier].StatAmount);
+                    break;
+
+                case "ResHP":
+                case "ResTP":
+                case "ResPB":
+                case "Tech":
+                case "AtkSpeed":
+                case "CureAll":
+                case "TrapV":
+                case "CurePoison":
+                case "CurePara":
+                case "CureShock":
+                case "CureSlow":
+                case "CureConfuse":
+                case "CureFreeze":
+                case "None":
+                    break;
+
+                default:
+                    yield return Tuple.Create<string, int>(statNames[itemPMT.Units[Identifier].Stat], itemPMT.Units[Identifier].StatAmount);
+                    break;
+            }
+        }
+
+        public override string ToString()
+        {
+            if (string.IsNullOrEmpty(Name)) return "";
+            var s = $"{Name}";
+            if (Modifier > 0) s += new string('+', Modifier);
+            if (Modifier < 0) s += new string('-', Modifier * -1);
             return s;
         }
     }
