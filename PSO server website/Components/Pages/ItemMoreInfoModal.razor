@@ -175,25 +175,16 @@
                                 <div class="col">@itemInfo.UnitModel.Id.ToString("X6") (@(itemInfo.UnitModel.Id))</div>
                             </div>
                             <div class="row">
-                                <div class="col">Type</div>
-                                <div class="col">@itemInfo.UnitModel.Type</div>
-                            </div>
-                            <div class="row">
-                                <div class="col">Skin Id</div>
-                                <div class="col">@itemInfo.UnitModel.Skin</div>
-                            </div>
-                            <div class="row">
                                 <div class="col">Team Points</div>
                                 <div class="col">@itemInfo.UnitModel.TeamPoints</div>
                             </div>
-                            <div class="row">
-                                <div class="col">Stat</div>
-                                <div class="col">@itemInfo.UnitModel.Stat</div>
-                            </div>
-                            <div class="row">
-                                <div class="col">Stat Amount</div>
-                                <div class="col">@itemInfo.UnitModel.StatAmount</div>
-                            </div>
+                            @foreach (var statBoost in GetStatBoosts())
+                            {
+                                <div class="row">
+                                    <div class="col">@statBoost.Key</div>
+                                    <div class="col">@statBoost.Value</div>
+                                </div>
+                            }
                             <div class="row">
                                 <div class="col">Modifier Amount</div>
                                 <div class="col">@itemInfo.UnitModel.ModifierAmount</div>
@@ -304,13 +295,58 @@
 
     public IEnumerable<KeyValuePair<string, ushort>> GetStatBoosts()
     {
-        if (itemInfo?.WeaponModel == null && itemInfo?.ArmorModel == null)
-            yield break;
+        if (itemInfo?.WeaponModel != null || itemInfo?.ArmorModel != null)
+        {
+            string[] statNames = ["None", "+ATP", "+ATA", "+EVP", "+DFP", "+MST", "+HP", "+LCK", "+All", "-ATP", "-ATA", "-EVP", "-DFP", "-MST", "-HP", "-LCK", "-All"];
+            var statBoost = itemPMT.StatBoosts[itemInfo.WeaponModel?.StatBoost ?? itemInfo.ArmorModel!.StatBoost];
+            if (statBoost.Stat1 != 0) yield return new KeyValuePair<string, ushort>(statNames[statBoost.Stat1], statBoost.Amount1);
+            if (statBoost.Stat2 != 0) yield return new KeyValuePair<string, ushort>(statNames[statBoost.Stat2], statBoost.Amount2);
+        }
 
-        string[] statNames = ["None", "+ATP", "+ATA", "+EVP", "+DFP", "+MST", "+HP", "+LCK", "+All", "-ATP", "-ATA", "-EVP", "-DFP", "-MST", "-HP", "-LCK", "-All"];
-        var statBoost = itemPMT.StatBoosts[itemInfo.WeaponModel?.StatBoost ?? itemInfo.ArmorModel!.StatBoost];
-        if (statBoost.Stat1 != 0) yield return new KeyValuePair<string, ushort>(statNames[statBoost.Stat1], statBoost.Amount1);
-        if (statBoost.Stat2 != 0) yield return new KeyValuePair<string, ushort>(statNames[statBoost.Stat2], statBoost.Amount2);
+        if (itemInfo?.UnitModel != null)
+        {
+            string[] statNames = ["+ATP", "+MST", "+ATA", "+EVP", "+HP", "+TP", "+DFP", "+LCK", "All", "+EFR", "+EIC", "+ETH", "+ELT", "+EDK", "EAll", "ResHP", "ResTP", "ResPB", "Tech", "AtkSpeed", "CureAll", "TrapV", "CurePoison", "CurePara", "CureShock", "CureSlow", "CureConfuse", "CureFreeze", "Unknown28", "Unknown29", "Unknown30", "Unknown31", "Unknown32", "Unknown33", "Unknown34", "Unknown35", "Unknown36", "Unknown37", "Unknown38", "None"];
+
+            switch (statNames[itemInfo.UnitModel.Stat])
+            {
+                case "All":
+                    yield return new KeyValuePair<string, ushort>("+ATP", itemInfo.UnitModel.StatAmount);
+                    yield return new KeyValuePair<string, ushort>("+DFP", itemInfo.UnitModel.StatAmount);
+                    yield return new KeyValuePair<string, ushort>("+MST", itemInfo.UnitModel.StatAmount);
+                    yield return new KeyValuePair<string, ushort>("+ATA", (ushort)(itemInfo.UnitModel.StatAmount / 10));
+                    yield return new KeyValuePair<string, ushort>("+EVP", itemInfo.UnitModel.StatAmount);
+                    yield return new KeyValuePair<string, ushort>("+LCK", itemInfo.UnitModel.StatAmount);
+                    break;
+
+                case "EAll":
+                    yield return new KeyValuePair<string, ushort>("+EFR", itemInfo.UnitModel.StatAmount);
+                    yield return new KeyValuePair<string, ushort>("+EIC", itemInfo.UnitModel.StatAmount);
+                    yield return new KeyValuePair<string, ushort>("+ETH", itemInfo.UnitModel.StatAmount);
+                    yield return new KeyValuePair<string, ushort>("+ELT", itemInfo.UnitModel.StatAmount);
+                    yield return new KeyValuePair<string, ushort>("+EDK", itemInfo.UnitModel.StatAmount);
+                    break;
+
+                case "ResHP":
+                case "ResTP":
+                case "ResPB":
+                case "Tech":
+                case "AtkSpeed":
+                case "CureAll":
+                case "TrapV":
+                case "CurePoison":
+                case "CurePara":
+                case "CureShock":
+                case "CureSlow":
+                case "CureConfuse":
+                case "CureFreeze":
+                case "None":
+                    break;
+
+                default:
+                    yield return new KeyValuePair<string, ushort>(statNames[itemInfo.UnitModel.Stat], itemInfo.UnitModel.StatAmount);
+                    break;
+            }
+        }
     }
 
     private class ItemInfoModel(ItemModel itemModel, WeaponModel? weaponModel, ArmorModel? armorModel, UnitModel? unitModel, ToolModel? toolModel)
