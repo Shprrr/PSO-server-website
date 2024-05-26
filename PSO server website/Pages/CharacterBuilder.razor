@@ -143,7 +143,7 @@ else
                 <label class="form-label d-flex flex-column justify-content-between h-100">
                     Weapon
                     <span class="form-control-plaintext form-text">@Character.WeaponName</span>
-                    <button class="btn btn-outline-secondary btn-sm">Edit</button>
+                    <button class="btn btn-outline-secondary btn-sm" data-bs-toggle="modal" data-bs-target="#modalEditWeapon">Edit</button>
                 </label>
             </div>
             <div class="col">
@@ -233,6 +233,52 @@ else
         </div>
     </div>
 
+    <div id="modalEditWeapon" class="modal" onhidden.bs.modal="@(() => Character.RefreshStats())">
+        <div class="modal-dialog modal-dialog-scrollable modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <span>Weapon</span><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body container row">
+                    <label class="form-label col col-12">
+                        Weapon
+                        <InputSelect @bind-Value="Character.Weapon.Model" class="form-select" aria-label="Select a weapon">
+                            <option selected="@(Character.Weapon.Identifier == null)" value=""><i>~ None ~</i></option>
+                            @foreach (var weapon in Character.GetItemWithRequirements(weapons))
+                            {
+                                <option selected="@(Character.Weapon.Identifier == weapon.Identifier)" value="@weapon">@weapon.Name</option>
+                            }
+                        </InputSelect>
+                    </label>
+                    <label class="form-label col col-3">
+                        ATP
+                        <InputNumber Value="@Character.Weapon.Atp" ValueExpression="@(() => Character.Weapon.Atp)" DisplayName="ATP" class="form-control" disabled></InputNumber>
+                    </label>
+                    <label class="form-label col col-3">
+                        Grind
+                        <InputNumber @bind-Value="Character.Weapon.Grind" DisplayName="Grind" class="form-control"></InputNumber>
+                    </label>
+                    <label class="form-label col col-3">
+                        ATA
+                        <InputNumber Value="@Character.Weapon.Ata" ValueExpression="@(() => Character.Weapon.Ata)" DisplayName="ATA" class="form-control" disabled></InputNumber>
+                    </label>
+                    <label class="form-label col col-3">
+                        MST
+                        <InputNumber Value="@Character.Weapon.Mst" ValueExpression="@(() => Character.Weapon.Mst)" DisplayName="MST" class="form-control" disabled></InputNumber>
+                    </label>
+                    @foreach (var statBoost in Character.Weapon.GetStatBoosts())
+                    {
+                        <label class="form-label col col-3">
+                            @statBoost.Item1
+                            <InputNumber Value="@statBoost.Item2" ValueExpression="@(() => statBoost.Item2)" DisplayName="@statBoost.Item1" class="form-control" disabled></InputNumber>
+                        </label>
+                    }
+                </div>
+                <div class="modal-footer">@Character.WeaponName</div>
+            </div>
+        </div>
+    </div>
+
     <div id="modalEditArmor" class="modal" onhidden.bs.modal="@(() => Character.RefreshStats())">
         <div class="modal-dialog modal-dialog-scrollable modal-dialog-centered">
             <div class="modal-content">
@@ -294,7 +340,7 @@ else
                     <div class="modal-body container row">
                         <label class="form-label col col-12">
                             Unit
-                            <InputSelect @bind-Value="EditUnitModel.Model" class="form-select" aria-label="Select a unit">
+                            <InputSelect @bind-Value="EditUnitModel.Model" class="form-select" aria-label="Select an unit">
                                 <option selected="@(EditUnitModel.Identifier == null)" value=""><i>~ None ~</i></option>
                                 @foreach (var unit in Character.GetItemWithRequirements(units))
                                 {
@@ -422,6 +468,7 @@ else
 @code {
     [DisallowNull] private LevelTableModel levelTable = default!;
     [DisallowNull] private ItemPMTModel itemPMT = default!;
+    [DisallowNull] private ItemModel[] weapons = default!;
     [DisallowNull] private ItemModel[] armors = default!;
     [DisallowNull] private ItemModel[] units = default!;
     [DisallowNull] private ItemModel[] shields = default!;
@@ -438,14 +485,15 @@ else
         _ => throw new NotSupportedException()
     };
 
-    [MemberNotNullWhen(false, nameof(levelTable), nameof(itemPMT), nameof(armors), nameof(units), nameof(shields), nameof(mags))]
-    private bool IsLoading => levelTable == null || itemPMT == null || armors == null || units == null || shields == null || mags == null;
+    [MemberNotNullWhen(false, nameof(levelTable), nameof(itemPMT), nameof(weapons), nameof(armors), nameof(units), nameof(shields), nameof(mags))]
+    private bool IsLoading => levelTable == null || itemPMT == null || weapons == null || armors == null || units == null || shields == null || mags == null;
 
     protected override async Task OnInitializedAsync()
     {
         levelTable = await levelTableService.GetLevelTableAsync();
         itemPMT = await itemPMTService.GetItemsAsync();
         var items = (await itemsService.GetItemsAsync()).ToArray();
+        weapons = items.Where(i => i.Identifier.StartsWith("00")).ToArray();
         armors = items.Where(i => i.Identifier.StartsWith("0101")).ToArray();
         shields = items.Where(i => i.Identifier.StartsWith("0102")).ToArray();
         units = items.Where(i => i.Identifier.StartsWith("0103")).ToArray();
@@ -485,6 +533,7 @@ else
         private int luckMaterial;
         private int shiftaLevel;
         private int debandLevel;
+        private WeaponModel weapon = new(itemPMT);
         private ArmorModel armor = new(itemPMT);
         private UnitModel unit1 = new(itemPMT);
         private UnitModel unit2 = new(itemPMT);
@@ -512,9 +561,39 @@ else
 
         public int HP { get; set; }
         public int TP { get; set; }
+        public int BaseATP
+        {
+            get
+            {
+                if (!ClassRaceSelection.HasValue) return 0;
+                int indexClass = (int)ClassRaceSelection;
+                var levelDeltas = levelTable.LevelDeltas[indexClass].Take(Level);
+                return levelTable.BaseStats[indexClass].ATP + levelDeltas.Sum(l => l.ATP) + GetATPBonus() + (PowerMaterial + Mag.Pow) * 2;
+            }
+        }
         public int ATP { get; set; }
         public int DFP { get; set; }
+        public int BaseMST
+        {
+            get
+            {
+                if (!ClassRaceSelection.HasValue) return 0;
+                int indexClass = (int)ClassRaceSelection;
+                var levelDeltas = levelTable.LevelDeltas[indexClass].Take(Level);
+                return levelTable.BaseStats[indexClass].MST + levelDeltas.Sum(l => l.MST) + (MindMaterial + Mag.Mind) * 2;
+            }
+        }
         public int MST { get; set; }
+        public float BaseATA
+        {
+            get
+            {
+                if (!ClassRaceSelection.HasValue) return 0;
+                int indexClass = (int)ClassRaceSelection;
+                var levelDeltas = levelTable.LevelDeltas[indexClass].Take(Level);
+                return levelTable.BaseStats[indexClass].ATA + levelDeltas.Sum(l => l.ATA) / 10f + GetATABonus() + Mag.Dex / 2;
+            }
+        }
         public float ATA { get; set; }
         public int EVP { get; set; }
         public int LCK { get; set; }
@@ -622,7 +701,12 @@ else
             set { debandLevel = value; RefreshStats(); }
         }
 
-        public string WeaponName { get; set; } = "";
+        public string WeaponName => Weapon.ToString();
+        public WeaponModel Weapon
+        {
+            get { return weapon; }
+            set { weapon = value; RefreshStats(); }
+        }
 
         public string ArmorName => Armor.ToString();
         public ArmorModel Armor
@@ -696,7 +780,7 @@ else
                 if (LuckMaterial != 0) LuckMaterial = 0;
                 if (ShiftaLevel != 0) ShiftaLevel = 0;
                 if (DebandLevel != 0) DebandLevel = 0;
-                WeaponName = "";
+                if (WeaponName != "") Weapon = new(itemPMT);
                 if (ArmorName != "") Armor = new(itemPMT);
                 if (Unit1Name != "") Unit1 = new(itemPMT);
                 if (Unit2Name != "") Unit2 = new(itemPMT);
@@ -726,6 +810,7 @@ else
             }
 
             // Reset equipement that don't meet requirements.
+            if (Weapon.Model != null && !GetItemWithRequirements(Weapon.Model).Any()) Weapon = new(itemPMT);
             if (Armor.Model != null && !GetItemWithRequirements(Armor.Model).Any()) Armor = new(itemPMT);
             if (Armor.NumberSlots < 1 && Unit1.Model != null) Unit1 = new(itemPMT);
             if (Armor.NumberSlots < 2 && Unit2.Model != null) Unit2 = new(itemPMT);
@@ -736,12 +821,10 @@ else
             // Calculate stats.
             var baseStats = levelTable.BaseStats[indexClass];
             var levelDeltas = levelTable.LevelDeltas[indexClass].Take(Level);
-            var baseATP = baseStats.ATP + levelDeltas.Sum(l => l.ATP) + GetATPBonus() + (PowerMaterial + Mag.Pow) * 2
-                + GetEveryStatBoost().Sum(s => CalculateStatBoost("ATP", s.Item1, s.Item2));
+            var baseATP = BaseATP + Weapon.BaseAtp + GetEveryStatBoost().Sum(s => CalculateStatBoost("ATP", s.Item1, s.Item2));
             var baseDFP = baseStats.DFP + levelDeltas.Sum(l => l.DFP) + DefMaterial * 2 + Armor.Dfp + Shield.Dfp
                 + GetEveryStatBoost().Sum(s => CalculateStatBoost("DFP", s.Item1, s.Item2)) + Mag.Def;
-            var baseMST = baseStats.MST + levelDeltas.Sum(l => l.MST) + (MindMaterial + Mag.Mind) * 2
-                + GetEveryStatBoost().Sum(s => CalculateStatBoost("MST", s.Item1, s.Item2));
+            var baseMST = BaseMST + Weapon.Mst + GetEveryStatBoost().Sum(s => CalculateStatBoost("MST", s.Item1, s.Item2));
             HP = (int)Math.Floor((baseStats.HP + levelDeltas.Sum(l => l.HP) + Level - 1) * GetHPMultiplier()) + HPMaterial * 2
                 + GetEveryStatBoost().Sum(s => CalculateStatBoost("HP", s.Item1, s.Item2));
             TP = ClassRaceSelection switch
@@ -752,11 +835,10 @@ else
                     => (int)Math.Floor((baseMST + Level - 1) * 1.5 + GetEveryStatBoost().Sum(s => CalculateStatBoost("TP", s.Item1, s.Item2))),
                 _ => 0
             } + TPMaterial * 2;
-            ATP = (int)Math.Floor(baseATP + baseATP * GetShiftaDebandMultiplier(ShiftaLevel));
+            ATP = (int)Math.Floor(baseATP + baseATP * GetShiftaDebandMultiplier(ShiftaLevel)) + Weapon.Atp - Weapon.BaseAtp;
             DFP = (int)Math.Floor(baseDFP + baseDFP * GetShiftaDebandMultiplier(DebandLevel));
             MST = baseMST;
-            ATA = baseStats.ATA + levelDeltas.Sum(l => l.ATA) / 10f + GetATABonus()
-                + GetEveryStatBoost().Sum(s => CalculateStatBoost("ATA", s.Item1, s.Item2)) + Mag.Dex / 2;
+            ATA = BaseATA + Weapon.Ata + GetEveryStatBoost().Sum(s => CalculateStatBoost("ATA", s.Item1, s.Item2));
             EVP = baseStats.EVP + levelDeltas.Sum(l => l.EVP) + EvadeMaterial * 2 + Armor.Evp + Shield.Evp
                 + GetEveryStatBoost().Sum(s => CalculateStatBoost("EVP", s.Item1, s.Item2));
             LCK = baseStats.LCK + levelDeltas.Sum(l => l.LCK) + LuckMaterial * 2
@@ -796,6 +878,15 @@ else
         {
             if (!ClassRaceSelection.HasValue) yield break;
 
+            foreach (var (item, weapon) in items.Join(itemPMT.Weapons, i => i.Identifier, w => w.Key, (i, w) => (item: i, weapon: w.Value)))
+            {
+                bool meetRequirement = weapon.ClassFlags.HasFlag(ItemPMTService.ClassFlagsByClass[(int)ClassRaceSelection]);
+                meetRequirement &= BaseATP >= weapon.ATPRequired;
+                meetRequirement &= BaseATA >= weapon.ATARequired;
+                meetRequirement &= BaseMST >= weapon.MSTRequired;
+                if (meetRequirement) yield return item;
+            }
+
             foreach (var (item, armor) in items.Join(itemPMT.Armors, i => i.Identifier, a => a.Key, (i, a) => (item: i, armor: a.Value)))
             {
                 bool meetRequirement = armor.ClassFlags.HasFlag(ItemPMTService.ClassFlagsByClass[(int)ClassRaceSelection]);
@@ -810,7 +901,7 @@ else
         }
 
         private IEnumerable<Tuple<string, int>> GetEveryStatBoost()
-            => Armor.GetStatBoosts().Concat(Unit1.GetStatBoosts().Concat(Unit2.GetStatBoosts().Concat(Unit3.GetStatBoosts().Concat(Unit4.GetStatBoosts().Concat(Shield.GetStatBoosts())))));
+            => Weapon.GetStatBoosts().Concat(Armor.GetStatBoosts().Concat(Unit1.GetStatBoosts().Concat(Unit2.GetStatBoosts().Concat(Unit3.GetStatBoosts().Concat(Unit4.GetStatBoosts().Concat(Shield.GetStatBoosts()))))));
 
         private int CalculateStatBoost(string stat, string statBoost, int amount)
         {
@@ -838,6 +929,65 @@ else
             => shiftaDebandLevel == 0 ? 0 : Math.Sign(shiftaDebandLevel) * (1.3 * (Math.Abs(shiftaDebandLevel) - 1) + 10) / 100;
         public TimeSpan GetShiftaDebandDuration(int shiftaDebandLevel)
             => shiftaDebandLevel == 0 ? TimeSpan.Zero : new TimeSpan(0, 0, 10 * (Math.Abs(shiftaDebandLevel) - 1) + 40);
+    }
+
+    public class WeaponModel(ItemPMTModel itemPMT)
+    {
+        private int grind;
+
+        private ItemModel? model;
+
+        public ItemModel? Model
+        {
+            get { return model; }
+            set
+            {
+                model = value;
+                if (Identifier == null) return;
+                var maxGrind = itemPMT.Weapons[Identifier].MaxGrind;
+                if (Grind > maxGrind) Grind = maxGrind;
+            }
+        }
+
+        public string? Identifier => Model?.Identifier;
+        public string Name => Model?.Name ?? "";
+
+        public int BaseAtp => string.IsNullOrEmpty(Identifier) ? 0 : itemPMT.Weapons[Identifier].ATPMax - itemPMT.Weapons[Identifier].ATPMin;
+        public int Atp => string.IsNullOrEmpty(Identifier) ? 0 : itemPMT.Weapons[Identifier].ATPMax + Grind * 2;
+        public int Ata => string.IsNullOrEmpty(Identifier) ? 0 : itemPMT.Weapons[Identifier].ATA;
+        public int Mst => string.IsNullOrEmpty(Identifier) ? 0 : itemPMT.Weapons[Identifier].MST;
+
+        public int Grind
+        {
+            get { return grind; }
+            set
+            {
+                if (string.IsNullOrEmpty(Identifier)) return;
+                if (value < 0) value = 0;
+                var maxGrind = itemPMT.Weapons[Identifier].MaxGrind;
+                if (value > maxGrind) value = maxGrind;
+                grind = value;
+            }
+        }
+
+        public IEnumerable<Tuple<string, int>> GetStatBoosts()
+        {
+            if (string.IsNullOrEmpty(Identifier))
+                yield break;
+
+            string[] statNames = ["None", "+ATP", "+ATA", "+EVP", "+DFP", "+MST", "+HP", "+LCK", "+All", "-ATP", "-ATA", "-EVP", "-DFP", "-MST", "-HP", "-LCK", "-All"];
+            var statBoost = itemPMT.StatBoosts[itemPMT.Weapons[Identifier].StatBoost];
+            if (statBoost.Stat1 != 0) yield return Tuple.Create<string, int>(statNames[statBoost.Stat1], statBoost.Amount1);
+            if (statBoost.Stat2 != 0) yield return Tuple.Create<string, int>(statNames[statBoost.Stat2], statBoost.Amount2);
+        }
+
+        public override string ToString()
+        {
+            if (string.IsNullOrEmpty(Name)) return "";
+            var s = $"{Name}";
+            if (Grind != 0) s += $" +{Grind}";
+            return s;
+        }
     }
 
     public class BaseArmorModel(ItemPMTModel itemPMT)
