@@ -1,6 +1,7 @@
 ﻿@page "/characterBuilder"
 @using PSOServerWebsite.Services
 @using System.Text.RegularExpressions
+@inject Blazored.LocalStorage.ILocalStorageService localStorage
 @inject LevelTableService levelTableService
 @inject ItemsService itemsService
 @inject ItemPMTService itemPMTService
@@ -20,27 +21,27 @@ else
             <div class="col">
                 <label class="form-label">
                     Class
-                    <InputSelect @bind-Value="Character.ClassRaceSelection" class="form-select" aria-label="Select a class">
+                    <InputSelect @bind-Value="ClassRaceSelection" class="form-select" aria-label="Select a class">
                         <option value="">Select a class ...</option>
-                        <option selected="@(Character.ClassRaceSelection == ClassRace.Humar)" value="@ClassRace.Humar">HUmar</option>
-                        <option selected="@(Character.ClassRaceSelection == ClassRace.Hunewearl)" value="@ClassRace.Hunewearl">HUnewearl</option>
-                        <option selected="@(Character.ClassRaceSelection == ClassRace.Hucast)" value="@ClassRace.Hucast">HUcast</option>
-                        <option selected="@(Character.ClassRaceSelection == ClassRace.Hucaseal)" value="@ClassRace.Hucaseal">HUcaseal</option>
-                        <option selected="@(Character.ClassRaceSelection == ClassRace.Ramar)" value="@ClassRace.Ramar">RAmar</option>
-                        <option selected="@(Character.ClassRaceSelection == ClassRace.Ramarl)" value="@ClassRace.Ramarl">RAmarl</option>
-                        <option selected="@(Character.ClassRaceSelection == ClassRace.Racast)" value="@ClassRace.Racast">RAcast</option>
-                        <option selected="@(Character.ClassRaceSelection == ClassRace.Racaseal)" value="@ClassRace.Racaseal">RAcaseal</option>
-                        <option selected="@(Character.ClassRaceSelection == ClassRace.Fomar)" value="@ClassRace.Fomar">FOmar</option>
-                        <option selected="@(Character.ClassRaceSelection == ClassRace.Fomarl)" value="@ClassRace.Fomarl">FOmarl</option>
-                        <option selected="@(Character.ClassRaceSelection == ClassRace.Fonewm)" value="@ClassRace.Fonewm">FOnewm</option>
-                        <option selected="@(Character.ClassRaceSelection == ClassRace.Fonewearl)" value="@ClassRace.Fonewearl">FOnewearl</option>
+                        <option selected="@(ClassRaceSelection == ClassRace.Humar)" value="@ClassRace.Humar">HUmar</option>
+                        <option selected="@(ClassRaceSelection == ClassRace.Hunewearl)" value="@ClassRace.Hunewearl">HUnewearl</option>
+                        <option selected="@(ClassRaceSelection == ClassRace.Hucast)" value="@ClassRace.Hucast">HUcast</option>
+                        <option selected="@(ClassRaceSelection == ClassRace.Hucaseal)" value="@ClassRace.Hucaseal">HUcaseal</option>
+                        <option selected="@(ClassRaceSelection == ClassRace.Ramar)" value="@ClassRace.Ramar">RAmar</option>
+                        <option selected="@(ClassRaceSelection == ClassRace.Ramarl)" value="@ClassRace.Ramarl">RAmarl</option>
+                        <option selected="@(ClassRaceSelection == ClassRace.Racast)" value="@ClassRace.Racast">RAcast</option>
+                        <option selected="@(ClassRaceSelection == ClassRace.Racaseal)" value="@ClassRace.Racaseal">RAcaseal</option>
+                        <option selected="@(ClassRaceSelection == ClassRace.Fomar)" value="@ClassRace.Fomar">FOmar</option>
+                        <option selected="@(ClassRaceSelection == ClassRace.Fomarl)" value="@ClassRace.Fomarl">FOmarl</option>
+                        <option selected="@(ClassRaceSelection == ClassRace.Fonewm)" value="@ClassRace.Fonewm">FOnewm</option>
+                        <option selected="@(ClassRaceSelection == ClassRace.Fonewearl)" value="@ClassRace.Fonewearl">FOnewearl</option>
                     </InputSelect>
                 </label>
             </div>
             <div class="col">
                 <label class="form-label">
                     Level
-                    <InputNumber @bind-Value="Character.Level" DisplayName="Level" class="form-control"></InputNumber>
+                    <InputNumber @bind-Value="Level" DisplayName="Level" class="form-control"></InputNumber>
                 </label>
             </div>
         </div>
@@ -48,49 +49,49 @@ else
             <div class="col">
                 <label class="form-label">
                     HP
-                    <InputNumber @bind-Value="Character.HP" DisplayName="HP" class="form-control" disabled></InputNumber>
+                    <InputNumber @bind-Value="HP" DisplayName="HP" class="form-control" disabled></InputNumber>
                 </label>
             </div>
             <div class="col">
                 <label class="form-label">
                     TP
-                    <InputNumber @bind-Value="Character.TP" DisplayName="TP" class="form-control" disabled></InputNumber>
+                    <InputNumber @bind-Value="TP" DisplayName="TP" class="form-control" disabled></InputNumber>
                 </label>
             </div>
             <div class="col">
                 <label class="form-label">
                     ATP
-                    <InputNumber @bind-Value="Character.ATP" DisplayName="ATP" class="form-control" disabled></InputNumber>
+                    <InputNumber @bind-Value="ATP" DisplayName="ATP" class="form-control" disabled></InputNumber>
                 </label>
             </div>
             <div class="col">
                 <label class="form-label">
                     DFP
-                    <InputNumber @bind-Value="Character.DFP" DisplayName="DFP" class="form-control" disabled></InputNumber>
+                    <InputNumber @bind-Value="DFP" DisplayName="DFP" class="form-control" disabled></InputNumber>
                 </label>
             </div>
             <div class="col">
                 <label class="form-label">
                     MST
-                    <InputNumber @bind-Value="Character.MST" DisplayName="MST" class="form-control" disabled></InputNumber>
+                    <InputNumber @bind-Value="MST" DisplayName="MST" class="form-control" disabled></InputNumber>
                 </label>
             </div>
             <div class="col">
                 <label class="form-label">
                     ATA
-                    <InputNumber @bind-Value="Character.ATA" DisplayName="ATA" class="form-control" disabled></InputNumber>
+                    <InputNumber @bind-Value="ATA" DisplayName="ATA" class="form-control" disabled></InputNumber>
                 </label>
             </div>
             <div class="col">
                 <label class="form-label">
                     EVP
-                    <InputNumber @bind-Value="Character.EVP" DisplayName="EVP" class="form-control" disabled></InputNumber>
+                    <InputNumber @bind-Value="EVP" DisplayName="EVP" class="form-control" disabled></InputNumber>
                 </label>
             </div>
             <div class="col">
                 <label class="form-label">
                     LCK
-                    <InputNumber @bind-Value="Character.LCK" DisplayName="LCK" class="form-control" disabled></InputNumber>
+                    <InputNumber @bind-Value="LCK" DisplayName="LCK" class="form-control" disabled></InputNumber>
                 </label>
             </div>
         </div>
@@ -98,43 +99,43 @@ else
             <div class="col">
                 <label class="form-label">
                     HP Material
-                    <InputNumber @bind-Value="Character.HPMaterial" DisplayName="HP Material" class="form-control"></InputNumber>
+                    <InputNumber @bind-Value="HPMaterial" DisplayName="HP Material" class="form-control"></InputNumber>
                 </label>
             </div>
             <div class="col">
                 <label class="form-label">
                     TP Material
-                    <InputNumber @bind-Value="Character.TPMaterial" DisplayName="TP Material" class="form-control"></InputNumber>
+                    <InputNumber @bind-Value="TPMaterial" DisplayName="TP Material" class="form-control"></InputNumber>
                 </label>
             </div>
             <div class="col">
                 <label class="form-label">
                     Power Material
-                    <InputNumber @bind-Value="Character.PowerMaterial" DisplayName="Power Material" class="form-control"></InputNumber>
+                    <InputNumber @bind-Value="PowerMaterial" DisplayName="Power Material" class="form-control"></InputNumber>
                 </label>
             </div>
             <div class="col">
                 <label class="form-label">
                     Def Material
-                    <InputNumber @bind-Value="Character.DefMaterial" DisplayName="Def Material" class="form-control"></InputNumber>
+                    <InputNumber @bind-Value="DefMaterial" DisplayName="Def Material" class="form-control"></InputNumber>
                 </label>
             </div>
             <div class="col">
                 <label class="form-label">
                     Mind Material
-                    <InputNumber @bind-Value="Character.MindMaterial" DisplayName="Mind Material" class="form-control"></InputNumber>
+                    <InputNumber @bind-Value="MindMaterial" DisplayName="Mind Material" class="form-control"></InputNumber>
                 </label>
             </div>
             <div class="col">
                 <label class="form-label">
                     Evade Material
-                    <InputNumber @bind-Value="Character.EvadeMaterial" DisplayName="Evade Material" class="form-control"></InputNumber>
+                    <InputNumber @bind-Value="EvadeMaterial" DisplayName="Evade Material" class="form-control"></InputNumber>
                 </label>
             </div>
             <div class="col">
                 <label class="form-label">
                     Luck Material
-                    <InputNumber @bind-Value="Character.LuckMaterial" DisplayName="Luck Material" class="form-control"></InputNumber>
+                    <InputNumber @bind-Value="LuckMaterial" DisplayName="Luck Material" class="form-control"></InputNumber>
                 </label>
             </div>
         </div>
@@ -153,7 +154,7 @@ else
                     <button class="btn btn-outline-secondary btn-sm" data-bs-toggle="modal" data-bs-target="#modalEditArmor">Edit</button>
                 </label>
             </div>
-            @if (Character.Armor.NumberSlots > 0)
+            @if (Armor.NumberSlots > 0)
             {
                 <div class="col">
                     <label class="form-label d-flex flex-column justify-content-between h-100">
@@ -163,7 +164,7 @@ else
                     </label>
                 </div>
             }
-            @if (Character.Armor.NumberSlots > 1)
+            @if (Armor.NumberSlots > 1)
             {
                 <div class="col">
                     <label class="form-label d-flex flex-column justify-content-between h-100">
@@ -173,7 +174,7 @@ else
                     </label>
                 </div>
             }
-            @if (Character.Armor.NumberSlots > 2)
+            @if (Armor.NumberSlots > 2)
             {
                 <div class="col">
                     <label class="form-label d-flex flex-column justify-content-between h-100">
@@ -183,7 +184,7 @@ else
                     </label>
                 </div>
             }
-            @if (Character.Armor.NumberSlots > 3)
+            @if (Armor.NumberSlots > 3)
             {
                 <div class="col">
                     <label class="form-label d-flex flex-column justify-content-between h-100">
@@ -212,28 +213,21 @@ else
             <div class="col">
                 <label class="form-label">
                     Shifta Level
-                    <InputNumber @bind-Value="Character.ShiftaLevel" DisplayName="Shifta Level" class="form-control"></InputNumber>
+                    <InputNumber @bind-Value="ShiftaLevel" DisplayName="Shifta Level" class="form-control"></InputNumber>
                 </label>
-                <span class="ms-1">@Character.GetShiftaDebandDuration(Character.ShiftaLevel)</span>
+                <span class="ms-1">@GetShiftaDebandDuration(ShiftaLevel)</span>
             </div>
             <div class="col">
                 <label class="form-label">
                     Deband Level
-                    <InputNumber @bind-Value="Character.DebandLevel" DisplayName="Deband Level" class="form-control"></InputNumber>
+                    <InputNumber @bind-Value="DebandLevel" DisplayName="Deband Level" class="form-control"></InputNumber>
                 </label>
-                <span class="ms-1">@Character.GetShiftaDebandDuration(Character.DebandLevel)</span>
-            </div>
-        </div>
-        <div class="row">
-            <div class="col">
-                <label class="form-label">
-
-                </label>
+                <span class="ms-1">@GetShiftaDebandDuration(DebandLevel)</span>
             </div>
         </div>
     </div>
 
-    <div id="modalEditWeapon" class="modal" onhidden.bs.modal="@(() => Character.RefreshStats())">
+    <div id="modalEditWeapon" class="modal" onhidden.bs.modal="@(() => RefreshStats())">
         <div class="modal-dialog modal-dialog-scrollable modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
@@ -242,31 +236,31 @@ else
                 <div class="modal-body container row">
                     <label class="form-label col col-12">
                         Weapon
-                        <InputSelect @bind-Value="Character.Weapon.Model" class="form-select" aria-label="Select a weapon">
-                            <option selected="@(Character.Weapon.Identifier == null)" value=""><i>~ None ~</i></option>
-                            @foreach (var weapon in Character.GetItemWithRequirements(weapons))
+                        <InputSelect @bind-Value="Weapon.Model" class="form-select" aria-label="Select a weapon">
+                            <option selected="@(Weapon.Identifier == null)" value=""><i>~ None ~</i></option>
+                            @foreach (var weapon in GetItemWithRequirements(weapons))
                             {
-                                <option selected="@(Character.Weapon.Identifier == weapon.Identifier)" value="@weapon">@weapon.Name</option>
+                                <option selected="@(Weapon.Identifier == weapon.Identifier)" value="@weapon">@weapon.Name</option>
                             }
                         </InputSelect>
                     </label>
                     <label class="form-label col col-3">
                         ATP
-                        <InputNumber Value="@Character.Weapon.Atp" ValueExpression="@(() => Character.Weapon.Atp)" DisplayName="ATP" class="form-control" disabled></InputNumber>
+                        <InputNumber Value="@Weapon.Atp" ValueExpression="@(() => Weapon.Atp)" DisplayName="ATP" class="form-control" disabled></InputNumber>
                     </label>
                     <label class="form-label col col-3">
                         Grind
-                        <InputNumber @bind-Value="Character.Weapon.Grind" DisplayName="Grind" class="form-control"></InputNumber>
+                        <InputNumber @bind-Value="Weapon.Grind" DisplayName="Grind" class="form-control"></InputNumber>
                     </label>
                     <label class="form-label col col-3">
                         ATA
-                        <InputNumber Value="@Character.Weapon.Ata" ValueExpression="@(() => Character.Weapon.Ata)" DisplayName="ATA" class="form-control" disabled></InputNumber>
+                        <InputNumber Value="@Weapon.Ata" ValueExpression="@(() => Weapon.Ata)" DisplayName="ATA" class="form-control" disabled></InputNumber>
                     </label>
                     <label class="form-label col col-3">
                         MST
-                        <InputNumber Value="@Character.Weapon.Mst" ValueExpression="@(() => Character.Weapon.Mst)" DisplayName="MST" class="form-control" disabled></InputNumber>
+                        <InputNumber Value="@Weapon.Mst" ValueExpression="@(() => Weapon.Mst)" DisplayName="MST" class="form-control" disabled></InputNumber>
                     </label>
-                    @foreach (var statBoost in Character.Weapon.GetStatBoosts())
+                    @foreach (var statBoost in Weapon.GetStatBoosts())
                     {
                         <label class="form-label col col-3">
                             @statBoost.Item1
@@ -274,12 +268,12 @@ else
                         </label>
                     }
                 </div>
-                <div class="modal-footer">@Character.WeaponName</div>
+                <div class="modal-footer">@Weapon</div>
             </div>
         </div>
     </div>
 
-    <div id="modalEditArmor" class="modal" onhidden.bs.modal="@(() => Character.RefreshStats())">
+    <div id="modalEditArmor" class="modal" onhidden.bs.modal="@(() => RefreshStats())">
         <div class="modal-dialog modal-dialog-scrollable modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
@@ -288,31 +282,31 @@ else
                 <div class="modal-body container row">
                     <label class="form-label col col-12">
                         Armor
-                        <InputSelect @bind-Value="Character.Armor.Model" class="form-select" aria-label="Select an armor">
-                            <option selected="@(Character.Armor.Identifier == null)" value=""><i>~ None ~</i></option>
-                            @foreach (var armor in Character.GetItemWithRequirements(armors))
+                        <InputSelect @bind-Value="Armor.Model" class="form-select" aria-label="Select an armor">
+                            <option selected="@(Armor.Identifier == null)" value=""><i>~ None ~</i></option>
+                            @foreach (var armor in GetItemWithRequirements(armors))
                             {
-                                <option selected="@(Character.Armor.Identifier == armor.Identifier)" value="@armor">@armor.Name</option>
+                                <option selected="@(Armor.Identifier == armor.Identifier)" value="@armor">@armor.Name</option>
                             }
                         </InputSelect>
                     </label>
                     <label class="form-label col col-3">
                         DFP
-                        <InputNumber Value="@Character.Armor.Dfp" ValueExpression="@(() => Character.Armor.Dfp)" DisplayName="DFP" class="form-control" disabled></InputNumber>
+                        <InputNumber Value="@Armor.Dfp" ValueExpression="@(() => Armor.Dfp)" DisplayName="DFP" class="form-control" disabled></InputNumber>
                     </label>
                     <label class="form-label col col-3">
                         DFP Bonus
-                        <InputNumber @bind-Value="Character.Armor.DfpBonus" DisplayName="DFP Bonus" class="form-control"></InputNumber>
+                        <InputNumber @bind-Value="Armor.DfpBonus" DisplayName="DFP Bonus" class="form-control"></InputNumber>
                     </label>
                     <label class="form-label col col-3">
                         EVP
-                        <InputNumber Value="@Character.Armor.Evp" ValueExpression="@(() => Character.Armor.Evp)" DisplayName="EVP" class="form-control" disabled></InputNumber>
+                        <InputNumber Value="@Armor.Evp" ValueExpression="@(() => Armor.Evp)" DisplayName="EVP" class="form-control" disabled></InputNumber>
                     </label>
                     <label class="form-label col col-3">
                         EVP Bonus
-                        <InputNumber @bind-Value="Character.Armor.EvpBonus" DisplayName="EVP Bonus" class="form-control"></InputNumber>
+                        <InputNumber @bind-Value="Armor.EvpBonus" DisplayName="EVP Bonus" class="form-control"></InputNumber>
                     </label>
-                    @foreach (var statBoost in Character.Armor.GetStatBoosts())
+                    @foreach (var statBoost in Armor.GetStatBoosts())
                     {
                         <label class="form-label col col-3">
                             @statBoost.Item1
@@ -321,15 +315,15 @@ else
                     }
                     <label class="form-label col col-12">
                         Slots
-                        <InputNumber @bind-Value="Character.Armor.NumberSlots" DisplayName="Slots" class="form-control"></InputNumber>
+                        <InputNumber @bind-Value="Armor.NumberSlots" DisplayName="Slots" class="form-control"></InputNumber>
                     </label>
                 </div>
-                <div class="modal-footer">@Character.ArmorName</div>
+                <div class="modal-footer">@Armor</div>
             </div>
         </div>
     </div>
 
-    <div id="modalEditUnit" class="modal" onhidden.bs.modal="@(() => Character.RefreshStats())">
+    <div id="modalEditUnit" class="modal" onhidden.bs.modal="@(() => RefreshStats())">
         <div class="modal-dialog modal-dialog-scrollable modal-dialog-centered">
             @if (EditUnit > 0)
             {
@@ -342,7 +336,7 @@ else
                             Unit
                             <InputSelect @bind-Value="EditUnitModel.Model" class="form-select" aria-label="Select an unit">
                                 <option selected="@(EditUnitModel.Identifier == null)" value=""><i>~ None ~</i></option>
-                                @foreach (var unit in Character.GetItemWithRequirements(units))
+                                @foreach (var unit in GetItemWithRequirements(units))
                                 {
                                     <option selected="@(EditUnitModel.Identifier == unit.Identifier)" value="@unit">@unit.Name</option>
                                 }
@@ -366,7 +360,7 @@ else
         </div>
     </div>
 
-    <div id="modalEditShield" class="modal" onhidden.bs.modal="@(() => Character.RefreshStats())">
+    <div id="modalEditShield" class="modal" onhidden.bs.modal="@(() => RefreshStats())">
         <div class="modal-dialog modal-dialog-scrollable modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
@@ -375,31 +369,31 @@ else
                 <div class="modal-body container row">
                     <label class="form-label col col-12">
                         Shield
-                        <InputSelect @bind-Value="Character.Shield.Model" class="form-select" aria-label="Select a shield">
-                            <option selected="@(Character.Shield.Identifier == null)" value=""><i>~ None ~</i></option>
-                            @foreach (var shield in Character.GetItemWithRequirements(shields))
+                        <InputSelect @bind-Value="Shield.Model" class="form-select" aria-label="Select a shield">
+                            <option selected="@(Shield.Identifier == null)" value=""><i>~ None ~</i></option>
+                            @foreach (var shield in GetItemWithRequirements(shields))
                             {
-                                <option selected="@(Character.Shield.Identifier == shield.Identifier)" value="@shield">@shield.Name</option>
+                                <option selected="@(Shield.Identifier == shield.Identifier)" value="@shield">@shield.Name</option>
                             }
                         </InputSelect>
                     </label>
                     <label class="form-label col col-3">
                         DFP
-                        <InputNumber Value="@Character.Shield.Dfp" ValueExpression="@(() => Character.Shield.Dfp)" DisplayName="DFP" class="form-control" disabled></InputNumber>
+                        <InputNumber Value="@Shield.Dfp" ValueExpression="@(() => Shield.Dfp)" DisplayName="DFP" class="form-control" disabled></InputNumber>
                     </label>
                     <label class="form-label col col-3">
                         DFP Bonus
-                        <InputNumber @bind-Value="Character.Shield.DfpBonus" DisplayName="DFP Bonus" class="form-control"></InputNumber>
+                        <InputNumber @bind-Value="Shield.DfpBonus" DisplayName="DFP Bonus" class="form-control"></InputNumber>
                     </label>
                     <label class="form-label col col-3">
                         EVP
-                        <InputNumber Value="@Character.Shield.Evp" ValueExpression="@(() => Character.Shield.Evp)" DisplayName="EVP" class="form-control" disabled></InputNumber>
+                        <InputNumber Value="@Shield.Evp" ValueExpression="@(() => Shield.Evp)" DisplayName="EVP" class="form-control" disabled></InputNumber>
                     </label>
                     <label class="form-label col col-3">
                         EVP Bonus
-                        <InputNumber @bind-Value="Character.Shield.EvpBonus" DisplayName="EVP Bonus" class="form-control"></InputNumber>
+                        <InputNumber @bind-Value="Shield.EvpBonus" DisplayName="EVP Bonus" class="form-control"></InputNumber>
                     </label>
-                    @foreach (var statBoost in Character.Shield.GetStatBoosts())
+                    @foreach (var statBoost in Shield.GetStatBoosts())
                     {
                         <label class="form-label col col-3">
                             @statBoost.Item1
@@ -407,12 +401,12 @@ else
                         </label>
                     }
                 </div>
-                <div class="modal-footer">@Character.ShieldName</div>
+                <div class="modal-footer">@Shield</div>
             </div>
         </div>
     </div>
 
-    <div id="modalEditMag" class="modal" onhidden.bs.modal="@(() => Character.RefreshStats())">
+    <div id="modalEditMag" class="modal" onhidden.bs.modal="@(() => RefreshStats())">
         <div class="modal-dialog modal-dialog-scrollable modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
@@ -421,7 +415,7 @@ else
                 <div class="modal-body container row">
                     <label class="form-label col col-6">
                         Mag
-                        <InputSelect @bind-Value="Character.Mag.Name" class="form-select" aria-label="Select a mag">
+                        <InputSelect @bind-Value="Mag.Name" class="form-select" aria-label="Select a mag">
                             <option value=""><i>~ None ~</i></option>
                             @foreach (var mag in mags)
                             {
@@ -431,23 +425,23 @@ else
                     </label>
                     <label class="form-label col col-6">
                         Level
-                        <InputNumber Value="@Character.Mag.Level" ValueExpression="@(() => Character.Mag.Level)" DisplayName="Level" class="form-control" disabled></InputNumber>
+                        <InputNumber Value="@Mag.Level" ValueExpression="@(() => Mag.Level)" DisplayName="Level" class="form-control" disabled></InputNumber>
                     </label>
                     <label class="form-label col col-3">
                         DEF
-                        <InputNumber @bind-Value="Character.Mag.Def" DisplayName="DEF" class="form-control"></InputNumber>
+                        <InputNumber @bind-Value="Mag.Def" DisplayName="DEF" class="form-control"></InputNumber>
                     </label>
                     <label class="form-label col col-3">
                         POW
-                        <InputNumber @bind-Value="Character.Mag.Pow" DisplayName="POW" class="form-control"></InputNumber>
+                        <InputNumber @bind-Value="Mag.Pow" DisplayName="POW" class="form-control"></InputNumber>
                     </label>
                     <label class="form-label col col-3">
                         DEX
-                        <InputNumber @bind-Value="Character.Mag.Dex" DisplayName="DEX" class="form-control"></InputNumber>
+                        <InputNumber @bind-Value="Mag.Dex" DisplayName="DEX" class="form-control"></InputNumber>
                     </label>
                     <label class="form-label col col-3">
                         MIND
-                        <InputNumber @bind-Value="Character.Mag.Mind" DisplayName="MIND" class="form-control"></InputNumber>
+                        <InputNumber @bind-Value="Mag.Mind" DisplayName="MIND" class="form-control"></InputNumber>
                     </label>
                     <label class="form-label col col-6 visually-hidden">
                         Syncro
@@ -459,7 +453,7 @@ else
                         PB
                     </label>
                 </div>
-                <div class="modal-footer">@Character.MagName</div>
+                <div class="modal-footer">@Mag</div>
             </div>
         </div>
     </div>
@@ -478,10 +472,10 @@ else
     private int EditUnit { get; set; }
     private UnitModel EditUnitModel => EditUnit switch
     {
-        1 => Character.Unit1,
-        2 => Character.Unit2,
-        3 => Character.Unit3,
-        4 => Character.Unit4,
+        1 => Unit1,
+        2 => Unit2,
+        3 => Unit3,
+        4 => Unit4,
         _ => throw new NotSupportedException()
     };
 
@@ -498,7 +492,39 @@ else
         shields = items.Where(i => i.Identifier.StartsWith("0102")).ToArray();
         units = items.Where(i => i.Identifier.StartsWith("0103")).ToArray();
         mags = items.Where(i => i.Identifier.StartsWith("02")).ToArray();
-        Character = new(levelTable, itemPMT);
+        weapon = new(itemPMT);
+        armor = new(itemPMT);
+        unit1 = new(itemPMT);
+        unit2 = new(itemPMT);
+        unit3 = new(itemPMT);
+        unit4 = new(itemPMT);
+        shield = new(itemPMT);
+
+        List<CharacterModel>? characters = await localStorage.GetItemAsync<List<CharacterModel>>("characters");
+        if (characters?.Count > 0)
+        {
+            Character = characters[0];
+            // Keep equipment names because they will be erased when assigning other equipment.
+            string armorName = Character.ArmorName;
+            string unit1Name = Character.Unit1Name;
+            string unit2Name = Character.Unit2Name;
+            string unit3Name = Character.Unit3Name;
+            string unit4Name = Character.Unit4Name;
+            string shieldName = Character.ShieldName;
+            string magName = Character.MagName;
+            Weapon = WeaponModel.Parse(itemPMT, weapons, Character.WeaponName);
+            Armor = ArmorModel.Parse(itemPMT, armors, armorName);
+            Unit1 = UnitModel.Parse(itemPMT, units, unit1Name);
+            Unit2 = UnitModel.Parse(itemPMT, units, unit2Name);
+            Unit3 = UnitModel.Parse(itemPMT, units, unit3Name);
+            Unit4 = UnitModel.Parse(itemPMT, units, unit4Name);
+            Shield = ShieldModel.Parse(itemPMT, shields, shieldName);
+            Mag = MagModel.Parse(magName);
+            RefreshStats();
+        }
+        else
+            Character = new();
+
         await base.OnInitializedAsync();
     }
 
@@ -517,418 +543,434 @@ else
         Fonewm,
         Fonewearl
     }
+    private static readonly int[] maxMats = [250, 150, 150, 150, 250, 250, 150, 150, 250, 250, 150, 150];
 
-    public class CharacterModel(LevelTableModel levelTable, ItemPMTModel itemPMT)
+    [DisallowNull] private WeaponModel weapon = default!;
+    [DisallowNull] private ArmorModel armor = default!;
+    [DisallowNull] private UnitModel unit1 = default!;
+    [DisallowNull] private UnitModel unit2 = default!;
+    [DisallowNull] private UnitModel unit3 = default!;
+    [DisallowNull] private UnitModel unit4 = default!;
+    [DisallowNull] private ShieldModel shield = default!;
+    [DisallowNull] private MagModel mag = MagModel.Parse("Mag 5/0/0/0");
+
+    public ClassRace? ClassRaceSelection
     {
-        private static readonly int[] maxMats = [250, 150, 150, 150, 250, 250, 150, 150, 250, 250, 150, 150];
+        get { return Character.ClassRaceSelection; }
+        set { Character.ClassRaceSelection = value; RefreshStats(); }
+    }
 
-        private ClassRace? classRaceSelection;
-        private int level = 1;
-        private int hpMaterial;
-        private int tpMaterial;
-        private int powerMaterial;
-        private int defMaterial;
-        private int mindMaterial;
-        private int evadeMaterial;
-        private int luckMaterial;
-        private int shiftaLevel;
-        private int debandLevel;
-        private WeaponModel weapon = new(itemPMT);
-        private ArmorModel armor = new(itemPMT);
-        private UnitModel unit1 = new(itemPMT);
-        private UnitModel unit2 = new(itemPMT);
-        private UnitModel unit3 = new(itemPMT);
-        private UnitModel unit4 = new(itemPMT);
-        private ShieldModel shield = new(itemPMT);
-        private MagModel mag = MagModel.Parse("Mag 5/0/0/0");
-
-        public ClassRace? ClassRaceSelection
+    public int Level
+    {
+        get { return Character.Level; }
+        set
         {
-            get { return classRaceSelection; }
-            set { classRaceSelection = value; RefreshStats(); }
+            if (value < 1) value = 1;
+            if (value > 200) value = 200;
+            Character.Level = value; RefreshStats();
         }
+    }
 
-        public int Level
+    public int HP { get; set; }
+    public int TP { get; set; }
+    public int BaseATP
+    {
+        get
         {
-            get { return level; }
-            set
-            {
-                if (value < 1) value = 1;
-                if (value > 200) value = 200;
-                level = value; RefreshStats();
-            }
-        }
-
-        public int HP { get; set; }
-        public int TP { get; set; }
-        public int BaseATP
-        {
-            get
-            {
-                if (!ClassRaceSelection.HasValue) return 0;
-                int indexClass = (int)ClassRaceSelection;
-                var levelDeltas = levelTable.LevelDeltas[indexClass].Take(Level);
-                return levelTable.BaseStats[indexClass].ATP + levelDeltas.Sum(l => l.ATP) + GetATPBonus() + (PowerMaterial + Mag.Pow) * 2;
-            }
-        }
-        public int ATP { get; set; }
-        public int DFP { get; set; }
-        public int BaseMST
-        {
-            get
-            {
-                if (!ClassRaceSelection.HasValue) return 0;
-                int indexClass = (int)ClassRaceSelection;
-                var levelDeltas = levelTable.LevelDeltas[indexClass].Take(Level);
-                return levelTable.BaseStats[indexClass].MST + levelDeltas.Sum(l => l.MST) + (MindMaterial + Mag.Mind) * 2;
-            }
-        }
-        public int MST { get; set; }
-        public float BaseATA
-        {
-            get
-            {
-                if (!ClassRaceSelection.HasValue) return 0;
-                int indexClass = (int)ClassRaceSelection;
-                var levelDeltas = levelTable.LevelDeltas[indexClass].Take(Level);
-                return levelTable.BaseStats[indexClass].ATA + levelDeltas.Sum(l => l.ATA) / 10f + GetATABonus() + Mag.Dex / 2;
-            }
-        }
-        public float ATA { get; set; }
-        public int EVP { get; set; }
-        public int LCK { get; set; }
-
-        public int HPMaterial
-        {
-            get { return hpMaterial; }
-            set
-            {
-                if (value < 0) value = 0;
-                if (value > 125) value = 125;
-                hpMaterial = value; RefreshStats();
-            }
-        }
-
-        public int TPMaterial
-        {
-            get { return tpMaterial; }
-            set
-            {
-                if (value < 0) value = 0;
-                if (value > MaxTPMaterial()) value = MaxTPMaterial();
-                tpMaterial = value; RefreshStats();
-            }
-        }
-
-        public int PowerMaterial
-        {
-            get { return powerMaterial; }
-            set
-            {
-                if (value < 0) value = 0;
-                var maxMaterial = MaxPowerDefEvadeMaterial();
-                if (value > maxMaterial) value = maxMaterial;
-                var totalMaterial = value + DefMaterial + MindMaterial + EvadeMaterial + LuckMaterial;
-                if (totalMaterial > maxMaterial) value -= totalMaterial - maxMaterial;
-                powerMaterial = value; RefreshStats();
-            }
-        }
-
-        public int DefMaterial
-        {
-            get { return defMaterial; }
-            set
-            {
-                if (value < 0) value = 0;
-                var maxMaterial = MaxPowerDefEvadeMaterial();
-                if (value > maxMaterial) value = maxMaterial;
-                var totalMaterial = value + PowerMaterial + MindMaterial + EvadeMaterial + LuckMaterial;
-                if (totalMaterial > maxMaterial) value -= totalMaterial - maxMaterial;
-                defMaterial = value; RefreshStats();
-            }
-        }
-
-        public int MindMaterial
-        {
-            get { return mindMaterial; }
-            set
-            {
-                if (value < 0) value = 0;
-                var maxMaterial = MaxMindMaterial();
-                if (value > maxMaterial) value = maxMaterial;
-                var totalMaterial = value + PowerMaterial + DefMaterial + EvadeMaterial + LuckMaterial;
-                if (totalMaterial > maxMaterial) value -= totalMaterial - maxMaterial;
-                mindMaterial = value; RefreshStats();
-            }
-        }
-
-        public int EvadeMaterial
-        {
-            get { return evadeMaterial; }
-            set
-            {
-                if (value < 0) value = 0;
-                var maxMaterial = MaxPowerDefEvadeMaterial();
-                if (value > maxMaterial) value = maxMaterial;
-                var totalMaterial = value + PowerMaterial + DefMaterial + MindMaterial + LuckMaterial;
-                if (totalMaterial > maxMaterial) value -= totalMaterial - maxMaterial;
-                evadeMaterial = value; RefreshStats();
-            }
-        }
-
-        public int LuckMaterial
-        {
-            get { return luckMaterial; }
-            set
-            {
-                if (value < 0) value = 0;
-                if (value > 45) value = 45;
-                var totalMaterial = value + PowerMaterial + DefMaterial + MindMaterial + EvadeMaterial;
-                if (totalMaterial > MaxPowerDefEvadeMaterial()) value -= totalMaterial - MaxPowerDefEvadeMaterial();
-                luckMaterial = value; RefreshStats();
-            }
-        }
-
-        public int ShiftaLevel
-        {
-            get { return shiftaLevel; }
-            set { shiftaLevel = value; RefreshStats(); }
-        }
-
-        public int DebandLevel
-        {
-            get { return debandLevel; }
-            set { debandLevel = value; RefreshStats(); }
-        }
-
-        public string WeaponName => Weapon.ToString();
-        public WeaponModel Weapon
-        {
-            get { return weapon; }
-            set { weapon = value; RefreshStats(); }
-        }
-
-        public string ArmorName => Armor.ToString();
-        public ArmorModel Armor
-        {
-            get { return armor; }
-            set { armor = value; RefreshStats(); }
-        }
-
-        public string Unit1Name => Unit1.ToString();
-        public UnitModel Unit1
-        {
-            get { return unit1; }
-            set { unit1 = value; RefreshStats(); }
-        }
-
-        public string Unit2Name => Unit2.ToString();
-        public UnitModel Unit2
-        {
-            get { return unit2; }
-            set { unit2 = value; RefreshStats(); }
-        }
-
-        public string Unit3Name => Unit3.ToString();
-        public UnitModel Unit3
-        {
-            get { return unit3; }
-            set { unit3 = value; RefreshStats(); }
-        }
-
-        public string Unit4Name => Unit4.ToString();
-        public UnitModel Unit4
-        {
-            get { return unit4; }
-            set { unit4 = value; RefreshStats(); }
-        }
-
-        public string ShieldName => Shield.ToString();
-        public ShieldModel Shield
-        {
-            get { return shield; }
-            set { shield = value; RefreshStats(); }
-        }
-
-        public string MagName => Mag.ToString();
-        public MagModel Mag
-        {
-            get { return mag; }
-            set { mag = value; RefreshStats(); }
-        }
-
-        public void RefreshStats()
-        {
-            if (!ClassRaceSelection.HasValue)
-            {
-                // Reset values.
-                if (Level != 1) Level = 1;
-                HP = 0;
-                TP = 0;
-                ATP = 0;
-                DFP = 0;
-                MST = 0;
-                ATA = 0;
-                EVP = 0;
-                LCK = 0;
-                if (HPMaterial != 0) HPMaterial = 0;
-                if (TPMaterial != 0) TPMaterial = 0;
-                if (PowerMaterial != 0) PowerMaterial = 0;
-                if (DefMaterial != 0) DefMaterial = 0;
-                if (MindMaterial != 0) MindMaterial = 0;
-                if (EvadeMaterial != 0) EvadeMaterial = 0;
-                if (LuckMaterial != 0) LuckMaterial = 0;
-                if (ShiftaLevel != 0) ShiftaLevel = 0;
-                if (DebandLevel != 0) DebandLevel = 0;
-                if (WeaponName != "") Weapon = new(itemPMT);
-                if (ArmorName != "") Armor = new(itemPMT);
-                if (Unit1Name != "") Unit1 = new(itemPMT);
-                if (Unit2Name != "") Unit2 = new(itemPMT);
-                if (Unit3Name != "") Unit3 = new(itemPMT);
-                if (Unit4Name != "") Unit4 = new(itemPMT);
-                if (ShieldName != "") Shield = new(itemPMT);
-                if (MagName != "Mag 5/0/0/0") Mag = MagModel.Parse("Mag 5/0/0/0");
-                return;
-            }
-
+            if (!ClassRaceSelection.HasValue) return 0;
             int indexClass = (int)ClassRaceSelection;
-
-            // Clamp materials numbers that can change with class selection.
-            var maxMaterial = MaxPowerDefEvadeMaterial();
-            if (TPMaterial > MaxTPMaterial()) TPMaterial = MaxTPMaterial();
-            if (PowerMaterial > maxMaterial) PowerMaterial = maxMaterial;
-            if (DefMaterial > maxMaterial) DefMaterial = maxMaterial;
-            if (MindMaterial > MaxMindMaterial()) MindMaterial = MaxMindMaterial();
-            if (EvadeMaterial > maxMaterial) EvadeMaterial = maxMaterial;
-            if (PowerMaterial + DefMaterial + MindMaterial + EvadeMaterial + LuckMaterial > maxMaterial)
-            {
-                PowerMaterial = 0;
-                DefMaterial = 0;
-                MindMaterial = 0;
-                EvadeMaterial = 0;
-                LuckMaterial = 0;
-            }
-
-            // Reset equipement that don't meet requirements.
-            if (Weapon.Model != null && !GetItemWithRequirements(Weapon.Model).Any()) Weapon = new(itemPMT);
-            if (Armor.Model != null && !GetItemWithRequirements(Armor.Model).Any()) Armor = new(itemPMT);
-            if (Armor.NumberSlots < 1 && Unit1.Model != null) Unit1 = new(itemPMT);
-            if (Armor.NumberSlots < 2 && Unit2.Model != null) Unit2 = new(itemPMT);
-            if (Armor.NumberSlots < 3 && Unit3.Model != null) Unit3 = new(itemPMT);
-            if (Armor.NumberSlots < 4 && Unit4.Model != null) Unit4 = new(itemPMT);
-            if (Shield.Model != null && !GetItemWithRequirements(Shield.Model).Any()) Shield = new(itemPMT);
-
-            // Calculate stats.
-            var baseStats = levelTable.BaseStats[indexClass];
             var levelDeltas = levelTable.LevelDeltas[indexClass].Take(Level);
-            var baseATP = BaseATP + Weapon.BaseAtp + GetEveryStatBoost().Sum(s => CalculateStatBoost("ATP", s.Item1, s.Item2));
-            var baseDFP = baseStats.DFP + levelDeltas.Sum(l => l.DFP) + DefMaterial * 2 + Armor.Dfp + Shield.Dfp
-                + GetEveryStatBoost().Sum(s => CalculateStatBoost("DFP", s.Item1, s.Item2)) + Mag.Def;
-            var baseMST = BaseMST + Weapon.Mst + GetEveryStatBoost().Sum(s => CalculateStatBoost("MST", s.Item1, s.Item2));
-            HP = (int)Math.Floor((baseStats.HP + levelDeltas.Sum(l => l.HP) + Level - 1) * GetHPMultiplier()) + HPMaterial * 2
-                + GetEveryStatBoost().Sum(s => CalculateStatBoost("HP", s.Item1, s.Item2));
-            TP = ClassRaceSelection switch
-            {
-                ClassRace.Humar or ClassRace.Hunewearl or ClassRace.Ramar or ClassRace.Ramarl
-                    => baseMST + Level - 1 + GetEveryStatBoost().Sum(s => CalculateStatBoost("TP", s.Item1, s.Item2)),
-                ClassRace.Fomar or ClassRace.Fomarl or ClassRace.Fonewm or ClassRace.Fonewearl
-                    => (int)Math.Floor((baseMST + Level - 1) * 1.5 + GetEveryStatBoost().Sum(s => CalculateStatBoost("TP", s.Item1, s.Item2))),
-                _ => 0
-            } + TPMaterial * 2;
-            ATP = (int)Math.Floor(baseATP + baseATP * GetShiftaDebandMultiplier(ShiftaLevel)) + Weapon.Atp - Weapon.BaseAtp;
-            DFP = (int)Math.Floor(baseDFP + baseDFP * GetShiftaDebandMultiplier(DebandLevel));
-            MST = baseMST;
-            ATA = BaseATA + Weapon.Ata + GetEveryStatBoost().Sum(s => CalculateStatBoost("ATA", s.Item1, s.Item2));
-            EVP = baseStats.EVP + levelDeltas.Sum(l => l.EVP) + EvadeMaterial * 2 + Armor.Evp + Shield.Evp
-                + GetEveryStatBoost().Sum(s => CalculateStatBoost("EVP", s.Item1, s.Item2));
-            LCK = baseStats.LCK + levelDeltas.Sum(l => l.LCK) + LuckMaterial * 2
-                + GetEveryStatBoost().Sum(s => CalculateStatBoost("LCK", s.Item1, s.Item2));
+            return levelTable.BaseStats[indexClass].ATP + levelDeltas.Sum(l => l.ATP) + GetATPBonus() + (PowerMaterial + Mag.Pow) * 2;
+        }
+    }
+    public int ATP { get; set; }
+    public int DFP { get; set; }
+    public int BaseMST
+    {
+        get
+        {
+            if (!ClassRaceSelection.HasValue) return 0;
+            int indexClass = (int)ClassRaceSelection;
+            var levelDeltas = levelTable.LevelDeltas[indexClass].Take(Level);
+            return levelTable.BaseStats[indexClass].MST + levelDeltas.Sum(l => l.MST) + (MindMaterial + Mag.Mind) * 2;
+        }
+    }
+    public int MST { get; set; }
+    public float BaseATA
+    {
+        get
+        {
+            if (!ClassRaceSelection.HasValue) return 0;
+            int indexClass = (int)ClassRaceSelection;
+            var levelDeltas = levelTable.LevelDeltas[indexClass].Take(Level);
+            return levelTable.BaseStats[indexClass].ATA + levelDeltas.Sum(l => l.ATA) / 10f + GetATABonus() + Mag.Dex / 2;
+        }
+    }
+    public float ATA { get; set; }
+    public int EVP { get; set; }
+    public int LCK { get; set; }
+
+    public int HPMaterial
+    {
+        get { return Character.HPMaterial; }
+        set
+        {
+            if (value < 0) value = 0;
+            if (value > 125) value = 125;
+            Character.HPMaterial = value; RefreshStats();
+        }
+    }
+
+    public int TPMaterial
+    {
+        get { return Character.TPMaterial; }
+        set
+        {
+            if (value < 0) value = 0;
+            if (value > MaxTPMaterial()) value = MaxTPMaterial();
+            Character.TPMaterial = value; RefreshStats();
+        }
+    }
+
+    public int PowerMaterial
+    {
+        get { return Character.PowerMaterial; }
+        set
+        {
+            if (value < 0) value = 0;
+            var maxMaterial = MaxPowerDefEvadeMaterial();
+            if (value > maxMaterial) value = maxMaterial;
+            var totalMaterial = value + DefMaterial + MindMaterial + EvadeMaterial + LuckMaterial;
+            if (totalMaterial > maxMaterial) value -= totalMaterial - maxMaterial;
+            Character.PowerMaterial = value; RefreshStats();
+        }
+    }
+
+    public int DefMaterial
+    {
+        get { return Character.DefMaterial; }
+        set
+        {
+            if (value < 0) value = 0;
+            var maxMaterial = MaxPowerDefEvadeMaterial();
+            if (value > maxMaterial) value = maxMaterial;
+            var totalMaterial = value + PowerMaterial + MindMaterial + EvadeMaterial + LuckMaterial;
+            if (totalMaterial > maxMaterial) value -= totalMaterial - maxMaterial;
+            Character.DefMaterial = value; RefreshStats();
+        }
+    }
+
+    public int MindMaterial
+    {
+        get { return Character.MindMaterial; }
+        set
+        {
+            var maxMaterial = MaxMindMaterial();
+            if (value > maxMaterial) value = maxMaterial;
+            var totalMaterial = value + PowerMaterial + DefMaterial + EvadeMaterial + LuckMaterial;
+            if (totalMaterial > maxMaterial) value -= totalMaterial - maxMaterial;
+            if (value < 0) value = 0;
+            Character.MindMaterial = value; RefreshStats();
+        }
+    }
+
+    public int EvadeMaterial
+    {
+        get { return Character.EvadeMaterial; }
+        set
+        {
+            if (value < 0) value = 0;
+            var maxMaterial = MaxPowerDefEvadeMaterial();
+            if (value > maxMaterial) value = maxMaterial;
+            var totalMaterial = value + PowerMaterial + DefMaterial + MindMaterial + LuckMaterial;
+            if (totalMaterial > maxMaterial) value -= totalMaterial - maxMaterial;
+            Character.EvadeMaterial = value; RefreshStats();
+        }
+    }
+
+    public int LuckMaterial
+    {
+        get { return Character.LuckMaterial; }
+        set
+        {
+            if (value < 0) value = 0;
+            if (value > 45) value = 45;
+            var totalMaterial = value + PowerMaterial + DefMaterial + MindMaterial + EvadeMaterial;
+            if (totalMaterial > MaxPowerDefEvadeMaterial()) value -= totalMaterial - MaxPowerDefEvadeMaterial();
+            Character.LuckMaterial = value; RefreshStats();
+        }
+    }
+
+    public int ShiftaLevel
+    {
+        get { return Character.ShiftaLevel; }
+        set { Character.ShiftaLevel = value; RefreshStats(); }
+    }
+
+    public int DebandLevel
+    {
+        get { return Character.DebandLevel; }
+        set { Character.DebandLevel = value; RefreshStats(); }
+    }
+
+    public WeaponModel Weapon
+    {
+        get { return weapon; }
+        set { weapon = value; RefreshStats(); }
+    }
+
+    public ArmorModel Armor
+    {
+        get { return armor; }
+        set { armor = value; RefreshStats(); }
+    }
+
+    public UnitModel Unit1
+    {
+        get { return unit1; }
+        set { unit1 = value; RefreshStats(); }
+    }
+
+    public UnitModel Unit2
+    {
+        get { return unit2; }
+        set { unit2 = value; RefreshStats(); }
+    }
+
+    public UnitModel Unit3
+    {
+        get { return unit3; }
+        set { unit3 = value; RefreshStats(); }
+    }
+
+    public UnitModel Unit4
+    {
+        get { return unit4; }
+        set { unit4 = value; RefreshStats(); }
+    }
+
+    public ShieldModel Shield
+    {
+        get { return shield; }
+        set { shield = value; RefreshStats(); }
+    }
+
+    public MagModel Mag
+    {
+        get { return mag; }
+        set { mag = value; RefreshStats(); }
+    }
+
+    public void RefreshStats()
+    {
+        if (!ClassRaceSelection.HasValue)
+        {
+            // Reset values.
+            if (Level != 1) Character.Level = 1;
+            HP = 0;
+            TP = 0;
+            ATP = 0;
+            DFP = 0;
+            MST = 0;
+            ATA = 0;
+            EVP = 0;
+            LCK = 0;
+            if (HPMaterial != 0) Character.HPMaterial = 0;
+            if (TPMaterial != 0) Character.TPMaterial = 0;
+            if (PowerMaterial != 0) Character.PowerMaterial = 0;
+            if (DefMaterial != 0) Character.DefMaterial = 0;
+            if (MindMaterial != 0) Character.MindMaterial = 0;
+            if (EvadeMaterial != 0) Character.EvadeMaterial = 0;
+            if (LuckMaterial != 0) Character.LuckMaterial = 0;
+            if (ShiftaLevel != 0) Character.ShiftaLevel = 0;
+            if (DebandLevel != 0) Character.DebandLevel = 0;
+            if (Character.WeaponName != "") { Character.WeaponName = ""; Weapon = new(itemPMT); }
+            if (Character.ArmorName != "") { Character.ArmorName = ""; Armor = new(itemPMT); }
+            if (Character.Unit1Name != "") { Character.Unit1Name = ""; Unit1 = new(itemPMT); }
+            if (Character.Unit2Name != "") { Character.Unit2Name = ""; Unit2 = new(itemPMT); }
+            if (Character.Unit3Name != "") { Character.Unit3Name = ""; Unit3 = new(itemPMT); }
+            if (Character.Unit4Name != "") { Character.Unit4Name = ""; Unit4 = new(itemPMT); }
+            if (Character.ShieldName != "") { Character.ShieldName = ""; Shield = new(itemPMT); }
+            if (Character.MagName != "Mag 5/0/0/0") { Character.MagName = "Mag 5/0/0/0"; Mag = MagModel.Parse("Mag 5/0/0/0"); }
+            return;
         }
 
-        private double GetHPMultiplier() => ClassRaceSelection switch
-        {
-            ClassRace.Ramar or ClassRace.Ramarl or ClassRace.Racast or ClassRace.Racaseal => 1.85,
-            ClassRace.Fomar or ClassRace.Fomarl or ClassRace.Fonewm or ClassRace.Fonewearl => 1.45,
-            _ => 2
-        };
+        int indexClass = (int)ClassRaceSelection;
 
-        private int GetATPBonus() => ClassRaceSelection switch
+        // Clamp materials numbers that can change with class selection.
+        var maxMaterial = MaxPowerDefEvadeMaterial();
+        if (TPMaterial > MaxTPMaterial()) TPMaterial = MaxTPMaterial();
+        if (PowerMaterial > maxMaterial) PowerMaterial = maxMaterial;
+        if (DefMaterial > maxMaterial) DefMaterial = maxMaterial;
+        if (MindMaterial > MaxMindMaterial()) MindMaterial = MaxMindMaterial();
+        if (EvadeMaterial > maxMaterial) EvadeMaterial = maxMaterial;
+        if (PowerMaterial + DefMaterial + MindMaterial + EvadeMaterial + LuckMaterial > maxMaterial)
         {
-            ClassRace.Humar or ClassRace.Hunewearl or ClassRace.Hucast or ClassRace.Hucaseal => 10,
-            ClassRace.Ramar or ClassRace.Ramarl or ClassRace.Racast or ClassRace.Racaseal => 5,
-            ClassRace.Fomar or ClassRace.Fomarl or ClassRace.Fonewm or ClassRace.Fonewearl => 3,
+            PowerMaterial = 0;
+            DefMaterial = 0;
+            MindMaterial = 0;
+            EvadeMaterial = 0;
+            LuckMaterial = 0;
+        }
+
+        // Set equipment names.
+        if (Character.WeaponName != Weapon.ToString()) Character.WeaponName = Weapon.ToString();
+        if (Character.ArmorName != Armor.ToString()) Character.ArmorName = Armor.ToString();
+        if (Character.Unit1Name != Unit1.ToString()) Character.Unit1Name = Unit1.ToString();
+        if (Character.Unit2Name != Unit2.ToString()) Character.Unit2Name = Unit2.ToString();
+        if (Character.Unit3Name != Unit3.ToString()) Character.Unit3Name = Unit3.ToString();
+        if (Character.Unit4Name != Unit4.ToString()) Character.Unit4Name = Unit4.ToString();
+        if (Character.ShieldName != Shield.ToString()) Character.ShieldName = Shield.ToString();
+        if (Character.MagName != Mag.ToString()) Character.MagName = Mag.ToString();
+
+        // Reset equipment that don't meet requirements.
+        if (Weapon.Model != null && !GetItemWithRequirements(Weapon.Model).Any()) Weapon = new(itemPMT);
+        if (Armor.Model != null && !GetItemWithRequirements(Armor.Model).Any()) Armor = new(itemPMT);
+        if (Armor.NumberSlots < 1 && Unit1.Model != null) Unit1 = new(itemPMT);
+        if (Armor.NumberSlots < 2 && Unit2.Model != null) Unit2 = new(itemPMT);
+        if (Armor.NumberSlots < 3 && Unit3.Model != null) Unit3 = new(itemPMT);
+        if (Armor.NumberSlots < 4 && Unit4.Model != null) Unit4 = new(itemPMT);
+        if (Shield.Model != null && !GetItemWithRequirements(Shield.Model).Any()) Shield = new(itemPMT);
+
+        // Calculate stats.
+        var baseStats = levelTable.BaseStats[indexClass];
+        var levelDeltas = levelTable.LevelDeltas[indexClass].Take(Level);
+        var baseATP = BaseATP + Weapon.BaseAtp + GetEveryStatBoost().Sum(s => CalculateStatBoost("ATP", s.Item1, s.Item2));
+        var baseDFP = baseStats.DFP + levelDeltas.Sum(l => l.DFP) + DefMaterial * 2 + Armor.Dfp + Shield.Dfp
+            + GetEveryStatBoost().Sum(s => CalculateStatBoost("DFP", s.Item1, s.Item2)) + Mag.Def;
+        var baseMST = BaseMST + Weapon.Mst + GetEveryStatBoost().Sum(s => CalculateStatBoost("MST", s.Item1, s.Item2));
+        HP = (int)Math.Floor((baseStats.HP + levelDeltas.Sum(l => l.HP) + Level - 1) * GetHPMultiplier()) + HPMaterial * 2
+            + GetEveryStatBoost().Sum(s => CalculateStatBoost("HP", s.Item1, s.Item2));
+        TP = ClassRaceSelection switch
+        {
+            ClassRace.Humar or ClassRace.Hunewearl or ClassRace.Ramar or ClassRace.Ramarl
+                => baseMST + Level - 1 + GetEveryStatBoost().Sum(s => CalculateStatBoost("TP", s.Item1, s.Item2)),
+            ClassRace.Fomar or ClassRace.Fomarl or ClassRace.Fonewm or ClassRace.Fonewearl
+                => (int)Math.Floor((baseMST + Level - 1) * 1.5 + GetEveryStatBoost().Sum(s => CalculateStatBoost("TP", s.Item1, s.Item2))),
             _ => 0
-        };
+        } + TPMaterial * 2;
+        ATP = (int)Math.Floor(baseATP + baseATP * GetShiftaDebandMultiplier(ShiftaLevel)) + Weapon.Atp - Weapon.BaseAtp;
+        DFP = (int)Math.Floor(baseDFP + baseDFP * GetShiftaDebandMultiplier(DebandLevel));
+        MST = baseMST;
+        ATA = BaseATA + Weapon.Ata + GetEveryStatBoost().Sum(s => CalculateStatBoost("ATA", s.Item1, s.Item2));
+        EVP = baseStats.EVP + levelDeltas.Sum(l => l.EVP) + EvadeMaterial * 2 + Armor.Evp + Shield.Evp
+            + GetEveryStatBoost().Sum(s => CalculateStatBoost("EVP", s.Item1, s.Item2));
+        LCK = baseStats.LCK + levelDeltas.Sum(l => l.LCK) + LuckMaterial * 2
+            + GetEveryStatBoost().Sum(s => CalculateStatBoost("LCK", s.Item1, s.Item2));
 
-        private int GetATABonus() => ClassRaceSelection switch
+        localStorage.SetItemAsync("characters", new[] { Character });
+    }
+
+    private double GetHPMultiplier() => ClassRaceSelection switch
+    {
+        ClassRace.Ramar or ClassRace.Ramarl or ClassRace.Racast or ClassRace.Racaseal => 1.85,
+        ClassRace.Fomar or ClassRace.Fomarl or ClassRace.Fonewm or ClassRace.Fonewearl => 1.45,
+        _ => 2
+    };
+
+    private int GetATPBonus() => ClassRaceSelection switch
+    {
+        ClassRace.Humar or ClassRace.Hunewearl or ClassRace.Hucast or ClassRace.Hucaseal => 10,
+        ClassRace.Ramar or ClassRace.Ramarl or ClassRace.Racast or ClassRace.Racaseal => 5,
+        ClassRace.Fomar or ClassRace.Fomarl or ClassRace.Fonewm or ClassRace.Fonewearl => 3,
+        _ => 0
+    };
+
+    private int GetATABonus() => ClassRaceSelection switch
+    {
+        ClassRace.Humar or ClassRace.Hunewearl => 38,
+        ClassRace.Hucast => 29,
+        ClassRace.Hucaseal => 36,
+        ClassRace.Ramar => 40,
+        ClassRace.Ramarl or ClassRace.Racaseal => 32,
+        ClassRace.Racast => 30,
+        ClassRace.Fomar or ClassRace.Fomarl => 48,
+        ClassRace.Fonewm => 49,
+        ClassRace.Fonewearl => 51,
+        _ => 0
+    };
+
+    private IEnumerable<ItemModel> GetItemWithRequirements(params ItemModel[] items)
+    {
+        if (!ClassRaceSelection.HasValue) yield break;
+
+        foreach (var (item, weapon) in items.Join(itemPMT.Weapons, i => i.Identifier, w => w.Key, (i, w) => (item: i, weapon: w.Value)))
         {
-            ClassRace.Humar or ClassRace.Hunewearl => 38,
-            ClassRace.Hucast => 29,
-            ClassRace.Hucaseal => 36,
-            ClassRace.Ramar => 40,
-            ClassRace.Ramarl or ClassRace.Racaseal => 32,
-            ClassRace.Racast => 30,
-            ClassRace.Fomar or ClassRace.Fomarl => 48,
-            ClassRace.Fonewm => 49,
-            ClassRace.Fonewearl => 51,
-            _ => 0
-        };
-
-        public IEnumerable<ItemModel> GetItemWithRequirements(params ItemModel[] items)
-        {
-            if (!ClassRaceSelection.HasValue) yield break;
-
-            foreach (var (item, weapon) in items.Join(itemPMT.Weapons, i => i.Identifier, w => w.Key, (i, w) => (item: i, weapon: w.Value)))
-            {
-                bool meetRequirement = weapon.ClassFlags.HasFlag(ItemPMTService.ClassFlagsByClass[(int)ClassRaceSelection]);
-                meetRequirement &= BaseATP >= weapon.ATPRequired;
-                meetRequirement &= BaseATA >= weapon.ATARequired;
-                meetRequirement &= BaseMST >= weapon.MSTRequired;
-                if (meetRequirement) yield return item;
-            }
-
-            foreach (var (item, armor) in items.Join(itemPMT.Armors, i => i.Identifier, a => a.Key, (i, a) => (item: i, armor: a.Value)))
-            {
-                bool meetRequirement = armor.ClassFlags.HasFlag(ItemPMTService.ClassFlagsByClass[(int)ClassRaceSelection]);
-                meetRequirement &= Level >= armor.RequiredLevel;
-                if (meetRequirement) yield return item;
-            }
-
-            foreach (var (item, unit) in items.Join(itemPMT.Units, i => i.Identifier, u => u.Key, (i, u) => (item: i, unit: u.Value)))
-            {
-                yield return item;
-            }
+            bool meetRequirement = weapon.ClassFlags.HasFlag(ItemPMTService.ClassFlagsByClass[(int)ClassRaceSelection]);
+            meetRequirement &= BaseATP >= weapon.ATPRequired;
+            meetRequirement &= BaseATA >= weapon.ATARequired;
+            meetRequirement &= BaseMST >= weapon.MSTRequired;
+            if (meetRequirement) yield return item;
         }
 
-        private IEnumerable<Tuple<string, int>> GetEveryStatBoost()
-            => Weapon.GetStatBoosts().Concat(Armor.GetStatBoosts().Concat(Unit1.GetStatBoosts().Concat(Unit2.GetStatBoosts().Concat(Unit3.GetStatBoosts().Concat(Unit4.GetStatBoosts().Concat(Shield.GetStatBoosts()))))));
-
-        private int CalculateStatBoost(string stat, string statBoost, int amount)
+        foreach (var (item, armor) in items.Join(itemPMT.Armors, i => i.Identifier, a => a.Key, (i, a) => (item: i, armor: a.Value)))
         {
-            if (ClassRaceSelection is ClassRace.Hucast or ClassRace.Hucaseal or ClassRace.Racast or ClassRace.Racaseal && stat is "MST" or "TP") return 0;
-            if (statBoost == stat || statBoost == $"+{stat}" || statBoost == "+All" && stat != "HP") return amount;
-            if (statBoost == $"-{stat}" || statBoost == "-All" && stat != "HP") return -1 * amount;
-            return 0;
+            bool meetRequirement = armor.ClassFlags.HasFlag(ItemPMTService.ClassFlagsByClass[(int)ClassRaceSelection]);
+            meetRequirement &= Level >= armor.RequiredLevel;
+            if (meetRequirement) yield return item;
         }
 
-        private int MaxTPMaterial() => ClassRaceSelection switch
+        foreach (var (item, unit) in items.Join(itemPMT.Units, i => i.Identifier, u => u.Key, (i, u) => (item: i, unit: u.Value)))
         {
-            null or ClassRace.Hucast or ClassRace.Hucaseal or ClassRace.Racast or ClassRace.Racaseal => 0,
-            _ => 125
-        };
+            yield return item;
+        }
+    }
 
-        private int MaxPowerDefEvadeMaterial() => ClassRaceSelection.HasValue ? maxMats[(int)ClassRaceSelection] : 0;
+    private IEnumerable<Tuple<string, int>> GetEveryStatBoost()
+        => Weapon.GetStatBoosts().Concat(Armor.GetStatBoosts().Concat(Unit1.GetStatBoosts().Concat(Unit2.GetStatBoosts().Concat(Unit3.GetStatBoosts().Concat(Unit4.GetStatBoosts().Concat(Shield.GetStatBoosts()))))));
 
-        private int MaxMindMaterial() => ClassRaceSelection switch
-        {
-            null or ClassRace.Hucast or ClassRace.Hucaseal or ClassRace.Racast or ClassRace.Racaseal => 0,
-            _ => maxMats[(int)ClassRaceSelection]
-        };
+    private int CalculateStatBoost(string stat, string statBoost, int amount)
+    {
+        if (ClassRaceSelection is ClassRace.Hucast or ClassRace.Hucaseal or ClassRace.Racast or ClassRace.Racaseal && stat is "MST" or "TP") return 0;
+        if (statBoost == stat || statBoost == $"+{stat}" || statBoost == "+All" && stat != "HP") return amount;
+        if (statBoost == $"-{stat}" || statBoost == "-All" && stat != "HP") return -1 * amount;
+        return 0;
+    }
 
-        private double GetShiftaDebandMultiplier(int shiftaDebandLevel)
-            => shiftaDebandLevel == 0 ? 0 : Math.Sign(shiftaDebandLevel) * (1.3 * (Math.Abs(shiftaDebandLevel) - 1) + 10) / 100;
-        public TimeSpan GetShiftaDebandDuration(int shiftaDebandLevel)
-            => shiftaDebandLevel == 0 ? TimeSpan.Zero : new TimeSpan(0, 0, 10 * (Math.Abs(shiftaDebandLevel) - 1) + 40);
+    private int MaxTPMaterial() => ClassRaceSelection switch
+    {
+        null or ClassRace.Hucast or ClassRace.Hucaseal or ClassRace.Racast or ClassRace.Racaseal => 0,
+        _ => 125
+    };
+
+    private int MaxPowerDefEvadeMaterial() => ClassRaceSelection.HasValue ? maxMats[(int)ClassRaceSelection] : 0;
+
+    private int MaxMindMaterial() => ClassRaceSelection switch
+    {
+        null or ClassRace.Hucast or ClassRace.Hucaseal or ClassRace.Racast or ClassRace.Racaseal => 0,
+        _ => maxMats[(int)ClassRaceSelection]
+    };
+
+    private double GetShiftaDebandMultiplier(int shiftaDebandLevel)
+        => shiftaDebandLevel == 0 ? 0 : Math.Sign(shiftaDebandLevel) * (1.3 * (Math.Abs(shiftaDebandLevel) - 1) + 10) / 100;
+    private TimeSpan GetShiftaDebandDuration(int shiftaDebandLevel)
+        => shiftaDebandLevel == 0 ? TimeSpan.Zero : new TimeSpan(0, 0, 10 * (Math.Abs(shiftaDebandLevel) - 1) + 40);
+
+    public class CharacterModel
+    {
+        public ClassRace? ClassRaceSelection { get; set; }
+
+        public int Level { get; set; } = 1;
+
+        public int HPMaterial { get; set; }
+        public int TPMaterial { get; set; }
+        public int PowerMaterial { get; set; }
+        public int DefMaterial { get; set; }
+        public int MindMaterial { get; set; }
+        public int EvadeMaterial { get; set; }
+        public int LuckMaterial { get; set; }
+
+        public int ShiftaLevel { get; set; }
+        public int DebandLevel { get; set; }
+
+        public string WeaponName { get; set; } = "";
+        public string ArmorName { get; set; } = "";
+        public string Unit1Name { get; set; } = "";
+        public string Unit2Name { get; set; } = "";
+        public string Unit3Name { get; set; } = "";
+        public string Unit4Name { get; set; } = "";
+        public string ShieldName { get; set; } = "";
+        public string MagName { get; set; } = "Mag 5/0/0/0";
     }
 
     public class WeaponModel(ItemPMTModel itemPMT)
@@ -987,6 +1029,16 @@ else
             var s = $"{Name}";
             if (Grind != 0) s += $" +{Grind}";
             return s;
+        }
+
+        public static WeaponModel Parse(ItemPMTModel itemPMT, ItemModel[] weapons, string weapon)
+        {
+            WeaponModel weaponModel = new(itemPMT);
+            Match m = Regex.Match(weapon, @"^(.+?)(?: \+(\d+?))?$", RegexOptions.Singleline);
+            if (!m.Success) return weaponModel;
+            weaponModel.Model = weapons.FirstOrDefault(i => i.Name == m.Groups[1].Value);
+            if (m.Groups[2].Success) weaponModel.Grind = int.Parse(m.Groups[2].Value);
+            return weaponModel;
         }
     }
 
@@ -1087,6 +1139,18 @@ else
             if (EvpBonus != 0) s += $" +{EvpBonus}EVP";
             return s;
         }
+
+        public static ArmorModel Parse(ItemPMTModel itemPMT, ItemModel[] armors, string armor)
+        {
+            ArmorModel armorModel = new(itemPMT);
+            Match m = Regex.Match(armor, @"^(.+?)(?: \((\d{1}) slots??\))?(?: \+(\d+?)DFP)?(?: \+(\d+?)EVP)?$", RegexOptions.Singleline);
+            if (!m.Success) return armorModel;
+            armorModel.Model = armors.FirstOrDefault(i => i.Name == m.Groups[1].Value);
+            if (m.Groups[2].Success) armorModel.NumberSlots = int.Parse(m.Groups[2].Value);
+            if (m.Groups[3].Success) armorModel.DfpBonus = int.Parse(m.Groups[3].Value);
+            if (m.Groups[4].Success) armorModel.EvpBonus = int.Parse(m.Groups[4].Value);
+            return armorModel;
+        }
     }
 
     public class UnitModel(ItemPMTModel itemPMT)
@@ -1175,9 +1239,30 @@ else
             if (Modifier < 0) s += new string('-', Modifier * -1);
             return s;
         }
+
+        public static UnitModel Parse(ItemPMTModel itemPMT, ItemModel[] units, string unit)
+        {
+            UnitModel unitModel = new(itemPMT);
+            Match m = Regex.Match(unit, @"^(.+?)(?: \+(\d+?)DFP)?(?: \+(\d+?)EVP)?$", RegexOptions.Singleline);
+            if (!m.Success) return unitModel;
+            unitModel.Model = units.FirstOrDefault(i => i.Name == m.Groups[1].Value);
+            return unitModel;
+        }
     }
 
-    public class ShieldModel(ItemPMTModel itemPMT) : BaseArmorModel(itemPMT) { }
+    public class ShieldModel(ItemPMTModel itemPMT) : BaseArmorModel(itemPMT)
+    {
+        public static ShieldModel Parse(ItemPMTModel itemPMT, ItemModel[] shields, string shield)
+        {
+            ShieldModel shieldModel = new(itemPMT);
+            Match m = Regex.Match(shield, @"^(.+?)(?: \+(\d+?)DFP)?(?: \+(\d+?)EVP)?$", RegexOptions.Singleline);
+            if (!m.Success) return shieldModel;
+            shieldModel.Model = shields.FirstOrDefault(i => i.Name == m.Groups[1].Value);
+            if (m.Groups[2].Success) shieldModel.DfpBonus = int.Parse(m.Groups[2].Value);
+            if (m.Groups[3].Success) shieldModel.EvpBonus = int.Parse(m.Groups[3].Value);
+            return shieldModel;
+        }
+    }
 
     public class MagModel
     {
@@ -1247,7 +1332,7 @@ else
         {
             MagModel magModel = new();
             Match m = Regex.Match(mag, @"^(.+?) (\d+?)/(\d+?)/(\d+?)/(\d+?)$", RegexOptions.Singleline);
-            if (!m.Success) throw new FormatException();
+            if (!m.Success) return magModel;
             magModel.Name = m.Groups[1].Value;
             magModel.Def = int.Parse(m.Groups[2].Value);
             magModel.Pow = int.Parse(m.Groups[3].Value);
