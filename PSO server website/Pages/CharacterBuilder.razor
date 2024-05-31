@@ -505,21 +505,22 @@ else
         {
             Character = characters[0];
             // Keep equipment names because they will be erased when assigning other equipment.
+            string weaponName = Character.WeaponName;
             string armorName = Character.ArmorName;
             string unit1Name = Character.Unit1Name;
             string unit2Name = Character.Unit2Name;
             string unit3Name = Character.Unit3Name;
             string unit4Name = Character.Unit4Name;
             string shieldName = Character.ShieldName;
-            string magName = Character.MagName;
-            Weapon = WeaponModel.Parse(itemPMT, weapons, Character.WeaponName);
+            // It's this order because each one helps with requirements for other equipment.
+            Mag = MagModel.Parse(Character.MagName);
             Armor = ArmorModel.Parse(itemPMT, armors, armorName);
             Unit1 = UnitModel.Parse(itemPMT, units, unit1Name);
             Unit2 = UnitModel.Parse(itemPMT, units, unit2Name);
             Unit3 = UnitModel.Parse(itemPMT, units, unit3Name);
             Unit4 = UnitModel.Parse(itemPMT, units, unit4Name);
             Shield = ShieldModel.Parse(itemPMT, shields, shieldName);
-            Mag = MagModel.Parse(magName);
+            Weapon = WeaponModel.Parse(itemPMT, weapons, weaponName);
             RefreshStats();
         }
         else
