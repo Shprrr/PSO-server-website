@@ -64,6 +64,8 @@ public class ItemPMTService(HttpClient http)
     private const int SpecialSize = 0x4;
     private const int StatBoostCount = 52;
     private const int StatBoostSize = 0x6;
+    private const int TechBoostCount = 44;
+    private const int TechBoostSize = 0x18;
 
     public async Task<ItemPMTModel> GetItemsAsync()
     {
@@ -155,7 +157,16 @@ public class ItemPMTService(HttpClient http)
             statBoosts.Add(BitConverterExtensions.ToStatBoostModel(fileBytes, tableAddr + StatBoostSize * j));
         }
 
-        return new ItemPMTModel { Weapons = weapons, Armors = armors, Units = units, Tools = tools, Specials = [.. specials], StatBoosts = [.. statBoosts] };
+        offset = startAddr + s_offset["tech-boost"];
+        tableAddr = BitConverter.ToInt32(fileBytes, offset);
+
+        List<TechBoostModel> techBoosts = [];
+        for (int j = 0; j < TechBoostCount; j++)
+        {
+            techBoosts.Add(BitConverterExtensions.ToTechBoostModel(fileBytes, tableAddr + TechBoostSize * j));
+        }
+
+        return new ItemPMTModel { Weapons = weapons, Armors = armors, Units = units, Tools = tools, Specials = [.. specials], StatBoosts = [.. statBoosts], TechBoosts = [.. techBoosts] };
     }
 }
 
@@ -168,6 +179,7 @@ public class ItemPMTModel
     public Dictionary<string, ToolModel> Tools { get; set; } = [];
     public SpecialModel[] Specials { get; set; } = [];
     public StatBoostModel[] StatBoosts { get; set; } = [];
+    public TechBoostModel[] TechBoosts { get; set; } = [];
 }
 
 public class ItemCountModel
@@ -276,6 +288,16 @@ public class StatBoostModel
     public byte Stat2 { get; set; }
     public ushort Amount1 { get; set; }
     public ushort Amount2 { get; set; }
+}
+
+public class TechBoostModel
+{
+    public int Tech1 { get; set; }
+    public float Boost1 { get; set; }
+    public int Tech2 { get; set; }
+    public float Boost2 { get; set; }
+    public int Tech3 { get; set; }
+    public float Boost3 { get; set; }
 }
 
 [Flags]
@@ -451,17 +473,37 @@ public static partial class BitConverterExtensions
 
     public static StatBoostModel ToStatBoostModel(byte[] array, int offset)
     {
-        StatBoostModel special = new()
+        StatBoostModel statBoost = new()
         {
             Stat1 = array[offset]
         };
-        offset += Marshal.SizeOf(special.Stat1);
-        special.Stat2 = array[offset];
-        offset += Marshal.SizeOf(special.Stat2);
-        special.Amount1 = BitConverter.ToUInt16(array, offset);
-        offset += Marshal.SizeOf(special.Amount1);
-        special.Amount2 = BitConverter.ToUInt16(array, offset);
-        _ = Marshal.SizeOf(special.Amount2);
-        return special;
+        offset += Marshal.SizeOf(statBoost.Stat1);
+        statBoost.Stat2 = array[offset];
+        offset += Marshal.SizeOf(statBoost.Stat2);
+        statBoost.Amount1 = BitConverter.ToUInt16(array, offset);
+        offset += Marshal.SizeOf(statBoost.Amount1);
+        statBoost.Amount2 = BitConverter.ToUInt16(array, offset);
+        _ = Marshal.SizeOf(statBoost.Amount2);
+        return statBoost;
+    }
+
+    public static TechBoostModel ToTechBoostModel(byte[] array, int offset)
+    {
+        TechBoostModel techBoost = new()
+        {
+            Tech1 = (sbyte)array[offset]
+        };
+        offset += Marshal.SizeOf(techBoost.Tech1);
+        techBoost.Boost1 = BitConverter.ToSingle(array, offset);
+        offset += Marshal.SizeOf(techBoost.Boost1);
+        techBoost.Tech2 = (sbyte)array[offset];
+        offset += Marshal.SizeOf(techBoost.Tech2);
+        techBoost.Boost2 = BitConverter.ToSingle(array, offset);
+        offset += Marshal.SizeOf(techBoost.Boost2);
+        techBoost.Tech3 = (sbyte)array[offset];
+        offset += Marshal.SizeOf(techBoost.Tech3);
+        techBoost.Boost3 = BitConverter.ToSingle(array, offset);
+        _ = Marshal.SizeOf(techBoost.Boost3);
+        return techBoost;
     }
 }

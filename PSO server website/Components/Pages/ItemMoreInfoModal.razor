@@ -65,10 +65,13 @@
                                     <div class="col">@statBoost.Value</div>
                                 </div>
                             }
-                            <div class="row">
-                                <div class="col">Tech Boost</div>
-                                <div class="col">@itemInfo.WeaponModel.TechBoost</div>
-                            </div>
+                            @foreach (var techBoost in GetTechBoosts())
+                            {
+                                <div class="row">
+                                    <div class="col">@techBoost.Key</div>
+                                    <div class="col">@techBoost.Value</div>
+                                </div>
+                            }
                             <div class="row">
                                 <div class="col">Max Grind</div>
                                 <div class="col">@itemInfo.WeaponModel.MaxGrind</div>
@@ -153,10 +156,13 @@
                                     <div class="col">@statBoost.Value</div>
                                 </div>
                             }
-                            <div class="row">
-                                <div class="col">Tech Boost</div>
-                                <div class="col">@itemInfo.ArmorModel.TechBoost</div>
-                            </div>
+                            @foreach (var techBoost in GetTechBoosts())
+                            {
+                                <div class="row">
+                                    <div class="col">@techBoost.Key</div>
+                                    <div class="col">@techBoost.Value</div>
+                                </div>
+                            }
                             <div class="row">
                                 <div class="col">Block Particle</div>
                                 <div class="col">@itemInfo.ArmorModel.BlockParticle</div>
@@ -347,6 +353,23 @@
                     break;
             }
         }
+    }
+
+    public IEnumerable<KeyValuePair<string, string>> GetTechBoosts()
+    {
+        if (itemInfo?.WeaponModel == null && itemInfo?.ArmorModel == null) yield break;
+
+        string[] techNames = ["Foie", "Gifoie", "Rafoie", "Barta", "Gibarta", "Rabarta", "Zonde", "Gizonde", "Razonde", "Grants", "Deband", "Jellen", "Zalure", "Shifta", "Ryuker", "Resta", "Anti", "Reverser", "Megid"];
+        var techBoost = itemPMT.TechBoosts[itemInfo.WeaponModel?.TechBoost ?? itemInfo.ArmorModel!.TechBoost];
+        string BoostToString(string techName, float boost) => techName switch
+        {
+            "Deband" or "Jellen" or "Zalure" or "Shifta" or "Resta" or "Anti" => (boost).ToString("P0") + " Range",
+            "Megid" => "Pierce",
+            _ => (boost).ToString("P0")
+        };
+        if (techBoost.Tech1 >= 0) yield return new KeyValuePair<string, string>(techNames[techBoost.Tech1], BoostToString(techNames[techBoost.Tech1], techBoost.Boost1));
+        if (techBoost.Tech2 >= 0) yield return new KeyValuePair<string, string>(techNames[techBoost.Tech2], BoostToString(techNames[techBoost.Tech2], techBoost.Boost2));
+        if (techBoost.Tech3 >= 0) yield return new KeyValuePair<string, string>(techNames[techBoost.Tech3], BoostToString(techNames[techBoost.Tech3], techBoost.Boost3));
     }
 
     private class ItemInfoModel(ItemModel itemModel, WeaponModel? weaponModel, ArmorModel? armorModel, UnitModel? unitModel, ToolModel? toolModel)

@@ -267,6 +267,13 @@ else
                             <InputNumber Value="@statBoost.Item2" ValueExpression="@(() => statBoost.Item2)" DisplayName="@statBoost.Item1" class="form-control" disabled></InputNumber>
                         </label>
                     }
+                    @foreach (var statBoost in Weapon.GetTechBoosts())
+                    {
+                        <label class="form-label col col-4">
+                            @statBoost.Item1
+                            <InputText Value="@statBoost.Item2" ValueExpression="@(() => statBoost.Item2)" DisplayName="@statBoost.Item1" class="form-control" disabled></InputText>
+                        </label>
+                    }
                 </div>
                 <div class="modal-footer">@Weapon</div>
             </div>
@@ -317,6 +324,13 @@ else
                         Slots
                         <InputNumber @bind-Value="Armor.NumberSlots" DisplayName="Slots" class="form-control"></InputNumber>
                     </label>
+                    @foreach (var statBoost in Armor.GetTechBoosts())
+                    {
+                        <label class="form-label col col-4">
+                            @statBoost.Item1
+                            <InputText Value="@statBoost.Item2" ValueExpression="@(() => statBoost.Item2)" DisplayName="@statBoost.Item1" class="form-control" disabled></InputText>
+                        </label>
+                    }
                 </div>
                 <div class="modal-footer">@Armor</div>
             </div>
@@ -1024,6 +1038,24 @@ else
             if (statBoost.Stat2 != 0) yield return Tuple.Create<string, int>(statNames[statBoost.Stat2], statBoost.Amount2);
         }
 
+        public IEnumerable<Tuple<string, string>> GetTechBoosts()
+        {
+            if (string.IsNullOrEmpty(Identifier))
+                yield break;
+
+            string[] techNames = ["Foie", "Gifoie", "Rafoie", "Barta", "Gibarta", "Rabarta", "Zonde", "Gizonde", "Razonde", "Grants", "Deband", "Jellen", "Zalure", "Shifta", "Ryuker", "Resta", "Anti", "Reverser", "Megid"];
+            var techBoost = itemPMT.TechBoosts[itemPMT.Weapons[Identifier].TechBoost];
+            string BoostToString(string techName, float boost) => techName switch
+            {
+                "Deband" or "Jellen" or "Zalure" or "Shifta" or "Resta" or "Anti" => (boost).ToString("P0") + " Range",
+                "Megid" => "Pierce",
+                _ => (boost).ToString("P0")
+            };
+            if (techBoost.Tech1 >= 0) yield return Tuple.Create<string, string>(techNames[techBoost.Tech1], BoostToString(techNames[techBoost.Tech1], techBoost.Boost1));
+            if (techBoost.Tech2 >= 0) yield return Tuple.Create<string, string>(techNames[techBoost.Tech2], BoostToString(techNames[techBoost.Tech2], techBoost.Boost2));
+            if (techBoost.Tech3 >= 0) yield return Tuple.Create<string, string>(techNames[techBoost.Tech3], BoostToString(techNames[techBoost.Tech3], techBoost.Boost3));
+        }
+
         public override string ToString()
         {
             if (string.IsNullOrEmpty(Name)) return "";
@@ -1104,6 +1136,24 @@ else
             var statBoost = itemPMT.StatBoosts[itemPMT.Armors[Identifier].StatBoost];
             if (statBoost.Stat1 != 0) yield return Tuple.Create<string, int>(statNames[statBoost.Stat1], statBoost.Amount1);
             if (statBoost.Stat2 != 0) yield return Tuple.Create<string, int>(statNames[statBoost.Stat2], statBoost.Amount2);
+        }
+
+        public IEnumerable<Tuple<string, string>> GetTechBoosts()
+        {
+            if (string.IsNullOrEmpty(Identifier))
+                yield break;
+
+            string[] techNames = ["Foie", "Gifoie", "Rafoie", "Barta", "Gibarta", "Rabarta", "Zonde", "Gizonde", "Razonde", "Grants", "Deband", "Jellen", "Zalure", "Shifta", "Ryuker", "Resta", "Anti", "Reverser", "Megid"];
+            var techBoost = itemPMT.TechBoosts[itemPMT.Armors[Identifier].TechBoost];
+            string BoostToString(string techName, float boost) => techName switch
+            {
+                "Deband" or "Jellen" or "Zalure" or "Shifta" or "Resta" or "Anti" => (boost).ToString("P0") + " Range",
+                "Megid" => "Pierce",
+                _ => (boost).ToString("P0")
+            };
+            if (techBoost.Tech1 >= 0) yield return Tuple.Create<string, string>(techNames[techBoost.Tech1], BoostToString(techNames[techBoost.Tech1], techBoost.Boost1));
+            if (techBoost.Tech2 >= 0) yield return Tuple.Create<string, string>(techNames[techBoost.Tech2], BoostToString(techNames[techBoost.Tech2], techBoost.Boost2));
+            if (techBoost.Tech3 >= 0) yield return Tuple.Create<string, string>(techNames[techBoost.Tech3], BoostToString(techNames[techBoost.Tech3], techBoost.Boost3));
         }
 
         public override string ToString()
