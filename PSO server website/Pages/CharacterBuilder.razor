@@ -921,7 +921,7 @@ else
         foreach (var (item, armor) in items.Join(itemPMT.Armors, i => i.Identifier, a => a.Key, (i, a) => (item: i, armor: a.Value)))
         {
             bool meetRequirement = armor.ClassFlags.HasFlag(ItemPMTService.ClassFlagsByClass[(int)ClassRaceSelection]);
-            meetRequirement &= Level >= armor.RequiredLevel;
+            meetRequirement &= Level > armor.RequiredLevel;
             if (meetRequirement) yield return item;
         }
 
