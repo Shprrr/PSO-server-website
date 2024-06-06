@@ -96,7 +96,7 @@ else
             </div>
         </div>
         <div class="row">
-            <div class="col">
+            <div class="col offset-1">
                 <label class="form-label">
                     HP Material
                     <InputNumber @bind-Value="HPMaterial" DisplayName="HP Material" class="form-control"></InputNumber>
@@ -136,6 +136,54 @@ else
                 <label class="form-label">
                     Luck Material
                     <InputNumber @bind-Value="LuckMaterial" DisplayName="Luck Material" class="form-control"></InputNumber>
+                </label>
+            </div>
+        </div>
+        <div class="row small">
+            <div class="col-1">
+                Target
+                <span>@(125 + MaxTPMaterial() + TargetPowerMaterial + TargetDefMaterial + TargetMindMaterial + TargetEvadeMaterial + TargetLuckMaterial)</span>/<span>@(125 + MaxTPMaterial() + MaxPowerDefEvadeMaterial())</span>
+            </div>
+            <div class="col">
+                <label class="form-label">
+                    HP Material
+                    <input type="number" class="form-control form-control-sm" value="125" disabled />
+                </label>
+            </div>
+            <div class="col">
+                <label class="form-label">
+                    TP Material
+                    <input type="number" class="form-control form-control-sm" value="@MaxTPMaterial()" disabled />
+                </label>
+            </div>
+            <div class="col">
+                <label class="form-label">
+                    Power Material
+                    <InputNumber @bind-Value="TargetPowerMaterial" DisplayName="Target Power Material" class="form-control form-control-sm"></InputNumber>
+                </label>
+            </div>
+            <div class="col">
+                <label class="form-label">
+                    Def Material
+                    <InputNumber @bind-Value="TargetDefMaterial" DisplayName="Target Def Material" class="form-control form-control-sm"></InputNumber>
+                </label>
+            </div>
+            <div class="col">
+                <label class="form-label">
+                    Mind Material
+                    <InputNumber @bind-Value="TargetMindMaterial" DisplayName="Target Mind Material" class="form-control form-control-sm"></InputNumber>
+                </label>
+            </div>
+            <div class="col">
+                <label class="form-label">
+                    Evade Material
+                    <InputNumber @bind-Value="TargetEvadeMaterial" DisplayName="Target Evade Material" class="form-control form-control-sm"></InputNumber>
+                </label>
+            </div>
+            <div class="col">
+                <label class="form-label">
+                    Luck Material
+                    <InputNumber @bind-Value="TargetLuckMaterial" DisplayName="Target Luck Material" class="form-control form-control-sm"></InputNumber>
                 </label>
             </div>
         </div>
@@ -723,6 +771,75 @@ else
         }
     }
 
+    public int TargetPowerMaterial
+    {
+        get { return Character.TargetPowerMaterial; }
+        set
+        {
+            if (value < 0) value = 0;
+            var maxMaterial = MaxPowerDefEvadeMaterial();
+            if (value > maxMaterial) value = maxMaterial;
+            var totalMaterial = value + TargetDefMaterial + TargetMindMaterial + TargetEvadeMaterial + TargetLuckMaterial;
+            if (totalMaterial > maxMaterial) value -= totalMaterial - maxMaterial;
+            Character.TargetPowerMaterial = value; RefreshStats();
+        }
+    }
+
+    public int TargetDefMaterial
+    {
+        get { return Character.TargetDefMaterial; }
+        set
+        {
+            if (value < 0) value = 0;
+            var maxMaterial = MaxPowerDefEvadeMaterial();
+            if (value > maxMaterial) value = maxMaterial;
+            var totalMaterial = value + TargetPowerMaterial + TargetMindMaterial + TargetEvadeMaterial + TargetLuckMaterial;
+            if (totalMaterial > maxMaterial) value -= totalMaterial - maxMaterial;
+            Character.TargetDefMaterial = value; RefreshStats();
+        }
+    }
+
+    public int TargetMindMaterial
+    {
+        get { return Character.TargetMindMaterial; }
+        set
+        {
+            var maxMaterial = MaxMindMaterial();
+            if (value > maxMaterial) value = maxMaterial;
+            var totalMaterial = value + TargetPowerMaterial + TargetDefMaterial + TargetEvadeMaterial + TargetLuckMaterial;
+            if (totalMaterial > maxMaterial) value -= totalMaterial - maxMaterial;
+            if (value < 0) value = 0;
+            Character.TargetMindMaterial = value; RefreshStats();
+        }
+    }
+
+    public int TargetEvadeMaterial
+    {
+        get { return Character.TargetEvadeMaterial; }
+        set
+        {
+            if (value < 0) value = 0;
+            var maxMaterial = MaxPowerDefEvadeMaterial();
+            if (value > maxMaterial) value = maxMaterial;
+            var totalMaterial = value + TargetPowerMaterial + TargetDefMaterial + TargetMindMaterial + TargetLuckMaterial;
+            if (totalMaterial > maxMaterial) value -= totalMaterial - maxMaterial;
+            Character.TargetEvadeMaterial = value; RefreshStats();
+        }
+    }
+
+    public int TargetLuckMaterial
+    {
+        get { return Character.TargetLuckMaterial; }
+        set
+        {
+            if (value < 0) value = 0;
+            if (value > 45) value = 45;
+            var totalMaterial = value + TargetPowerMaterial + TargetDefMaterial + TargetMindMaterial + TargetEvadeMaterial;
+            if (totalMaterial > MaxPowerDefEvadeMaterial()) value -= totalMaterial - MaxPowerDefEvadeMaterial();
+            Character.TargetLuckMaterial = value; RefreshStats();
+        }
+    }
+
     public int ShiftaLevel
     {
         get { return Character.ShiftaLevel; }
@@ -804,6 +921,11 @@ else
             if (MindMaterial != 0) Character.MindMaterial = 0;
             if (EvadeMaterial != 0) Character.EvadeMaterial = 0;
             if (LuckMaterial != 0) Character.LuckMaterial = 0;
+            if (TargetPowerMaterial != 0) Character.TargetPowerMaterial = 0;
+            if (TargetDefMaterial != 0) Character.TargetDefMaterial = 0;
+            if (TargetMindMaterial != 0) Character.TargetMindMaterial = 0;
+            if (TargetEvadeMaterial != 0) Character.TargetEvadeMaterial = 0;
+            if (TargetLuckMaterial != 0) Character.TargetLuckMaterial = 0;
             if (ShiftaLevel != 0) Character.ShiftaLevel = 0;
             if (DebandLevel != 0) Character.DebandLevel = 0;
             if (Character.WeaponName != "") { Character.WeaponName = ""; Weapon = new(itemPMT); }
@@ -833,6 +955,18 @@ else
             MindMaterial = 0;
             EvadeMaterial = 0;
             LuckMaterial = 0;
+        }
+        if (TargetPowerMaterial > maxMaterial) TargetPowerMaterial = maxMaterial;
+        if (TargetDefMaterial > maxMaterial) TargetDefMaterial = maxMaterial;
+        if (TargetMindMaterial > MaxMindMaterial()) TargetMindMaterial = MaxMindMaterial();
+        if (TargetEvadeMaterial > maxMaterial) TargetEvadeMaterial = maxMaterial;
+        if (TargetPowerMaterial + TargetDefMaterial + TargetMindMaterial + TargetEvadeMaterial + TargetLuckMaterial > maxMaterial)
+        {
+            TargetPowerMaterial = 0;
+            TargetDefMaterial = 0;
+            TargetMindMaterial = 0;
+            TargetEvadeMaterial = 0;
+            TargetLuckMaterial = 0;
         }
 
         // Set equipment names.
@@ -981,6 +1115,12 @@ else
         public int MindMaterial { get; set; }
         public int EvadeMaterial { get; set; }
         public int LuckMaterial { get; set; }
+
+        public int TargetPowerMaterial { get; set; }
+        public int TargetDefMaterial { get; set; }
+        public int TargetMindMaterial { get; set; }
+        public int TargetEvadeMaterial { get; set; }
+        public int TargetLuckMaterial { get; set; }
 
         public int ShiftaLevel { get; set; }
         public int DebandLevel { get; set; }
