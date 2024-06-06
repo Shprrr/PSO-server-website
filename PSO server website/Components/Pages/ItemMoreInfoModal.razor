@@ -184,6 +184,10 @@
                                 <div class="col">Team Points</div>
                                 <div class="col">@itemInfo.UnitModel.TeamPoints</div>
                             </div>
+                            <div class="row">
+                                <div class="col">Class Can Use</div>
+                                <div class="col"><ClassFlags Value="@itemInfo.UnitModel.ClassFlags" /></div>
+                            </div>
                             @foreach (var statBoost in GetStatBoosts())
                             {
                                 <div class="row">

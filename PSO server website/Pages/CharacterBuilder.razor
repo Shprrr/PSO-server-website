@@ -982,10 +982,10 @@ else
         // Reset equipment that don't meet requirements.
         if (Weapon.Model != null && !GetItemWithRequirements(Weapon.Model).Any()) Weapon = new(itemPMT);
         if (Armor.Model != null && !GetItemWithRequirements(Armor.Model).Any()) Armor = new(itemPMT);
-        if (Armor.NumberSlots < 1 && Unit1.Model != null) Unit1 = new(itemPMT);
-        if (Armor.NumberSlots < 2 && Unit2.Model != null) Unit2 = new(itemPMT);
-        if (Armor.NumberSlots < 3 && Unit3.Model != null) Unit3 = new(itemPMT);
-        if (Armor.NumberSlots < 4 && Unit4.Model != null) Unit4 = new(itemPMT);
+        if (Unit1.Model != null && (Armor.NumberSlots < 1 || !GetItemWithRequirements(Unit1.Model).Any())) Unit1 = new(itemPMT);
+        if (Unit2.Model != null && (Armor.NumberSlots < 2 || !GetItemWithRequirements(Unit2.Model).Any())) Unit2 = new(itemPMT);
+        if (Unit3.Model != null && (Armor.NumberSlots < 3 || !GetItemWithRequirements(Unit3.Model).Any())) Unit3 = new(itemPMT);
+        if (Unit4.Model != null && (Armor.NumberSlots < 4 || !GetItemWithRequirements(Unit4.Model).Any())) Unit4 = new(itemPMT);
         if (Shield.Model != null && !GetItemWithRequirements(Shield.Model).Any()) Shield = new(itemPMT);
 
         // Calculate stats.
@@ -1068,7 +1068,8 @@ else
 
         foreach (var (item, unit) in items.Join(itemPMT.Units, i => i.Identifier, u => u.Key, (i, u) => (item: i, unit: u.Value)))
         {
-            yield return item;
+            bool meetRequirement = unit.ClassFlags.HasFlag(ItemPMTService.ClassFlagsByClass[(int)ClassRaceSelection]);
+            if (meetRequirement) yield return item;
         }
     }
 

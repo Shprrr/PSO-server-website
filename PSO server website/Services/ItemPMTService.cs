@@ -266,6 +266,24 @@ public class UnitModel : ItemBaseModel
     public ushort Stat { get; set; }
     public ushort StatAmount { get; set; }
     public short ModifierAmount { get; set; }
+    public ClassFlag ClassFlags => Id switch
+    {
+        897 or 898 or 899 or 900 or 978 // Mind
+        or 913 or 914 or 915 or 916 or 987 // TP
+        or 947 or 948 or 949 or 991 // Restore TP
+        or 953 or 954 or 955 or 989 // Technique
+        or 959 or 960 // Cure
+        or 969 // V801
+        => ClassFlag.HUNTER | ClassFlag.RANGER | ClassFlag.FORCE | ClassFlag.HUMAN | ClassFlag.NEWMAN | ClassFlag.MALE | ClassFlag.FEMALE,
+
+        965 => ClassFlag.HUNTER | ClassFlag.RANGER | ClassFlag.HUMAN | ClassFlag.ANDROID | ClassFlag.NEWMAN | ClassFlag.MALE | ClassFlag.FEMALE,
+
+        972 or 973 => ClassFlag.HUNTER | ClassFlag.HUMAN | ClassFlag.ANDROID | ClassFlag.NEWMAN | ClassFlag.MALE | ClassFlag.FEMALE,
+
+        974 => ClassFlag.HUNTER | ClassFlag.FORCE | ClassFlag.HUMAN | ClassFlag.ANDROID | ClassFlag.NEWMAN | ClassFlag.MALE | ClassFlag.FEMALE,
+
+        _ => ClassFlag.HUNTER | ClassFlag.RANGER | ClassFlag.FORCE | ClassFlag.HUMAN | ClassFlag.ANDROID | ClassFlag.NEWMAN | ClassFlag.MALE | ClassFlag.FEMALE
+    };
 }
 
 public class ToolModel : ItemBaseModel
