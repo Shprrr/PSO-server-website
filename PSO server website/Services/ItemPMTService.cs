@@ -284,6 +284,11 @@ public class UnitModel : ItemBaseModel
 
         _ => ClassFlag.HUNTER | ClassFlag.RANGER | ClassFlag.FORCE | ClassFlag.HUMAN | ClassFlag.ANDROID | ClassFlag.NEWMAN | ClassFlag.MALE | ClassFlag.FEMALE
     };
+    public bool CanHaveModifier => Id switch
+    {
+        < 908 and not (896 or 900 or 904) => true,
+        _ => false
+    };
 }
 
 public class ToolModel : ItemBaseModel

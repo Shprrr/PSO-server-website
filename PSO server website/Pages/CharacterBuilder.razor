@@ -411,10 +411,13 @@ else
                                 }
                             </InputSelect>
                         </label>
-                        <label class="form-label col col-3 visually-hidden">
-                            +/-
-                            <InputNumber @bind-Value="EditUnitModel.Modifier" DisplayName="+/-" class="form-control"></InputNumber>
-                        </label>
+                        @if (EditUnitModel.Identifier != null && itemPMT.Units[EditUnitModel.Identifier].CanHaveModifier)
+                        {
+                            <label class="form-label col col-3">
+                                +/-
+                                <InputNumber @bind-Value="EditUnitModel.Modifier" DisplayName="+/-" class="form-control"></InputNumber>
+                            </label>
+                        }
                         @foreach (var statBoost in EditUnitModel.GetStatBoosts())
                         {
                             <label class="form-label col col-3">
@@ -1386,10 +1389,10 @@ else
 
         public int Modifier
         {
-            get { return modifier; }
+            get { return !string.IsNullOrEmpty(Identifier) && itemPMT.Units[Identifier].CanHaveModifier ? modifier : 0; }
             set
             {
-                if (string.IsNullOrEmpty(Identifier)) return;
+                if (string.IsNullOrEmpty(Identifier) || !itemPMT.Units[Identifier].CanHaveModifier) return;
                 if (value < -2) value = -2;
                 if (value > 2) value = 2;
                 modifier = value;
@@ -1439,7 +1442,7 @@ else
                     break;
 
                 default:
-                    yield return Tuple.Create<string, int>(statNames[itemPMT.Units[Identifier].Stat], itemPMT.Units[Identifier].StatAmount);
+                    yield return Tuple.Create<string, int>(statNames[itemPMT.Units[Identifier].Stat], itemPMT.Units[Identifier].StatAmount + Modifier * itemPMT.Units[Identifier].ModifierAmount);
                     break;
             }
         }
@@ -1456,9 +1459,10 @@ else
         public static UnitModel Parse(ItemPMTModel itemPMT, ItemModel[] units, string unit)
         {
             UnitModel unitModel = new(itemPMT);
-            Match m = Regex.Match(unit, @"^(.+?)(?: \+(\d+?)DFP)?(?: \+(\d+?)EVP)?$", RegexOptions.Singleline);
+            Match m = Regex.Match(unit, @"^(.+?)([\+\-]+?)?$", RegexOptions.Singleline);
             if (!m.Success) return unitModel;
             unitModel.Model = units.FirstOrDefault(i => i.Name == m.Groups[1].Value);
+            if (m.Groups[2].Success) unitModel.Modifier = m.Groups[2].Value.Sum(c => c == '+' ? 1 : c == '-' ? -1 : 0);
             return unitModel;
         }
     }

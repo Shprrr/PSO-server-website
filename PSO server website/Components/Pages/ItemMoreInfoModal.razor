@@ -195,10 +195,13 @@
                                     <div class="col">@statBoost.Value</div>
                                 </div>
                             }
-                            <div class="row">
-                                <div class="col">Modifier Amount</div>
-                                <div class="col">@itemInfo.UnitModel.ModifierAmount</div>
-                            </div>
+                            @if (itemInfo.UnitModel.CanHaveModifier)
+                            {
+                                <div class="row">
+                                    <div class="col">Modifier Amount</div>
+                                    <div class="col">@itemInfo.UnitModel.ModifierAmount</div>
+                                </div>
+                            }
                         </div>
                     }
                     else if (itemInfo.ToolModel != null)
