@@ -82,6 +82,8 @@ public class ItemPMTService(HttpClient http)
 
         int tableAddr = BitConverter.ToInt32(fileBytes, offset);
 
+        ItemPMTModel itemPMT = new();
+
         Dictionary<string, WeaponModel> weapons = new(WeaponClassesCount);
         for (int i = 0; i < WeaponClassesCount; i++)
         {
@@ -90,9 +92,10 @@ public class ItemPMTService(HttpClient http)
 
             for (int j = 0; j < subtableCount; j++)
             {
-                weapons.Add($"{i:X4}{j:X2}", BitConverterExtensions.ToWeaponModel(fileBytes, subtableOffset + WeaponSize * j));
+                weapons.Add($"{i:X4}{j:X2}", BitConverterExtensions.ToWeaponModel(fileBytes, subtableOffset + WeaponSize * j, itemPMT));
             }
         }
+        itemPMT.Weapons = weapons;
 
         offset = startAddr + s_offset["armor"];
         tableAddr = BitConverter.ToInt32(fileBytes, offset);
@@ -105,9 +108,10 @@ public class ItemPMTService(HttpClient http)
 
             for (int j = 0; j < subtableCount; j++)
             {
-                armors.Add($"{i + ArmorClassesIdentifierOffset:X4}{j:X2}", BitConverterExtensions.ToArmorModel(fileBytes, subtableOffset + ArmorSize * j));
+                armors.Add($"{i + ArmorClassesIdentifierOffset:X4}{j:X2}", BitConverterExtensions.ToArmorModel(fileBytes, subtableOffset + ArmorSize * j, itemPMT));
             }
         }
+        itemPMT.Armors = armors;
 
         offset = startAddr + s_offset["unit"];
         tableAddr = BitConverter.ToInt32(fileBytes, offset);
@@ -123,6 +127,7 @@ public class ItemPMTService(HttpClient http)
                 units.Add($"{i + UnitClassesIdentifierOffset:X4}{j:X2}", BitConverterExtensions.ToUnitModel(fileBytes, subtableOffset + UnitSize * j));
             }
         }
+        itemPMT.Units = units;
 
         offset = startAddr + s_offset["tool"];
         tableAddr = BitConverter.ToInt32(fileBytes, offset);
@@ -138,6 +143,7 @@ public class ItemPMTService(HttpClient http)
                 tools.Add($"{i + ToolClassesIdentifierOffset:X4}{j:X2}", BitConverterExtensions.ToToolModel(fileBytes, subtableOffset + ToolSize * j));
             }
         }
+        itemPMT.Tools = tools;
 
         offset = startAddr + s_offset["special"];
         tableAddr = BitConverter.ToInt32(fileBytes, offset);
@@ -147,6 +153,7 @@ public class ItemPMTService(HttpClient http)
         {
             specials.Add(BitConverterExtensions.ToSpecialModel(fileBytes, tableAddr + SpecialSize * j));
         }
+        itemPMT.Specials = [.. specials];
 
         offset = startAddr + s_offset["stat-boost"];
         tableAddr = BitConverter.ToInt32(fileBytes, offset);
@@ -156,6 +163,7 @@ public class ItemPMTService(HttpClient http)
         {
             statBoosts.Add(BitConverterExtensions.ToStatBoostModel(fileBytes, tableAddr + StatBoostSize * j));
         }
+        itemPMT.StatBoosts = [.. statBoosts];
 
         offset = startAddr + s_offset["tech-boost"];
         tableAddr = BitConverter.ToInt32(fileBytes, offset);
@@ -165,8 +173,9 @@ public class ItemPMTService(HttpClient http)
         {
             techBoosts.Add(BitConverterExtensions.ToTechBoostModel(fileBytes, tableAddr + TechBoostSize * j));
         }
+        itemPMT.TechBoosts = [.. techBoosts];
 
-        return new ItemPMTModel { Weapons = weapons, Armors = armors, Units = units, Tools = tools, Specials = [.. specials], StatBoosts = [.. statBoosts], TechBoosts = [.. techBoosts] };
+        return itemPMT;
     }
 }
 
@@ -210,7 +219,7 @@ public class ItemBaseModel
     public uint TeamPoints { get; set; }
 }
 
-public class WeaponModel : ItemBaseModel
+public class WeaponModel(ItemPMTModel itemPMT) : ItemBaseModel
 {
     public ushort ClassFlagsRaw { get; set; }
     public ClassFlag ClassFlags => (ClassFlag)ClassFlagsRaw;
@@ -238,9 +247,17 @@ public class WeaponModel : ItemBaseModel
     public byte Unknown5 { get; set; }
     public byte TechBoost { get; set; }
     public byte ComboType { get; set; }
+
+    public IEnumerable<Stat> GetStatBoosts()
+    {
+        string[] statNames = ["None", "+ATP", "+ATA", "+EVP", "+DFP", "+MST", "+HP", "+LCK", "+All", "-ATP", "-ATA", "-EVP", "-DFP", "-MST", "-HP", "-LCK", "-All"];
+        StatBoostModel statBoost = itemPMT.StatBoosts[StatBoost];
+        if (statBoost.Stat1 != 0) yield return new Stat(statNames[statBoost.Stat1], statBoost.Amount1);
+        if (statBoost.Stat2 != 0) yield return new Stat(statNames[statBoost.Stat2], statBoost.Amount2);
+    }
 }
 
-public class ArmorModel : ItemBaseModel
+public class ArmorModel(ItemPMTModel itemPMT) : ItemBaseModel
 {
     public ushort DFP { get; set; }
     public ushort EVP { get; set; }
@@ -259,6 +276,14 @@ public class ArmorModel : ItemBaseModel
     public byte StatBoost { get; set; }
     public byte TechBoost { get; set; }
     public ushort Unknown2 { get; set; }
+
+    public IEnumerable<Stat> GetStatBoosts()
+    {
+        string[] statNames = ["None", "+ATP", "+ATA", "+EVP", "+DFP", "+MST", "+HP", "+LCK", "+All", "-ATP", "-ATA", "-EVP", "-DFP", "-MST", "-HP", "-LCK", "-All"];
+        StatBoostModel statBoost = itemPMT.StatBoosts[StatBoost];
+        if (statBoost.Stat1 != 0) yield return new Stat(statNames[statBoost.Stat1], statBoost.Amount1);
+        if (statBoost.Stat2 != 0) yield return new Stat(statNames[statBoost.Stat2], statBoost.Amount2);
+    }
 }
 
 public class UnitModel : ItemBaseModel
@@ -289,6 +314,35 @@ public class UnitModel : ItemBaseModel
         < 908 and not (896 or 900 or 904) => true,
         _ => false
     };
+
+    public IEnumerable<Stat> GetStatBoosts(int modifier = 0)
+    {
+        string[] statNames = ["ATP", "MST", "ATA", "EVP", "HP", "TP", "DFP", "LCK", "All", "EFR", "EIC", "ETH", "ELT", "EDK", "EAll", "ResHP", "ResTP", "ResPB", "Tech", "AtkSpeed", "CureAll", "TrapV", "CurePoison", "CurePara", "CureShock", "CureSlow", "CureConfuse", "CureFreeze", "Unknown28", "Unknown29", "Unknown30", "Unknown31", "Unknown32", "Unknown33", "Unknown34", "Unknown35", "Unknown36", "Unknown37", "Unknown38", "None"];
+
+        switch (statNames[Stat])
+        {
+            case "All":
+                yield return new Stat("ATP", StatAmount);
+                yield return new Stat("DFP", StatAmount);
+                yield return new Stat("MST", StatAmount);
+                yield return new Stat("ATA", StatAmount / 10);
+                yield return new Stat("EVP", StatAmount);
+                yield return new Stat("LCK", StatAmount);
+                break;
+
+            case "EAll":
+                yield return new Stat("EFR", StatAmount);
+                yield return new Stat("EIC", StatAmount);
+                yield return new Stat("ETH", StatAmount);
+                yield return new Stat("ELT", StatAmount);
+                yield return new Stat("EDK", StatAmount);
+                break;
+
+            default:
+                yield return new Stat(statNames[Stat], StatAmount + modifier * ModifierAmount);
+                break;
+        }
+    }
 }
 
 public class ToolModel : ItemBaseModel
@@ -336,6 +390,41 @@ public enum ClassFlag
     FEMALE = 0x80,
 };
 
+public record Stat(string Code, int Value)
+{
+    public string Name { get; init; } = Code switch
+    {
+        "ResHP" => "Restoration HP",
+        "ResTP" => "Restoration TP",
+        "ResPB" => "Restoration PB",
+        "Tech" => "Technique Level",
+        "AtkSpeed" => "Attack Speed",
+        "CureAll" => "Cure All",
+        "TrapV" => "Trap Vision",
+        "CurePoison" => "Cure Poison",
+        "CurePara" => "Cure Paralysis",
+        "CureShock" => "Cure Shock",
+        "CureSlow" => "Cure Slow",
+        "CureConfuse" => "Cure Confuse",
+        "CureFreeze" => "Cure Freeze",
+        _ => Code
+    };
+
+    public string? Prefix { get; init; } = Code switch
+    {
+        "ResHP" => "1 HP per",
+        "ResTP" => "1 TP per",
+        "ResPB" => "1 PB per",
+        _ => null
+    };
+
+    public string? Suffix { get; init; } = Code switch
+    {
+        "AtkSpeed" => "%",
+        _ => null
+    };
+}
+
 public static partial class BitConverterExtensions
 {
     private static void ToItemBaseModel(byte[] array, ref int offset, ref ItemBaseModel itemBase)
@@ -350,9 +439,9 @@ public static partial class BitConverterExtensions
         offset += Marshal.SizeOf(itemBase.TeamPoints);
     }
 
-    public static WeaponModel ToWeaponModel(byte[] array, int offset)
+    public static WeaponModel ToWeaponModel(byte[] array, int offset, ItemPMTModel itemPMT)
     {
-        WeaponModel item = new();
+        WeaponModel item = new(itemPMT);
         ItemBaseModel itemBase = item;
         ToItemBaseModel(array, ref offset, ref itemBase);
 
@@ -409,9 +498,9 @@ public static partial class BitConverterExtensions
         return item;
     }
 
-    public static ArmorModel ToArmorModel(byte[] array, int offset)
+    public static ArmorModel ToArmorModel(byte[] array, int offset, ItemPMTModel itemPMT)
     {
-        ArmorModel item = new();
+        ArmorModel item = new(itemPMT);
         ItemBaseModel itemBase = item;
         ToItemBaseModel(array, ref offset, ref itemBase);
 

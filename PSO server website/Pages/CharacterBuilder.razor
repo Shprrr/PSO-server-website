@@ -317,9 +317,19 @@ else
                     </label>
                     @foreach (var statBoost in Weapon.GetStatBoosts())
                     {
-                        <label class="form-label col col-3">
-                            @statBoost.Item1
-                            <InputNumber Value="@statBoost.Item2" ValueExpression="@(() => statBoost.Item2)" DisplayName="@statBoost.Item1" class="form-control" disabled></InputNumber>
+                        <label class="form-label col @(statBoost.Prefix != null ? "col-6" : statBoost.Suffix != null ? "col-4" : "col-3")">
+                            @statBoost.Name
+                            <span class="input-group">
+                                @if (statBoost.Prefix != null)
+                                {
+                                    <span class="input-group-prepend input-group-text">@statBoost.Prefix</span>
+                                }
+                                <InputNumber Value="@statBoost.Value" ValueExpression="@(() => statBoost.Value)" DisplayName="@statBoost.Name" class="form-control" disabled></InputNumber>
+                                @if (statBoost.Suffix != null)
+                                {
+                                    <span class="input-group-append input-group-text">@statBoost.Suffix</span>
+                                }
+                            </span>
                         </label>
                     }
                     @foreach (var statBoost in Weapon.GetTechBoosts())
@@ -370,9 +380,19 @@ else
                     </label>
                     @foreach (var statBoost in Armor.GetStatBoosts())
                     {
-                        <label class="form-label col col-3">
-                            @statBoost.Item1
-                            <InputNumber Value="@statBoost.Item2" ValueExpression="@(() => statBoost.Item2)" DisplayName="@statBoost.Item1" class="form-control" disabled></InputNumber>
+                        <label class="form-label col @(statBoost.Prefix != null ? "col-6" : statBoost.Suffix != null ? "col-4" : "col-3")">
+                            @statBoost.Name
+                            <span class="input-group">
+                                @if (statBoost.Prefix != null)
+                                {
+                                    <span class="input-group-prepend input-group-text">@statBoost.Prefix</span>
+                                }
+                                <InputNumber Value="@statBoost.Value" ValueExpression="@(() => statBoost.Value)" DisplayName="@statBoost.Name" class="form-control" disabled></InputNumber>
+                                @if (statBoost.Suffix != null)
+                                {
+                                    <span class="input-group-append input-group-text">@statBoost.Suffix</span>
+                                }
+                            </span>
                         </label>
                     }
                     <label class="form-label col col-12">
@@ -420,9 +440,19 @@ else
                         }
                         @foreach (var statBoost in EditUnitModel.GetStatBoosts())
                         {
-                            <label class="form-label col col-3">
-                                @statBoost.Item1
-                                <InputNumber Value="@statBoost.Item2" ValueExpression="@(() => statBoost.Item2)" DisplayName="@statBoost.Item1" class="form-control" disabled></InputNumber>
+                            <label class="form-label col @(statBoost.Prefix != null ? "col-6" : statBoost.Suffix != null ? "col-4" : "col-3")">
+                                @statBoost.Name
+                                <span class="input-group">
+                                    @if (statBoost.Prefix != null)
+                                    {
+                                        <span class="input-group-prepend input-group-text">@statBoost.Prefix</span>
+                                    }
+                                    <InputNumber Value="@statBoost.Value" ValueExpression="@(() => statBoost.Value)" DisplayName="@statBoost.Name" class="form-control" disabled></InputNumber>
+                                    @if (statBoost.Suffix != null)
+                                    {
+                                        <span class="input-group-append input-group-text">@statBoost.Suffix</span>
+                                    }
+                                </span>
                             </label>
                         }
                     </div>
@@ -468,8 +498,8 @@ else
                     @foreach (var statBoost in Shield.GetStatBoosts())
                     {
                         <label class="form-label col col-3">
-                            @statBoost.Item1
-                            <InputNumber Value="@statBoost.Item2" ValueExpression="@(() => statBoost.Item2)" DisplayName="@statBoost.Item1" class="form-control" disabled></InputNumber>
+                            @statBoost.Name
+                            <InputNumber Value="@statBoost.Value" ValueExpression="@(() => statBoost.Value)" DisplayName="@statBoost.Name" class="form-control" disabled></InputNumber>
                         </label>
                     }
                 </div>
@@ -994,28 +1024,28 @@ else
         // Calculate stats.
         var baseStats = levelTable.BaseStats[indexClass];
         var levelDeltas = levelTable.LevelDeltas[indexClass].Take(Level);
-        var baseATP = BaseATP + Weapon.BaseAtp + GetEveryStatBoost().Sum(s => CalculateStatBoost("ATP", s.Item1, s.Item2));
+        var baseATP = BaseATP + Weapon.BaseAtp + GetEveryStatBoost().Sum(s => CalculateStatBoost("ATP", s.Code, s.Value));
         var baseDFP = baseStats.DFP + levelDeltas.Sum(l => l.DFP) + DefMaterial * 2 + Armor.Dfp + Shield.Dfp
-            + GetEveryStatBoost().Sum(s => CalculateStatBoost("DFP", s.Item1, s.Item2)) + Mag.Def;
-        var baseMST = BaseMST + Weapon.Mst + GetEveryStatBoost().Sum(s => CalculateStatBoost("MST", s.Item1, s.Item2));
+            + GetEveryStatBoost().Sum(s => CalculateStatBoost("DFP", s.Code, s.Value)) + Mag.Def;
+        var baseMST = BaseMST + Weapon.Mst + GetEveryStatBoost().Sum(s => CalculateStatBoost("MST", s.Code, s.Value));
         HP = (int)Math.Floor((baseStats.HP + levelDeltas.Sum(l => l.HP) + Level - 1) * GetHPMultiplier()) + HPMaterial * 2
-            + GetEveryStatBoost().Sum(s => CalculateStatBoost("HP", s.Item1, s.Item2));
+            + GetEveryStatBoost().Sum(s => CalculateStatBoost("HP", s.Code, s.Value));
         TP = ClassRaceSelection switch
         {
             ClassRace.Humar or ClassRace.Hunewearl or ClassRace.Ramar or ClassRace.Ramarl
-                => baseMST + Level - 1 + GetEveryStatBoost().Sum(s => CalculateStatBoost("TP", s.Item1, s.Item2)),
+                => baseMST + Level - 1 + GetEveryStatBoost().Sum(s => CalculateStatBoost("TP", s.Code, s.Value)),
             ClassRace.Fomar or ClassRace.Fomarl or ClassRace.Fonewm or ClassRace.Fonewearl
-                => (int)Math.Floor((baseMST + Level - 1) * 1.5 + GetEveryStatBoost().Sum(s => CalculateStatBoost("TP", s.Item1, s.Item2))),
+                => (int)Math.Floor((baseMST + Level - 1) * 1.5 + GetEveryStatBoost().Sum(s => CalculateStatBoost("TP", s.Code, s.Value))),
             _ => 0
         } + TPMaterial * 2;
         ATP = (int)Math.Floor(baseATP + baseATP * GetShiftaDebandMultiplier(ShiftaLevel)) + Weapon.Atp - Weapon.BaseAtp;
         DFP = (int)Math.Floor(baseDFP + baseDFP * GetShiftaDebandMultiplier(DebandLevel));
         MST = baseMST;
-        ATA = BaseATA + Weapon.Ata + GetEveryStatBoost().Sum(s => CalculateStatBoost("ATA", s.Item1, s.Item2));
+        ATA = BaseATA + Weapon.Ata + GetEveryStatBoost().Sum(s => CalculateStatBoost("ATA", s.Code, s.Value));
         EVP = baseStats.EVP + levelDeltas.Sum(l => l.EVP) + EvadeMaterial * 2 + Armor.Evp + Shield.Evp
-            + GetEveryStatBoost().Sum(s => CalculateStatBoost("EVP", s.Item1, s.Item2));
+            + GetEveryStatBoost().Sum(s => CalculateStatBoost("EVP", s.Code, s.Value));
         LCK = baseStats.LCK + levelDeltas.Sum(l => l.LCK) + LuckMaterial * 2
-            + GetEveryStatBoost().Sum(s => CalculateStatBoost("LCK", s.Item1, s.Item2));
+            + GetEveryStatBoost().Sum(s => CalculateStatBoost("LCK", s.Code, s.Value));
 
         localStorage.SetItemAsync("characters", new[] { Character });
     }
@@ -1076,7 +1106,7 @@ else
         }
     }
 
-    private IEnumerable<Tuple<string, int>> GetEveryStatBoost()
+    private IEnumerable<Stat> GetEveryStatBoost()
         => Weapon.GetStatBoosts().Concat(Armor.GetStatBoosts().Concat(Unit1.GetStatBoosts().Concat(Unit2.GetStatBoosts().Concat(Unit3.GetStatBoosts().Concat(Unit4.GetStatBoosts().Concat(Shield.GetStatBoosts()))))));
 
     private int CalculateStatBoost(string stat, string statBoost, int amount)
@@ -1190,15 +1220,12 @@ else
             }
         }
 
-        public IEnumerable<Tuple<string, int>> GetStatBoosts()
+        public IEnumerable<Stat> GetStatBoosts()
         {
             if (string.IsNullOrEmpty(Identifier))
-                yield break;
+                return Enumerable.Empty<Stat>();
 
-            string[] statNames = ["None", "+ATP", "+ATA", "+EVP", "+DFP", "+MST", "+HP", "+LCK", "+All", "-ATP", "-ATA", "-EVP", "-DFP", "-MST", "-HP", "-LCK", "-All"];
-            var statBoost = itemPMT.StatBoosts[itemPMT.Weapons[Identifier].StatBoost];
-            if (statBoost.Stat1 != 0) yield return Tuple.Create<string, int>(statNames[statBoost.Stat1], statBoost.Amount1);
-            if (statBoost.Stat2 != 0) yield return Tuple.Create<string, int>(statNames[statBoost.Stat2], statBoost.Amount2);
+            return itemPMT.Weapons[Identifier].GetStatBoosts();
         }
 
         public IEnumerable<Tuple<string, string>> GetTechBoosts()
@@ -1292,15 +1319,12 @@ else
             }
         }
 
-        public IEnumerable<Tuple<string, int>> GetStatBoosts()
+        public IEnumerable<Stat> GetStatBoosts()
         {
             if (string.IsNullOrEmpty(Identifier))
-                yield break;
+                return Enumerable.Empty<Stat>();
 
-            string[] statNames = ["None", "+ATP", "+ATA", "+EVP", "+DFP", "+MST", "+HP", "+LCK", "+All", "-ATP", "-ATA", "-EVP", "-DFP", "-MST", "-HP", "-LCK", "-All"];
-            var statBoost = itemPMT.StatBoosts[itemPMT.Armors[Identifier].StatBoost];
-            if (statBoost.Stat1 != 0) yield return Tuple.Create<string, int>(statNames[statBoost.Stat1], statBoost.Amount1);
-            if (statBoost.Stat2 != 0) yield return Tuple.Create<string, int>(statNames[statBoost.Stat2], statBoost.Amount2);
+            return itemPMT.Armors[Identifier].GetStatBoosts();
         }
 
         public IEnumerable<Tuple<string, string>> GetTechBoosts()
@@ -1399,52 +1423,12 @@ else
             }
         }
 
-        public IEnumerable<Tuple<string, int>> GetStatBoosts()
+        public IEnumerable<Stat> GetStatBoosts()
         {
             if (string.IsNullOrEmpty(Identifier))
-                yield break;
+                return Enumerable.Empty<Stat>();
 
-            string[] statNames = ["ATP", "MST", "ATA", "EVP", "HP", "TP", "DFP", "LCK", "All", "EFR", "EIC", "ETH", "ELT", "EDK", "EAll", "ResHP", "ResTP", "ResPB", "Tech", "AtkSpeed", "CureAll", "TrapV", "CurePoison", "CurePara", "CureShock", "CureSlow", "CureConfuse", "CureFreeze", "Unknown28", "Unknown29", "Unknown30", "Unknown31", "Unknown32", "Unknown33", "Unknown34", "Unknown35", "Unknown36", "Unknown37", "Unknown38", "None"];
-
-            switch (statNames[itemPMT.Units[Identifier].Stat])
-            {
-                case "All":
-                    yield return Tuple.Create<string, int>("ATP", itemPMT.Units[Identifier].StatAmount);
-                    yield return Tuple.Create<string, int>("DFP", itemPMT.Units[Identifier].StatAmount);
-                    yield return Tuple.Create<string, int>("MST", itemPMT.Units[Identifier].StatAmount);
-                    yield return Tuple.Create<string, int>("ATA", itemPMT.Units[Identifier].StatAmount / 10);
-                    yield return Tuple.Create<string, int>("EVP", itemPMT.Units[Identifier].StatAmount);
-                    yield return Tuple.Create<string, int>("LCK", itemPMT.Units[Identifier].StatAmount);
-                    break;
-
-                case "EAll":
-                    yield return Tuple.Create<string, int>("EFR", itemPMT.Units[Identifier].StatAmount);
-                    yield return Tuple.Create<string, int>("EIC", itemPMT.Units[Identifier].StatAmount);
-                    yield return Tuple.Create<string, int>("ETH", itemPMT.Units[Identifier].StatAmount);
-                    yield return Tuple.Create<string, int>("ELT", itemPMT.Units[Identifier].StatAmount);
-                    yield return Tuple.Create<string, int>("EDK", itemPMT.Units[Identifier].StatAmount);
-                    break;
-
-                case "ResHP":
-                case "ResTP":
-                case "ResPB":
-                case "Tech":
-                case "AtkSpeed":
-                case "CureAll":
-                case "TrapV":
-                case "CurePoison":
-                case "CurePara":
-                case "CureShock":
-                case "CureSlow":
-                case "CureConfuse":
-                case "CureFreeze":
-                case "None":
-                    break;
-
-                default:
-                    yield return Tuple.Create<string, int>(statNames[itemPMT.Units[Identifier].Stat], itemPMT.Units[Identifier].StatAmount + Modifier * itemPMT.Units[Identifier].ModifierAmount);
-                    break;
-            }
+            return itemPMT.Units[Identifier].GetStatBoosts(Modifier);
         }
 
         public override string ToString()
