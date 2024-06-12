@@ -1,0 +1,83 @@
+﻿@inherits InputBase<TValue>
+@typeparam TValue
+@inject IJSRuntime JS
+
+<div @ref="dropdown" class="dropdown" @attributes="AdditionalAttributes">
+    <input class="form-select dropdown-toggle" @bind-value="SearchValue" role="search" data-bs-toggle="dropdown" aria-expanded="false"
+           @oninput="FilterDataSource" onshow.bs.dropdown="@(async () => ShowDropdownAsync())" onhide.bs.dropdown="@(async () => HideDropdownAsync())" />
+    <ul @ref="dropdownMenu" class="dropdown-menu overflow-auto shadow">
+        <li><button class="dropdown-item @(IdMember(Value) == null ? "active" : "")" value="" onclick="@(async () => SelectedValueChangeAsync(null))"><i>~ None ~</i></button></li>
+        @foreach (var item in DataSourceFiltered)
+        {
+            <li><button class="dropdown-item @(IdMember(Value) == IdMember(item) ? "active" : "")" value="@item" onclick="@(async () => SelectedValueChangeAsync(IdMember(item)))">@DisplayMember(item)</button></li>
+        }
+    </ul>
+</div>
+
+<script>bootstrap.Dropdown.Default.popperConfig = { strategy: "fixed" };</script>
+
+@code {
+    [Parameter]
+    public IEnumerable<TValue> DataSource { get; set; } = [];
+
+    [Parameter]
+    public Func<TValue?, string?> IdMember { get; set; } = (i) => i?.ToString();
+
+    [Parameter]
+    public Func<TValue?, string?> DisplayMember { get; set; } = (i) => i?.ToString();
+
+    private ElementReference dropdown;
+    private ElementReference dropdownMenu;
+
+    public string? SearchValue { get; set; }
+    private IEnumerable<TValue> DataSourceFiltered { get; set; } = [];
+
+    private async ValueTask ShowDropdownAsync()
+    {
+        await JS.InvokeVoidAsync("updateDropdownMenu", dropdown, dropdownMenu);
+    }
+
+    private async ValueTask HideDropdownAsync()
+    {
+        await JS.InvokeVoidAsync("stopUpdateDropdownMenu", dropdown, dropdownMenu);
+    }
+
+    private void FilterDataSource(ChangeEventArgs eventArgs)
+    {
+        SearchValue = (string?)eventArgs.Value;
+        DataSourceFiltered = DataSource.Where(i => string.IsNullOrWhiteSpace(SearchValue) || SearchValue == DisplayMember(i) ? true : DisplayMember(i)!.StartsWith(SearchValue, StringComparison.CurrentCultureIgnoreCase));
+    }
+
+    private async Task SelectedValueChangeAsync(string? newId)
+    {
+        Value = DataSource.SingleOrDefault(i => IdMember(i) == newId);
+        await ValueChanged.InvokeAsync(Value);
+        SearchValue = DisplayMember(Value);
+        // Recreate filtered data source with everything to be able to select something else easily.
+        DataSourceFiltered = DataSource.Where(i => true);
+    }
+
+    /// <inheritdoc />
+    protected override void OnParametersSet()
+    {
+        SearchValue = DisplayMember(Value);
+        // Recreate filtered data source with everything to be able to select something else easily.
+        DataSourceFiltered = DataSource.Where(i => true);
+        base.OnParametersSet();
+    }
+
+    /// <inheritdoc />
+    protected override bool TryParseValueFromString(string? value, [MaybeNullWhen(false)] out TValue result, [NotNullWhen(false)] out string validationErrorMessage)
+    {
+        if (BindConverter.TryConvertTo<TValue>(value, System.Globalization.CultureInfo.CurrentCulture, out result))
+        {
+            validationErrorMessage = "";
+            return true;
+        }
+        else
+        {
+            validationErrorMessage = "Can't convert from string.";
+            return false;
+        }
+    }
+}

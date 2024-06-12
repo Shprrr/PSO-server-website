@@ -284,13 +284,8 @@ else
                 <div class="modal-body container row">
                     <label class="form-label col col-12">
                         Weapon
-                        <InputSelect @bind-Value="Weapon.Model" class="form-select" aria-label="Select a weapon">
-                            <option selected="@(Weapon.Identifier == null)" value=""><i>~ None ~</i></option>
-                            @foreach (var weapon in GetItemWithRequirements(weapons))
-                            {
-                                <option selected="@(Weapon.Identifier == weapon.Identifier)" value="@weapon">@weapon.Name</option>
-                            }
-                        </InputSelect>
+                        <InputSelectSearch @bind-Value="Weapon.Model" DataSource="@GetItemWithRequirements(weapons)"
+                                           IdMember="@((w) => w?.Identifier)" DisplayMember="@((w) => w?.Name)" aria-label="Select a weapon"></InputSelectSearch>
                     </label>
                     <label class="form-label col col-6">
                         Grind
@@ -354,13 +349,8 @@ else
                 <div class="modal-body container row">
                     <label class="form-label col col-12">
                         Armor
-                        <InputSelect @bind-Value="Armor.Model" class="form-select" aria-label="Select an armor">
-                            <option selected="@(Armor.Identifier == null)" value=""><i>~ None ~</i></option>
-                            @foreach (var armor in GetItemWithRequirements(armors))
-                            {
-                                <option selected="@(Armor.Identifier == armor.Identifier)" value="@armor">@armor.Name</option>
-                            }
-                        </InputSelect>
+                        <InputSelectSearch @bind-Value="Armor.Model" DataSource="@GetItemWithRequirements(armors)"
+                                           IdMember="@((a) => a?.Identifier)" DisplayMember="@((a) => a?.Name)" aria-label="Select an armor"></InputSelectSearch>
                     </label>
                     <label class="form-label col col-3">
                         DFP
@@ -423,13 +413,8 @@ else
                     <div class="modal-body container row">
                         <label class="form-label col col-12">
                             Unit
-                            <InputSelect @bind-Value="EditUnitModel.Model" class="form-select" aria-label="Select an unit">
-                                <option selected="@(EditUnitModel.Identifier == null)" value=""><i>~ None ~</i></option>
-                                @foreach (var unit in GetItemWithRequirements(units))
-                                {
-                                    <option selected="@(EditUnitModel.Identifier == unit.Identifier)" value="@unit">@unit.Name</option>
-                                }
-                            </InputSelect>
+                            <InputSelectSearch @bind-Value="EditUnitModel.Model" DataSource="@GetItemWithRequirements(units)"
+                                               IdMember="@((u) => u?.Identifier)" DisplayMember="@((u) => u?.Name)" aria-label="Select an unit"></InputSelectSearch>
                         </label>
                         @if (EditUnitModel.Identifier != null && itemPMT.Units[EditUnitModel.Identifier].CanHaveModifier)
                         {
@@ -471,13 +456,8 @@ else
                 <div class="modal-body container row">
                     <label class="form-label col col-12">
                         Shield
-                        <InputSelect @bind-Value="Shield.Model" class="form-select" aria-label="Select a shield">
-                            <option selected="@(Shield.Identifier == null)" value=""><i>~ None ~</i></option>
-                            @foreach (var shield in GetItemWithRequirements(shields))
-                            {
-                                <option selected="@(Shield.Identifier == shield.Identifier)" value="@shield">@shield.Name</option>
-                            }
-                        </InputSelect>
+                        <InputSelectSearch @bind-Value="Shield.Model" DataSource="@GetItemWithRequirements(shields)"
+                                           IdMember="@((s) => s?.Identifier)" DisplayMember="@((s) => s?.Name)" aria-label="Select a shield"></InputSelectSearch>
                     </label>
                     <label class="form-label col col-3">
                         DFP
@@ -517,13 +497,7 @@ else
                 <div class="modal-body container row">
                     <label class="form-label col col-6">
                         Mag
-                        <InputSelect @bind-Value="Mag.Name" class="form-select" aria-label="Select a mag">
-                            <option value=""><i>~ None ~</i></option>
-                            @foreach (var mag in mags)
-                            {
-                                <option value="@mag.Name">@mag.Name</option>
-                            }
-                        </InputSelect>
+                        <InputSelectSearch @bind-Value="Mag.Name" DataSource="@mags.Select(m => m.Name)" aria-label="Select a mag"></InputSelectSearch>
                     </label>
                     <label class="form-label col col-6">
                         Level
