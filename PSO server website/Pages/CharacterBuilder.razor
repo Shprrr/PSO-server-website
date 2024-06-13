@@ -319,7 +319,10 @@ else
                                 {
                                     <span class="input-group-prepend input-group-text">@statBoost.Prefix</span>
                                 }
-                                <InputNumber Value="@statBoost.Value" ValueExpression="@(() => statBoost.Value)" DisplayName="@statBoost.Name" class="form-control" disabled></InputNumber>
+                                @if (statBoost.Value != 0)
+                                {
+                                    <InputNumber Value="@statBoost.Value" ValueExpression="@(() => statBoost.Value)" DisplayName="@statBoost.Name" class="form-control" disabled></InputNumber>
+                                }
                                 @if (statBoost.Suffix != null)
                                 {
                                     <span class="input-group-append input-group-text">@statBoost.Suffix</span>
@@ -377,7 +380,10 @@ else
                                 {
                                     <span class="input-group-prepend input-group-text">@statBoost.Prefix</span>
                                 }
-                                <InputNumber Value="@statBoost.Value" ValueExpression="@(() => statBoost.Value)" DisplayName="@statBoost.Name" class="form-control" disabled></InputNumber>
+                                @if (statBoost.Value != 0)
+                                {
+                                    <InputNumber Value="@statBoost.Value" ValueExpression="@(() => statBoost.Value)" DisplayName="@statBoost.Name" class="form-control" disabled></InputNumber>
+                                }
                                 @if (statBoost.Suffix != null)
                                 {
                                     <span class="input-group-append input-group-text">@statBoost.Suffix</span>
@@ -432,7 +438,10 @@ else
                                     {
                                         <span class="input-group-prepend input-group-text">@statBoost.Prefix</span>
                                     }
-                                    <InputNumber Value="@statBoost.Value" ValueExpression="@(() => statBoost.Value)" DisplayName="@statBoost.Name" class="form-control" disabled></InputNumber>
+                                    @if (statBoost.Value != 0)
+                                    {
+                                        <InputNumber Value="@statBoost.Value" ValueExpression="@(() => statBoost.Value)" DisplayName="@statBoost.Name" class="form-control" disabled></InputNumber>
+                                    }
                                     @if (statBoost.Suffix != null)
                                     {
                                         <span class="input-group-append input-group-text">@statBoost.Suffix</span>
@@ -479,7 +488,20 @@ else
                     {
                         <label class="form-label col col-3">
                             @statBoost.Name
-                            <InputNumber Value="@statBoost.Value" ValueExpression="@(() => statBoost.Value)" DisplayName="@statBoost.Name" class="form-control" disabled></InputNumber>
+                            <span class="input-group">
+                                @if (statBoost.Prefix != null)
+                                {
+                                    <span class="input-group-prepend input-group-text">@statBoost.Prefix</span>
+                                }
+                                @if (statBoost.Value != 0)
+                                {
+                                    <InputNumber Value="@statBoost.Value" ValueExpression="@(() => statBoost.Value)" DisplayName="@statBoost.Name" class="form-control" disabled></InputNumber>
+                                }
+                                @if (statBoost.Suffix != null)
+                                {
+                                    <span class="input-group-append input-group-text">@statBoost.Suffix</span>
+                                }
+                            </span>
                         </label>
                     }
                 </div>

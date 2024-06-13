@@ -319,7 +319,25 @@ public class UnitModel : ItemBaseModel
     {
         string[] statNames = ["ATP", "MST", "ATA", "EVP", "HP", "TP", "DFP", "LCK", "All", "EFR", "EIC", "ETH", "ELT", "EDK", "EAll", "ResHP", "ResTP", "ResPB", "Tech", "AtkSpeed", "CureAll", "TrapV", "CurePoison", "CurePara", "CureShock", "CureSlow", "CureConfuse", "CureFreeze", "Unknown28", "Unknown29", "Unknown30", "Unknown31", "Unknown32", "Unknown33", "Unknown34", "Unknown35", "Unknown36", "Unknown37", "Unknown38", "None"];
 
-        switch (statNames[Stat])
+        string statName = statNames[Stat];
+
+        statName = Id switch
+        {
+            965 => "Yasakani",
+            967 => "V501",
+            968 => "V502",
+            969 => "V801",
+            970 => "Limiter",
+            971 => "Adept",
+            972 => "UnsealsProofSS",
+            973 => "ProofSS",
+            974 => "Smartlink",
+            975 => "DivineProt",
+            985 => "FriendRing",
+            _ => statName
+        };
+
+        switch (statName)
         {
             case "All":
                 yield return new Stat("ATP", StatAmount);
@@ -338,10 +356,52 @@ public class UnitModel : ItemBaseModel
                 yield return new Stat("EDK", StatAmount);
                 break;
 
+            case "V501":
+                yield return new Stat("CFPSpecials", 50);
+                yield return new Stat("KillSpecials", 50);
+                break;
+
+            case "V502":
+                yield return new Stat("CFPSpecials", 50);
+                yield return new Stat("KillSpecials", 100);
+                break;
+
+            case "Limiter":
+                yield return new Stat("ATP", -30);
+                yield return new Stat("DFP", -30);
+                yield return new Stat("MST", -30);
+                yield return new Stat("ATA", -10);
+                yield return new Stat("EVP", -30);
+                yield return new Stat("LCK", -30);
+                yield return new Stat("EFR", -10);
+                yield return new Stat("EIC", -10);
+                yield return new Stat("ETH", -10);
+                yield return new Stat("ELT", -10);
+                yield return new Stat("EDK", -10);
+                yield return new Stat("UnsealsAdept", 0);
+                break;
+
+            case "Adept":
+                yield return new Stat("ATP", 10);
+                yield return new Stat("DFP", 10);
+                yield return new Stat("MST", 10);
+                yield return new Stat("ATA", 20);
+                yield return new Stat("EVP", 10);
+                yield return new Stat("LCK", 10);
+                yield return new Stat("EFR", 6);
+                yield return new Stat("EIC", 6);
+                yield return new Stat("ETH", 6);
+                yield return new Stat("ELT", 6);
+                yield return new Stat("EDK", 6);
+                yield return new Stat("TPCost", -25);
+                break;
+
             default:
-                yield return new Stat(statNames[Stat], StatAmount + modifier * ModifierAmount);
+                yield return new Stat(statName, StatAmount + modifier * ModifierAmount);
                 break;
         }
+
+        if (Id == 966) yield return new Stat("AtkSpeed", 40);
     }
 }
 
@@ -407,6 +467,17 @@ public record Stat(string Code, int Value)
         "CureSlow" => "Cure Slow",
         "CureConfuse" => "Cure Confuse",
         "CureFreeze" => "Cure Freeze",
+        "TPCost" => "TP Cost",
+        "Yasakani" => "+30 ATA when equipped with Kusanagi",
+        "CFPSpecials" => "Success rate to Confuse, Freeze, and Paralysis specials",
+        "KillSpecials" => "Success rate to Instant Kill specials",
+        "V801"=> "Decreases technique charge time and cast time",
+        "UnsealsAdept" => "Unseals Adept",
+        "UnsealsProofSS" => "Unseals Proof of Sword-Saint",
+        "ProofSS" => "+30 ATA, +60 EVP, and -20 DFP when equipped with specific weapons",
+        "Smartlink" => "Removes ranged weapon accuracy penalty",
+        "DivineProt" => "+100% LCK and +20 EDK/ELT on hundreds digit of beat time is odd",
+        "FriendRing" => "DFP by ½ guild cards held",
         _ => Code
     };
 
@@ -420,7 +491,7 @@ public record Stat(string Code, int Value)
 
     public string? Suffix { get; init; } = Code switch
     {
-        "AtkSpeed" => "%",
+        "AtkSpeed" or "TPCost" or "CFPSpecials" or "KillSpecials" => "%",
         _ => null
     };
 }
