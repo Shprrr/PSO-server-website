@@ -255,6 +255,15 @@ public class WeaponModel(ItemPMTModel itemPMT) : ItemBaseModel
         if (statBoost.Stat1 != 0) yield return new Stat(statNames[statBoost.Stat1], statBoost.Amount1);
         if (statBoost.Stat2 != 0) yield return new Stat(statNames[statBoost.Stat2], statBoost.Amount2);
     }
+
+    public IEnumerable<Tech> GetTechBoosts()
+    {
+        string[] techNames = ["Foie", "Gifoie", "Rafoie", "Barta", "Gibarta", "Rabarta", "Zonde", "Gizonde", "Razonde", "Grants", "Deband", "Jellen", "Zalure", "Shifta", "Ryuker", "Resta", "Anti", "Reverser", "Megid"];
+        TechBoostModel techBoost = itemPMT.TechBoosts[TechBoost];
+        if (techBoost.Tech1 >= 0) yield return new Tech(techNames[techBoost.Tech1], Convert.ToInt32(techBoost.Boost1 * 100));
+        if (techBoost.Tech2 >= 0) yield return new Tech(techNames[techBoost.Tech2], Convert.ToInt32(techBoost.Boost2 * 100));
+        if (techBoost.Tech3 >= 0) yield return new Tech(techNames[techBoost.Tech3], Convert.ToInt32(techBoost.Boost3 * 100));
+    }
 }
 
 public class ArmorModel(ItemPMTModel itemPMT) : ItemBaseModel
@@ -283,6 +292,15 @@ public class ArmorModel(ItemPMTModel itemPMT) : ItemBaseModel
         StatBoostModel statBoost = itemPMT.StatBoosts[StatBoost];
         if (statBoost.Stat1 != 0) yield return new Stat(statNames[statBoost.Stat1], statBoost.Amount1);
         if (statBoost.Stat2 != 0) yield return new Stat(statNames[statBoost.Stat2], statBoost.Amount2);
+    }
+
+    public IEnumerable<Tech> GetTechBoosts()
+    {
+        string[] techNames = ["Foie", "Gifoie", "Rafoie", "Barta", "Gibarta", "Rabarta", "Zonde", "Gizonde", "Razonde", "Grants", "Deband", "Jellen", "Zalure", "Shifta", "Ryuker", "Resta", "Anti", "Reverser", "Megid"];
+        TechBoostModel techBoost = itemPMT.TechBoosts[TechBoost];
+        if (techBoost.Tech1 >= 0) yield return new Tech(techNames[techBoost.Tech1], Convert.ToInt32(techBoost.Boost1 * 100));
+        if (techBoost.Tech2 >= 0) yield return new Tech(techNames[techBoost.Tech2], Convert.ToInt32(techBoost.Boost2 * 100));
+        if (techBoost.Tech3 >= 0) yield return new Tech(techNames[techBoost.Tech3], Convert.ToInt32(techBoost.Boost3 * 100));
     }
 }
 
@@ -471,7 +489,7 @@ public record Stat(string Code, int Value)
         "Yasakani" => "+30 ATA when equipped with Kusanagi",
         "CFPSpecials" => "Success rate to Confuse, Freeze, and Paralysis specials",
         "KillSpecials" => "Success rate to Instant Kill specials",
-        "V801"=> "Decreases technique charge time and cast time",
+        "V801" => "Decreases technique charge time and cast time",
         "UnsealsAdept" => "Unseals Adept",
         "UnsealsProofSS" => "Unseals Proof of Sword-Saint",
         "ProofSS" => "+30 ATA, +60 EVP, and -20 DFP when equipped with specific weapons",
@@ -494,6 +512,28 @@ public record Stat(string Code, int Value)
         "AtkSpeed" or "TPCost" or "CFPSpecials" or "KillSpecials" => "%",
         _ => null
     };
+
+    public string ValueToString()
+    {
+        if (Value == 0) return "";
+        return $"{Prefix} {Value}{Suffix}";
+    }
+
+    public override string ToString() => $"{Name} {ValueToString}".TrimEnd();
+}
+
+public record Tech(string Name, int Value)
+{
+    public string Suffix { get; init; } = Name switch
+    {
+        "Deband" or "Jellen" or "Zalure" or "Shifta" or "Resta" or "Anti" => "% Range",
+        "Megid" => "Pierce",
+        _ => "%"
+    };
+
+    public string ValueToString() => Name == "Megid" ? Suffix : $"{Value}{Suffix}";
+
+    public override string ToString() => $"{Name} {ValueToString()}";
 }
 
 public static partial class BitConverterExtensions

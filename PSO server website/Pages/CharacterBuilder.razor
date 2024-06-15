@@ -330,11 +330,20 @@ else
                             </span>
                         </label>
                     }
-                    @foreach (var statBoost in Weapon.GetTechBoosts())
+                    @foreach (var techBoost in Weapon.GetTechBoosts())
                     {
-                        <label class="form-label col col-4">
-                            @statBoost.Item1
-                            <InputText Value="@statBoost.Item2" ValueExpression="@(() => statBoost.Item2)" DisplayName="@statBoost.Item1" class="form-control" disabled></InputText>
+                        <label class="form-label col col-6">
+                            @techBoost.Name
+                            <span class="input-group">
+                                @if (techBoost.Value != 0)
+                                {
+                                    <InputNumber Value="@techBoost.Value" ValueExpression="@(() => techBoost.Value)" DisplayName="@techBoost.Name" class="form-control" disabled></InputNumber>
+                                }
+                                @if (techBoost.Suffix != null)
+                                {
+                                    <span class="input-group-append input-group-text">@techBoost.Suffix</span>
+                                }
+                            </span>
                         </label>
                     }
                 </div>
@@ -395,11 +404,20 @@ else
                         Slots
                         <InputNumber @bind-Value="Armor.NumberSlots" DisplayName="Slots" class="form-control"></InputNumber>
                     </label>
-                    @foreach (var statBoost in Armor.GetTechBoosts())
+                    @foreach (var techBoost in Armor.GetTechBoosts())
                     {
-                        <label class="form-label col col-4">
-                            @statBoost.Item1
-                            <InputText Value="@statBoost.Item2" ValueExpression="@(() => statBoost.Item2)" DisplayName="@statBoost.Item1" class="form-control" disabled></InputText>
+                        <label class="form-label col col-6">
+                            @techBoost.Name
+                            <span class="input-group">
+                                @if (techBoost.Value != 0)
+                                {
+                                    <InputNumber Value="@techBoost.Value" ValueExpression="@(() => techBoost.Value)" DisplayName="@techBoost.Name" class="form-control" disabled></InputNumber>
+                                }
+                                @if (techBoost.Suffix != null)
+                                {
+                                    <span class="input-group-append input-group-text">@techBoost.Suffix</span>
+                                }
+                            </span>
                         </label>
                     }
                 </div>
@@ -500,6 +518,22 @@ else
                                 @if (statBoost.Suffix != null)
                                 {
                                     <span class="input-group-append input-group-text">@statBoost.Suffix</span>
+                                }
+                            </span>
+                        </label>
+                    }
+                    @foreach (var techBoost in Shield.GetTechBoosts())
+                    {
+                        <label class="form-label col col-6">
+                            @techBoost.Name
+                            <span class="input-group">
+                                @if (techBoost.Value != 0)
+                                {
+                                    <InputNumber Value="@techBoost.Value" ValueExpression="@(() => techBoost.Value)" DisplayName="@techBoost.Name" class="form-control" disabled></InputNumber>
+                                }
+                                @if (techBoost.Suffix != null)
+                                {
+                                    <span class="input-group-append input-group-text">@techBoost.Suffix</span>
                                 }
                             </span>
                         </label>
@@ -1224,22 +1258,12 @@ else
             return itemPMT.Weapons[Identifier].GetStatBoosts();
         }
 
-        public IEnumerable<Tuple<string, string>> GetTechBoosts()
+        public IEnumerable<Tech> GetTechBoosts()
         {
             if (string.IsNullOrEmpty(Identifier))
-                yield break;
+                return Enumerable.Empty<Tech>();
 
-            string[] techNames = ["Foie", "Gifoie", "Rafoie", "Barta", "Gibarta", "Rabarta", "Zonde", "Gizonde", "Razonde", "Grants", "Deband", "Jellen", "Zalure", "Shifta", "Ryuker", "Resta", "Anti", "Reverser", "Megid"];
-            var techBoost = itemPMT.TechBoosts[itemPMT.Weapons[Identifier].TechBoost];
-            string BoostToString(string techName, float boost) => techName switch
-            {
-                "Deband" or "Jellen" or "Zalure" or "Shifta" or "Resta" or "Anti" => (boost).ToString("P0") + " Range",
-                "Megid" => "Pierce",
-                _ => (boost).ToString("P0")
-            };
-            if (techBoost.Tech1 >= 0) yield return Tuple.Create<string, string>(techNames[techBoost.Tech1], BoostToString(techNames[techBoost.Tech1], techBoost.Boost1));
-            if (techBoost.Tech2 >= 0) yield return Tuple.Create<string, string>(techNames[techBoost.Tech2], BoostToString(techNames[techBoost.Tech2], techBoost.Boost2));
-            if (techBoost.Tech3 >= 0) yield return Tuple.Create<string, string>(techNames[techBoost.Tech3], BoostToString(techNames[techBoost.Tech3], techBoost.Boost3));
+            return itemPMT.Weapons[Identifier].GetTechBoosts();
         }
 
         public override string ToString()
@@ -1323,22 +1347,15 @@ else
             return itemPMT.Armors[Identifier].GetStatBoosts();
         }
 
-        public IEnumerable<Tuple<string, string>> GetTechBoosts()
+        public IEnumerable<Tech> GetTechBoosts()
         {
             if (string.IsNullOrEmpty(Identifier))
-                yield break;
-
-            string[] techNames = ["Foie", "Gifoie", "Rafoie", "Barta", "Gibarta", "Rabarta", "Zonde", "Gizonde", "Razonde", "Grants", "Deband", "Jellen", "Zalure", "Shifta", "Ryuker", "Resta", "Anti", "Reverser", "Megid"];
-            var techBoost = itemPMT.TechBoosts[itemPMT.Armors[Identifier].TechBoost];
-            string BoostToString(string techName, float boost) => techName switch
+                return Enumerable.Empty<Tech>();
+            foreach (var techBoost in itemPMT.Armors[Identifier].GetTechBoosts())
             {
-                "Deband" or "Jellen" or "Zalure" or "Shifta" or "Resta" or "Anti" => (boost).ToString("P0") + " Range",
-                "Megid" => "Pierce",
-                _ => (boost).ToString("P0")
-            };
-            if (techBoost.Tech1 >= 0) yield return Tuple.Create<string, string>(techNames[techBoost.Tech1], BoostToString(techNames[techBoost.Tech1], techBoost.Boost1));
-            if (techBoost.Tech2 >= 0) yield return Tuple.Create<string, string>(techNames[techBoost.Tech2], BoostToString(techNames[techBoost.Tech2], techBoost.Boost2));
-            if (techBoost.Tech3 >= 0) yield return Tuple.Create<string, string>(techNames[techBoost.Tech3], BoostToString(techNames[techBoost.Tech3], techBoost.Boost3));
+                Console.WriteLine(System.Text.Json.JsonSerializer.Serialize(techBoost));
+            }
+            return itemPMT.Armors[Identifier].GetTechBoosts();
         }
 
         public override string ToString()

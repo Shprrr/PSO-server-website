@@ -62,14 +62,14 @@
                             {
                                 <div class="row">
                                     <div class="col">@statBoost.Name</div>
-                                    <div class="col">@GetStatValueString(statBoost)</div>
+                                    <div class="col">@statBoost.ValueToString()</div>
                                 </div>
                             }
                             @foreach (var techBoost in GetTechBoosts())
                             {
                                 <div class="row">
-                                    <div class="col">@techBoost.Key</div>
-                                    <div class="col">@techBoost.Value</div>
+                                    <div class="col">@techBoost.Name</div>
+                                    <div class="col">@techBoost.ValueToString()</div>
                                 </div>
                             }
                             <div class="row">
@@ -153,14 +153,14 @@
                             {
                                 <div class="row">
                                     <div class="col">@statBoost.Name</div>
-                                    <div class="col">@GetStatValueString(statBoost)</div>
+                                    <div class="col">@statBoost.ValueToString()</div>
                                 </div>
                             }
                             @foreach (var techBoost in GetTechBoosts())
                             {
                                 <div class="row">
-                                    <div class="col">@techBoost.Key</div>
-                                    <div class="col">@techBoost.Value</div>
+                                    <div class="col">@techBoost.Name</div>
+                                    <div class="col">@techBoost.ValueToString()</div>
                                 </div>
                             }
                             <div class="row">
@@ -192,7 +192,7 @@
                             {
                                 <div class="row">
                                     <div class="col">@statBoost.Name</div>
-                                    <div class="col">@GetStatValueString(statBoost)</div>
+                                    <div class="col">@statBoost.ValueToString()</div>
                                 </div>
                             }
                             @if (itemInfo.UnitModel.CanHaveModifier)
@@ -320,27 +320,15 @@
         return Enumerable.Empty<Stat>();
     }
 
-    public string GetStatValueString(Stat statBoost)
+    public IEnumerable<Tech> GetTechBoosts()
     {
-        if (statBoost.Value == 0) return "";
-        return $"{statBoost.Prefix} {statBoost.Value}{statBoost.Suffix}";
-    }
+        if (itemInfo?.WeaponModel != null)
+            return itemInfo.WeaponModel.GetTechBoosts();
 
-    public IEnumerable<KeyValuePair<string, string>> GetTechBoosts()
-    {
-        if (itemInfo?.WeaponModel == null && itemInfo?.ArmorModel == null) yield break;
+        if (itemInfo?.ArmorModel != null)
+            return itemInfo.ArmorModel.GetTechBoosts();
 
-        string[] techNames = ["Foie", "Gifoie", "Rafoie", "Barta", "Gibarta", "Rabarta", "Zonde", "Gizonde", "Razonde", "Grants", "Deband", "Jellen", "Zalure", "Shifta", "Ryuker", "Resta", "Anti", "Reverser", "Megid"];
-        var techBoost = itemPMT.TechBoosts[itemInfo.WeaponModel?.TechBoost ?? itemInfo.ArmorModel!.TechBoost];
-        string BoostToString(string techName, float boost) => techName switch
-        {
-            "Deband" or "Jellen" or "Zalure" or "Shifta" or "Resta" or "Anti" => (boost).ToString("P0") + " Range",
-            "Megid" => "Pierce",
-            _ => (boost).ToString("P0")
-        };
-        if (techBoost.Tech1 >= 0) yield return new KeyValuePair<string, string>(techNames[techBoost.Tech1], BoostToString(techNames[techBoost.Tech1], techBoost.Boost1));
-        if (techBoost.Tech2 >= 0) yield return new KeyValuePair<string, string>(techNames[techBoost.Tech2], BoostToString(techNames[techBoost.Tech2], techBoost.Boost2));
-        if (techBoost.Tech3 >= 0) yield return new KeyValuePair<string, string>(techNames[techBoost.Tech3], BoostToString(techNames[techBoost.Tech3], techBoost.Boost3));
+        return Enumerable.Empty<Tech>();
     }
 
     private class ItemInfoModel(ItemModel itemModel, WeaponModel? weaponModel, ArmorModel? armorModel, UnitModel? unitModel, ToolModel? toolModel)
