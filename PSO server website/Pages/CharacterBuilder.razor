@@ -273,6 +273,33 @@ else
                 <span class="ms-1">@GetShiftaDebandDuration(DebandLevel)</span>
             </div>
         </div>
+        <div class="row">
+            <div class="col-2">
+                Technique Boosts
+            </div>
+            @foreach (var techBoost in GetEveryTechBoost())
+            {
+                <div class="col-2">
+                    <label class="form-label">
+                        @techBoost.Name
+                        <span class="input-group">
+                            @if (techBoost.Name == "Megid")
+                            {
+                                <InputText Value="@techBoost.Suffix" ValueExpression="@(() => techBoost.Suffix)" DisplayName="@techBoost.Name" class="form-control" disabled></InputText>
+                            }
+                            else
+                            {
+                                <InputNumber Value="@techBoost.Value" ValueExpression="@(() => techBoost.Value)" DisplayName="@techBoost.Name" class="form-control" disabled></InputNumber>
+                                @if (techBoost.Suffix != null)
+                                {
+                                    <span class="input-group-append input-group-text">@techBoost.Suffix</span>
+                                }
+                            }
+                        </span>
+                    </label>
+                </div>
+            }
+        </div>
     </div>
 
     <div id="modalEditWeapon" class="modal" onhidden.bs.modal="@(() => RefreshStats())">
@@ -335,13 +362,17 @@ else
                         <label class="form-label col col-6">
                             @techBoost.Name
                             <span class="input-group">
-                                @if (techBoost.Value != 0)
+                                @if (techBoost.Name == "Megid")
+                                {
+                                    <InputText Value="@techBoost.Suffix" ValueExpression="@(() => techBoost.Suffix)" DisplayName="@techBoost.Name" class="form-control" disabled></InputText>
+                                }
+                                else
                                 {
                                     <InputNumber Value="@techBoost.Value" ValueExpression="@(() => techBoost.Value)" DisplayName="@techBoost.Name" class="form-control" disabled></InputNumber>
-                                }
-                                @if (techBoost.Suffix != null)
-                                {
-                                    <span class="input-group-append input-group-text">@techBoost.Suffix</span>
+                                    @if (techBoost.Suffix != null)
+                                    {
+                                        <span class="input-group-append input-group-text">@techBoost.Suffix</span>
+                                    }
                                 }
                             </span>
                         </label>
@@ -409,13 +440,17 @@ else
                         <label class="form-label col col-6">
                             @techBoost.Name
                             <span class="input-group">
-                                @if (techBoost.Value != 0)
+                                @if (techBoost.Name == "Megid")
+                                {
+                                    <InputText Value="@techBoost.Suffix" ValueExpression="@(() => techBoost.Suffix)" DisplayName="@techBoost.Name" class="form-control" disabled></InputText>
+                                }
+                                else
                                 {
                                     <InputNumber Value="@techBoost.Value" ValueExpression="@(() => techBoost.Value)" DisplayName="@techBoost.Name" class="form-control" disabled></InputNumber>
-                                }
-                                @if (techBoost.Suffix != null)
-                                {
-                                    <span class="input-group-append input-group-text">@techBoost.Suffix</span>
+                                    @if (techBoost.Suffix != null)
+                                    {
+                                        <span class="input-group-append input-group-text">@techBoost.Suffix</span>
+                                    }
                                 }
                             </span>
                         </label>
@@ -527,13 +562,17 @@ else
                         <label class="form-label col col-6">
                             @techBoost.Name
                             <span class="input-group">
-                                @if (techBoost.Value != 0)
+                                @if (techBoost.Name == "Megid")
+                                {
+                                    <InputText Value="@techBoost.Suffix" ValueExpression="@(() => techBoost.Suffix)" DisplayName="@techBoost.Name" class="form-control" disabled></InputText>
+                                }
+                                else
                                 {
                                     <InputNumber Value="@techBoost.Value" ValueExpression="@(() => techBoost.Value)" DisplayName="@techBoost.Name" class="form-control" disabled></InputNumber>
-                                }
-                                @if (techBoost.Suffix != null)
-                                {
-                                    <span class="input-group-append input-group-text">@techBoost.Suffix</span>
+                                    @if (techBoost.Suffix != null)
+                                    {
+                                        <span class="input-group-append input-group-text">@techBoost.Suffix</span>
+                                    }
                                 }
                             </span>
                         </label>
@@ -1165,6 +1204,10 @@ else
         => shiftaDebandLevel == 0 ? 0 : Math.Sign(shiftaDebandLevel) * (1.3 * (Math.Abs(shiftaDebandLevel) - 1) + 10) / 100;
     private TimeSpan GetShiftaDebandDuration(int shiftaDebandLevel)
         => shiftaDebandLevel == 0 ? TimeSpan.Zero : new TimeSpan(0, 0, 10 * (Math.Abs(shiftaDebandLevel) - 1) + 40);
+
+    private IEnumerable<Tech> GetEveryTechBoost() => Weapon.GetTechBoosts().Concat(Armor.GetTechBoosts().Concat(Shield.GetTechBoosts()))
+        .GroupBy(t => t.Name, (name, boosts) => new Tech(name, boosts.Sum(t => t.Value)))
+        .Order();
 
     public class CharacterModel
     {

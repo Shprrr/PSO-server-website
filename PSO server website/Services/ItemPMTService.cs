@@ -258,11 +258,10 @@ public class WeaponModel(ItemPMTModel itemPMT) : ItemBaseModel
 
     public IEnumerable<Tech> GetTechBoosts()
     {
-        string[] techNames = ["Foie", "Gifoie", "Rafoie", "Barta", "Gibarta", "Rabarta", "Zonde", "Gizonde", "Razonde", "Grants", "Deband", "Jellen", "Zalure", "Shifta", "Ryuker", "Resta", "Anti", "Reverser", "Megid"];
         TechBoostModel techBoost = itemPMT.TechBoosts[TechBoost];
-        if (techBoost.Tech1 >= 0) yield return new Tech(techNames[techBoost.Tech1], Convert.ToInt32(techBoost.Boost1 * 100));
-        if (techBoost.Tech2 >= 0) yield return new Tech(techNames[techBoost.Tech2], Convert.ToInt32(techBoost.Boost2 * 100));
-        if (techBoost.Tech3 >= 0) yield return new Tech(techNames[techBoost.Tech3], Convert.ToInt32(techBoost.Boost3 * 100));
+        if (techBoost.Tech1 >= 0) yield return new Tech(Tech.TechNames[techBoost.Tech1], Convert.ToInt32(techBoost.Boost1 * 100));
+        if (techBoost.Tech2 >= 0) yield return new Tech(Tech.TechNames[techBoost.Tech2], Convert.ToInt32(techBoost.Boost2 * 100));
+        if (techBoost.Tech3 >= 0) yield return new Tech(Tech.TechNames[techBoost.Tech3], Convert.ToInt32(techBoost.Boost3 * 100));
     }
 }
 
@@ -296,11 +295,10 @@ public class ArmorModel(ItemPMTModel itemPMT) : ItemBaseModel
 
     public IEnumerable<Tech> GetTechBoosts()
     {
-        string[] techNames = ["Foie", "Gifoie", "Rafoie", "Barta", "Gibarta", "Rabarta", "Zonde", "Gizonde", "Razonde", "Grants", "Deband", "Jellen", "Zalure", "Shifta", "Ryuker", "Resta", "Anti", "Reverser", "Megid"];
         TechBoostModel techBoost = itemPMT.TechBoosts[TechBoost];
-        if (techBoost.Tech1 >= 0) yield return new Tech(techNames[techBoost.Tech1], Convert.ToInt32(techBoost.Boost1 * 100));
-        if (techBoost.Tech2 >= 0) yield return new Tech(techNames[techBoost.Tech2], Convert.ToInt32(techBoost.Boost2 * 100));
-        if (techBoost.Tech3 >= 0) yield return new Tech(techNames[techBoost.Tech3], Convert.ToInt32(techBoost.Boost3 * 100));
+        if (techBoost.Tech1 >= 0) yield return new Tech(Tech.TechNames[techBoost.Tech1], Convert.ToInt32(techBoost.Boost1 * 100));
+        if (techBoost.Tech2 >= 0) yield return new Tech(Tech.TechNames[techBoost.Tech2], Convert.ToInt32(techBoost.Boost2 * 100));
+        if (techBoost.Tech3 >= 0) yield return new Tech(Tech.TechNames[techBoost.Tech3], Convert.ToInt32(techBoost.Boost3 * 100));
     }
 }
 
@@ -522,8 +520,12 @@ public record Stat(string Code, int Value)
     public override string ToString() => $"{Name} {ValueToString}".TrimEnd();
 }
 
-public record Tech(string Name, int Value)
+public record Tech(string Name, int Value) : IComparable<Tech>
 {
+    public static readonly string[] TechNames = ["Foie", "Gifoie", "Rafoie", "Barta", "Gibarta", "Rabarta", "Zonde", "Gizonde", "Razonde", "Grants", "Deband", "Jellen", "Zalure", "Shifta", "Ryuker", "Resta", "Anti", "Reverser", "Megid"];
+
+    public int Order { get; init; } = Array.IndexOf(TechNames, Name);
+
     public string Suffix { get; init; } = Name switch
     {
         "Deband" or "Jellen" or "Zalure" or "Shifta" or "Resta" or "Anti" => "% Range",
@@ -534,6 +536,8 @@ public record Tech(string Name, int Value)
     public string ValueToString() => Name == "Megid" ? Suffix : $"{Value}{Suffix}";
 
     public override string ToString() => $"{Name} {ValueToString()}";
+
+    public int CompareTo(Tech? other) => Order.CompareTo(other?.Order);
 }
 
 public static partial class BitConverterExtensions
