@@ -1205,7 +1205,50 @@ else
     private TimeSpan GetShiftaDebandDuration(int shiftaDebandLevel)
         => shiftaDebandLevel == 0 ? TimeSpan.Zero : new TimeSpan(0, 0, 10 * (Math.Abs(shiftaDebandLevel) - 1) + 40);
 
-    private IEnumerable<Tech> GetEveryTechBoost() => Weapon.GetTechBoosts().Concat(Armor.GetTechBoosts().Concat(Shield.GetTechBoosts()))
+    private IEnumerable<Tech> GetClassTechBoost()
+    {
+        switch (ClassRaceSelection)
+        {
+            case ClassRace.Fomar:
+                yield return new Tech("Gifoie", 30);
+                yield return new Tech("Gibarta", 30);
+                yield return new Tech("Gizonde", 30);
+                yield return new Tech("Grants", 30);
+                yield return new Tech("Shifta", 100);
+                yield return new Tech("Deband", 100);
+                break;
+
+            case ClassRace.Fomarl:
+                yield return new Tech("Grants", 50);
+                yield return new Tech("Resta", 100);
+                yield return new Tech("Anti", 100);
+                yield return new Tech("Shifta", 100);
+                yield return new Tech("Deband", 100);
+                break;
+
+            case ClassRace.Fonewm:
+                yield return new Tech("Gifoie", 30);
+                yield return new Tech("Gibarta", 30);
+                yield return new Tech("Gizonde", 30);
+                yield return new Tech("Rafoie", 30);
+                yield return new Tech("Rabarta", 30);
+                yield return new Tech("Razonde", 30);
+                break;
+
+            case ClassRace.Fonewearl:
+                yield return new Tech("Foie", 30);
+                yield return new Tech("Barta", 30);
+                yield return new Tech("Zonde", 30);
+                yield return new Tech("Megid", 100);
+                yield return new Tech("Resta", 100);
+                yield return new Tech("Anti", 100);
+                break;
+
+            default:
+                yield break;
+        }
+    }
+    private IEnumerable<Tech> GetEveryTechBoost() => GetClassTechBoost().Concat(Weapon.GetTechBoosts().Concat(Armor.GetTechBoosts().Concat(Shield.GetTechBoosts())))
         .GroupBy(t => t.Name, (name, boosts) => new Tech(name, boosts.Sum(t => t.Value)))
         .Order();
 
@@ -1394,10 +1437,7 @@ else
         {
             if (string.IsNullOrEmpty(Identifier))
                 return Enumerable.Empty<Tech>();
-            foreach (var techBoost in itemPMT.Armors[Identifier].GetTechBoosts())
-            {
-                Console.WriteLine(System.Text.Json.JsonSerializer.Serialize(techBoost));
-            }
+
             return itemPMT.Armors[Identifier].GetTechBoosts();
         }
 
