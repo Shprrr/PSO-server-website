@@ -347,7 +347,7 @@ public class UnitModel : ItemBaseModel
             971 => "Adept",
             972 => "UnsealsProofSS",
             973 => "ProofSS",
-            974 => "Smartlink",
+            974 => "Ranger",
             975 => "DivineProt",
             985 => "FriendRing",
             _ => statName
@@ -491,7 +491,7 @@ public record Stat(string Code, int Value)
         "UnsealsAdept" => "Unseals Adept",
         "UnsealsProofSS" => "Unseals Proof of Sword-Saint",
         "ProofSS" => "+30 ATA, +60 EVP, and -20 DFP when equipped with specific weapons",
-        "Smartlink" => "Removes ranged weapon accuracy penalty",
+        "Ranger" => "Removes ranged weapon accuracy penalty",
         "DivineProt" => "+100% LCK and +20 EDK/ELT on hundreds digit of beat time is odd",
         "FriendRing" => "DFP by ½ guild cards held",
         _ => Code

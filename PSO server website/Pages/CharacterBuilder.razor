@@ -273,33 +273,66 @@ else
                 <span class="ms-1">@GetShiftaDebandDuration(DebandLevel)</span>
             </div>
         </div>
-        <div class="row">
-            <div class="col-2">
-                Technique Boosts
-            </div>
-            @foreach (var techBoost in GetEveryTechBoost())
-            {
+        @if (GetEveryTechBoost().Any())
+        {
+            <div class="row">
                 <div class="col-2">
-                    <label class="form-label">
-                        @techBoost.Name
-                        <span class="input-group">
-                            @if (techBoost.Name == "Megid")
-                            {
-                                <InputText Value="@techBoost.Suffix" ValueExpression="@(() => techBoost.Suffix)" DisplayName="@techBoost.Name" class="form-control" disabled></InputText>
-                            }
-                            else
-                            {
-                                <InputNumber Value="@techBoost.Value" ValueExpression="@(() => techBoost.Value)" DisplayName="@techBoost.Name" class="form-control" disabled></InputNumber>
-                                @if (techBoost.Suffix != null)
-                                {
-                                    <span class="input-group-append input-group-text">@techBoost.Suffix</span>
-                                }
-                            }
-                        </span>
-                    </label>
+                    Technique Boosts
                 </div>
-            }
-        </div>
+                @foreach (var techBoost in GetEveryTechBoost())
+                {
+                    <div class="col-2">
+                        <label class="form-label">
+                            @techBoost.Name
+                            <span class="input-group">
+                                @if (techBoost.Name == "Megid")
+                                {
+                                    <InputText Value="@techBoost.Suffix" ValueExpression="@(() => techBoost.Suffix)" DisplayName="@techBoost.Name" class="form-control" disabled></InputText>
+                                }
+                                else
+                                {
+                                    <InputNumber Value="@techBoost.Value" ValueExpression="@(() => techBoost.Value)" DisplayName="@techBoost.Name" class="form-control" disabled></InputNumber>
+                                    @if (techBoost.Suffix != null)
+                                    {
+                                        <span class="input-group-append input-group-text">@techBoost.Suffix</span>
+                                    }
+                                }
+                            </span>
+                        </label>
+                    </div>
+                }
+            </div>
+        }
+        @if (GetEverySpecialStats().Any())
+        {
+            <div class="row">
+                <div class="col-2">
+                    Hidden Stats
+                </div>
+                @foreach (var specialStat in GetEverySpecialStats())
+                {
+                    <div class="col-2">
+                        <label class="form-label">
+                            @specialStat.Name
+                            <span class="input-group">
+                                @if (specialStat.Prefix != null)
+                                {
+                                    <span class="input-group-prepend input-group-text">@specialStat.Prefix</span>
+                                }
+                                @if (specialStat.Value != 0)
+                                {
+                                    <InputNumber Value="@specialStat.Value" ValueExpression="@(() => specialStat.Value)" DisplayName="@specialStat.Name" class="form-control" disabled></InputNumber>
+                                }
+                                @if (specialStat.Suffix != null)
+                                {
+                                    <span class="input-group-append input-group-text">@specialStat.Suffix</span>
+                                }
+                            </span>
+                        </label>
+                    </div>
+                }
+            </div>
+        }
     </div>
 
     <div id="modalEditWeapon" class="modal" onhidden.bs.modal="@(() => RefreshStats())">
@@ -1251,6 +1284,24 @@ else
     private IEnumerable<Tech> GetEveryTechBoost() => GetClassTechBoost().Concat(Weapon.GetTechBoosts().Concat(Armor.GetTechBoosts().Concat(Shield.GetTechBoosts())))
         .GroupBy(t => t.Name, (name, boosts) => new Tech(name, boosts.Sum(t => t.Value)))
         .Order();
+
+    private IEnumerable<Stat> GetClassStatBoost()
+    {
+        switch (ClassRaceSelection)
+        {
+            case ClassRace.Ramar:
+            case ClassRace.Ramarl:
+            case ClassRace.Racast:
+            case ClassRace.Racaseal:
+                yield return new Stat("Ranger", 0);
+                break;
+
+            default:
+                yield break;
+        }
+    }
+    private IEnumerable<Stat> GetEverySpecialStats() => GetClassStatBoost().Concat(GetEveryStatBoost())
+        .Where(s => !new string[] { "ATP", "MST", "ATA", "EVP", "HP", "TP", "DFP", "LCK", "EFR", "EIC", "ETH", "ELT", "EDK", "+ATP", "+ATA", "+EVP", "+DFP", "+MST", "+HP", "+LCK", "+All", "-ATP", "-ATA", "-EVP", "-DFP", "-MST", "-HP", "-LCK", "-All" }.Contains(s.Code));
 
     public class CharacterModel
     {
