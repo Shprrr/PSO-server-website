@@ -20,6 +20,12 @@ else
         <div class="row">
             <div class="col">
                 <label class="form-label">
+                    Name
+                    <InputText @bind-Value="Name" DisplayName="Name" class="form-control"></InputText>
+                </label>
+            </div>
+            <div class="col">
+                <label class="form-label">
                     Class
                     <InputSelect @bind-Value="ClassRaceSelection" class="form-select" aria-label="Select a class">
                         <option value="">Select a class ...</option>
@@ -333,6 +339,14 @@ else
                 }
             </div>
         }
+        <div class="row">
+            <div class="col">
+                <label class="form-label w-100">
+                    Notes
+                    <InputTextArea @bind-Value="Notes" DisplayName="Notes" class="form-control"></InputTextArea>
+                </label>
+            </div>
+        </div>
     </div>
 
     <div id="modalEditWeapon" class="modal" onhidden.bs.modal="@(() => RefreshStats())">
@@ -759,6 +773,12 @@ else
     [DisallowNull] private ShieldModel shield = default!;
     [DisallowNull] private MagModel mag = MagModel.Parse("Mag 5/0/0/0");
 
+    public string Name
+    {
+        get { return Character.Name; }
+        set { Character.Name = value; RefreshStats(); }
+    }
+
     public ClassRace? ClassRaceSelection
     {
         get { return Character.ClassRaceSelection; }
@@ -1035,6 +1055,12 @@ else
         set { mag = value; RefreshStats(); }
     }
 
+    public string? Notes
+    {
+        get { return Character.Notes; }
+        set { Character.Notes = value; RefreshStats(); }
+    }
+
     public void RefreshStats()
     {
         if (!ClassRaceSelection.HasValue)
@@ -1305,6 +1331,7 @@ else
 
     public class CharacterModel
     {
+        public string Name { get; set; } = "";
         public ClassRace? ClassRaceSelection { get; set; }
 
         public int Level { get; set; } = 1;
@@ -1334,6 +1361,8 @@ else
         public string Unit4Name { get; set; } = "";
         public string ShieldName { get; set; } = "";
         public string MagName { get; set; } = "Mag 5/0/0/0";
+
+        public string? Notes { get; set; }
     }
 
     public class WeaponModel(ItemPMTModel itemPMT)
