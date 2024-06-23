@@ -16,6 +16,9 @@
 }
 else
 {
+    <div class="container mb-2">
+        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalCharacterSelection">Change character</button>
+    </div>
     <div class="container border rounded">
         <div class="row">
             <div class="col">
@@ -345,6 +348,33 @@ else
                     Notes
                     <InputTextArea @bind-Value="Notes" DisplayName="Notes" class="form-control"></InputTextArea>
                 </label>
+            </div>
+        </div>
+    </div>
+
+    <div id="modalCharacterSelection" class="modal" onhidden.bs.modal="@(() => RefreshStats())">
+        <div class="modal-dialog modal-dialog-scrollable modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <span>Character Selection</span><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body container">
+                    <div class="btn-group-vertical vstack" role="group">
+                        @foreach (var character in Characters)
+                        {
+                            <label class="btn btn-outline-primary d-flex @(character == Character ? "active": "")">
+                                <input type="radio" class="btn-check" name="vbtn-radio-character-selection" autocomplete="off" checked="@(character == Character)" @onchange="(e) => OnClickCharacterSelection(character)">
+                                &nbsp;<span>@character.Name</span>
+                            </label>
+                        }
+
+                        <label class="btn btn-outline-secondary d-flex">
+                            <input type="radio" class="btn-check" name="vbtn-radio-character-selection" autocomplete="off" @onchange="(e) => OnClickCharacterSelection(null)">
+                            ~ New Character ~
+                        </label>
+                    </div>
+                </div>
+                <div class="modal-footer"></div>
             </div>
         </div>
     </div>
@@ -686,6 +716,7 @@ else
     [DisallowNull] private ItemModel[] shields = default!;
     [DisallowNull] private ItemModel[] mags = default!;
 
+    [DisallowNull] public List<CharacterModel> Characters { get; set; } = new();
     [DisallowNull] public CharacterModel Character { get; set; } = default!;
     private int EditUnit { get; set; }
     private UnitModel EditUnitModel => EditUnit switch
@@ -718,33 +749,52 @@ else
         unit4 = new(itemPMT);
         shield = new(itemPMT);
 
-        List<CharacterModel>? characters = await localStorage.GetItemAsync<List<CharacterModel>>("characters");
-        if (characters?.Count > 0)
+        Characters = await localStorage.GetItemAsync<List<CharacterModel>>("characters") ?? new();
+        if (Characters.Count > 0)
         {
-            Character = characters[0];
-            // Keep equipment names because they will be erased when assigning other equipment.
-            string weaponName = Character.WeaponName;
-            string armorName = Character.ArmorName;
-            string unit1Name = Character.Unit1Name;
-            string unit2Name = Character.Unit2Name;
-            string unit3Name = Character.Unit3Name;
-            string unit4Name = Character.Unit4Name;
-            string shieldName = Character.ShieldName;
-            // It's this order because each one helps with requirements for other equipment.
-            Mag = MagModel.Parse(Character.MagName);
-            Armor = ArmorModel.Parse(itemPMT, armors, armorName);
-            Unit1 = UnitModel.Parse(itemPMT, units, unit1Name);
-            Unit2 = UnitModel.Parse(itemPMT, units, unit2Name);
-            Unit3 = UnitModel.Parse(itemPMT, units, unit3Name);
-            Unit4 = UnitModel.Parse(itemPMT, units, unit4Name);
-            Shield = ShieldModel.Parse(itemPMT, shields, shieldName);
-            Weapon = WeaponModel.Parse(itemPMT, weapons, weaponName);
-            RefreshStats();
+            LoadCharacter(Characters[0]);
         }
         else
+        {
             Character = new();
+            Characters.Add(Character);
+        }
 
         await base.OnInitializedAsync();
+    }
+
+    private void LoadCharacter(CharacterModel character)
+    {
+        Character = character;
+        // Keep equipment names because they will be erased when assigning other equipment.
+        string weaponName = Character.WeaponName;
+        string armorName = Character.ArmorName;
+        string unit1Name = Character.Unit1Name;
+        string unit2Name = Character.Unit2Name;
+        string unit3Name = Character.Unit3Name;
+        string unit4Name = Character.Unit4Name;
+        string shieldName = Character.ShieldName;
+        // It's this order because each one helps with requirements for other equipment.
+        Mag = MagModel.Parse(Character.MagName);
+        Armor = ArmorModel.Parse(itemPMT, armors, armorName);
+        Unit1 = UnitModel.Parse(itemPMT, units, unit1Name);
+        Unit2 = UnitModel.Parse(itemPMT, units, unit2Name);
+        Unit3 = UnitModel.Parse(itemPMT, units, unit3Name);
+        Unit4 = UnitModel.Parse(itemPMT, units, unit4Name);
+        Shield = ShieldModel.Parse(itemPMT, shields, shieldName);
+        Weapon = WeaponModel.Parse(itemPMT, weapons, weaponName);
+        RefreshStats();
+    }
+
+    private void OnClickCharacterSelection(CharacterModel? newSelection)
+    {
+        if (newSelection == null)
+        {
+            newSelection = new();
+            Characters.Add(newSelection);
+        }
+
+        LoadCharacter(newSelection);
     }
 
     public enum ClassRace
@@ -1175,7 +1225,7 @@ else
         LCK = baseStats.LCK + levelDeltas.Sum(l => l.LCK) + LuckMaterial * 2
             + GetEveryStatBoost().Sum(s => CalculateStatBoost("LCK", s.Code, s.Value));
 
-        localStorage.SetItemAsync("characters", new[] { Character });
+        localStorage.SetItemAsync("characters", Characters);
     }
 
     private double GetHPMultiplier() => ClassRaceSelection switch
