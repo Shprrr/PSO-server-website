@@ -364,7 +364,8 @@ else
                         {
                             <label class="btn btn-outline-primary d-flex @(character == Character ? "active": "")">
                                 <input type="radio" class="btn-check" name="vbtn-radio-character-selection" autocomplete="off" checked="@(character == Character)" @onchange="(e) => OnClickCharacterSelection(character)">
-                                &nbsp;<span>@character.Name</span>
+                                <span>@character.Name</span>
+                                <button class="btn btn-sm btn-danger ms-auto" @onclick="(e) => OnClickCharacterDelete(character)">Delete</button>
                             </label>
                         }
 
@@ -797,6 +798,16 @@ else
         LoadCharacter(newSelection);
     }
 
+    private void OnClickCharacterDelete(CharacterModel character)
+    {
+        Characters.Remove(character);
+
+        if (character == Character)
+            LoadCharacter(Characters[0]);
+        else
+            RefreshStats();
+    }
+
     public enum ClassRace
     {
         Humar,
@@ -1147,6 +1158,8 @@ else
             if (Character.Unit4Name != "") { Character.Unit4Name = ""; Unit4 = new(itemPMT); }
             if (Character.ShieldName != "") { Character.ShieldName = ""; Shield = new(itemPMT); }
             if (Character.MagName != "Mag 5/0/0/0") { Character.MagName = "Mag 5/0/0/0"; Mag = MagModel.Parse("Mag 5/0/0/0"); }
+
+            localStorage.SetItemAsync("characters", Characters);
             return;
         }
 
