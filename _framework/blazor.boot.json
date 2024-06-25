@@ -1,7 +1,7 @@
 {
   "mainAssemblyName": "PSOServerWebsite",
   "resources": {
-    "hash": "sha256-U73AjlF1/Dhb8Fv5MUlEakZpY20HvboOJqN72KEyGDw=",
+    "hash": "sha256-e8mHI994CFsQ3/MR6/s2JUokQbUPIQ0N3lagW36EcKM=",
     "jsModuleNative": {
       "dotnet.native.8.0.6.hvj2d4ets5.js": "sha256-oXccQn9rICGrmJCU3+W/8JiZeUiNSyNwKlDJJuHaJHs="
     },
@@ -33,11 +33,11 @@
       "Microsoft.Extensions.Primitives.wasm": "sha256-Ms2HR5Gpug/0uRAzdk4SUNT76Ml3CjFv9Jo+dUIMGac=",
       "Microsoft.JSInterop.wasm": "sha256-3O3gWyrEr74DBx9YVdApbuDBLG2cw8DkHPzqZ2JoG2Q=",
       "Microsoft.JSInterop.WebAssembly.wasm": "sha256-i8yLC1pzEZMAPAHK2MyunJW81S6Tpyvwka9LDZSylx8=",
-      "PSOServerWebsite.wasm": "sha256-GS/r6Wp2E4FX6rJOnW5L26BkW/W4PJ9BcWdlr3+grF4=",
+      "PSOServerWebsite.wasm": "sha256-V5wOFUj9y+8RMASvo6L2F8vEfhoKmSo042CBxSFtlMc=",
       "System.Collections.Concurrent.wasm": "sha256-8PpZeomW/LFWW+AgLJB2TBI6LPnkT10kuOV1oWTn3Xo=",
       "System.Collections.NonGeneric.wasm": "sha256-hYwQfCavxnKjAdbzca708h7wiRxp51b2p0ZX+Rdyf3E=",
       "System.Collections.Specialized.wasm": "sha256-3EveVMjovty5exaf74Da1WPuYJopYXTQU40xAHl55/0=",
-      "System.Collections.wasm": "sha256-8+H7YArnHBB1C45W5H0yNs0OJoMsFVG9ha9xfKFSSQ4=",
+      "System.Collections.wasm": "sha256-fyiT25Te+/+lgVoJtzjpJ2vU/MB0dpRnmG9rS3+JgAQ=",
       "System.ComponentModel.Primitives.wasm": "sha256-zxsNmz89Lp0uFmfLVb1CJQ0Hdq5IEdio5g0iAjKBbCE=",
       "System.ComponentModel.TypeConverter.wasm": "sha256-uwLxkpqBUYVxaLfizr6WnvhLn+a3DwrQniI0Ze1bCzo=",
       "System.ComponentModel.wasm": "sha256-tqO2Y4mD7n9rI1g+QSashz42lb50djXmx3ECzGEqbcY=",
