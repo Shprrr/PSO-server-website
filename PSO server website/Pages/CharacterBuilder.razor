@@ -1,6 +1,7 @@
 ﻿@page "/characterBuilder"
 @using PSOServerWebsite.Services
 @using System.Text.RegularExpressions
+@inject IJSRuntime JsRuntime
 @inject Blazored.LocalStorage.ILocalStorageService localStorage
 @inject LevelTableService levelTableService
 @inject ItemsService itemsService
@@ -359,13 +360,26 @@ else
                     <span>Character Selection</span><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body container">
+                    <div id="alertPlaceholder"></div>
+                    <dialog id="dialogConfirmDeleteCharacter" @onclose="() => CharacterToDelete = null">
+                        @if (CharacterToDelete != null)
+                        {
+                            <form method="dialog">
+                                <p>Do you want to delete @CharacterToDelete.Name ?</p>
+                                <div class="d-flex gap-2 justify-content-end">
+                                    <button class="btn btn-secondary" value="cancel">No</button>
+                                    <button class="btn btn-danger" value="ok" @onclick="() => OnClickCharacterDelete(CharacterToDelete)">Yes</button>
+                                </div>
+                            </form>
+                        }
+                    </dialog>
                     <div class="btn-group-vertical vstack" role="group">
                         @foreach (var character in Characters)
                         {
                             <label class="btn btn-outline-primary d-flex @(character == Character ? "active": "")">
                                 <input type="radio" class="btn-check" name="vbtn-radio-character-selection" autocomplete="off" checked="@(character == Character)" @onchange="(e) => OnClickCharacterSelection(character)">
                                 <span>@character.Name</span>
-                                <button class="btn btn-sm btn-danger ms-auto" @onclick="(e) => OnClickCharacterDelete(character)">Delete</button>
+                                <button class="btn btn-sm btn-danger ms-auto" @onclick="() => OnClickConfirmCharacterDelete(character)">Delete</button>
                             </label>
                         }
 
@@ -379,6 +393,28 @@ else
             </div>
         </div>
     </div>
+    <script type="text/javascript">
+        const dialogConfirmDeleteCharacter = document.getElementById('dialogConfirmDeleteCharacter');
+
+        function closeModalCharacterSelection() {
+            bootstrap.Modal.getInstance(document.getElementById('modalCharacterSelection')).hide();
+        }
+        function confirmDeleteCharacter() {
+            dialogConfirmDeleteCharacter.showModal();
+        }
+        function deleteCharacter(characterName) {
+            const wrapper = document.createElement('div')
+            wrapper.innerHTML = [
+                `<div class="alert alert-success alert-dismissible" role="alert">`,
+                `<div>${characterName} was deleted.</div>`,
+                '   <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>',
+                '</div>'
+            ].join('')
+
+            const alertPlaceholder = document.getElementById('alertPlaceholder')
+            alertPlaceholder.append(wrapper)
+        }
+    </script>
 
     <div id="modalEditWeapon" class="modal" onhidden.bs.modal="@(() => RefreshStats())">
         <div class="modal-dialog modal-dialog-scrollable modal-dialog-centered">
@@ -796,6 +832,14 @@ else
         }
 
         LoadCharacter(newSelection);
+        JsRuntime.InvokeVoidAsync("closeModalCharacterSelection").ConfigureAwait(false);
+    }
+
+    public CharacterModel? CharacterToDelete { get; set; }
+    private void OnClickConfirmCharacterDelete(CharacterModel character)
+    {
+        CharacterToDelete = character;
+        JsRuntime.InvokeVoidAsync("confirmDeleteCharacter");
     }
 
     private void OnClickCharacterDelete(CharacterModel character)
@@ -803,9 +847,14 @@ else
         Characters.Remove(character);
 
         if (character == Character)
+        {
+            if (Characters.Count == 0)
+                Characters.Add(new());
             LoadCharacter(Characters[0]);
+        }
         else
             RefreshStats();
+        JsRuntime.InvokeVoidAsync("deleteCharacter", character.Name);
     }
 
     public enum ClassRace
