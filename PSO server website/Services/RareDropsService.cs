@@ -6,11 +6,12 @@ namespace PSOServerWebsite.Services;
 public class RareDropsService(HttpClient http)
 {
     private static readonly JsonSerializerOptions s_options = new() { ReadCommentHandling = JsonCommentHandling.Skip, AllowTrailingCommas = true };
+    private static string? s_rareDropsJson = null;
 
     public async Task<RareDropModel> GetRareDropsAsync()
     {
-        string json = (await http.GetStringAsync("data/rare-table-v4.json")).FixJson();
-        return JsonSerializer.Deserialize<RareDropModel>(json, s_options)!;
+        s_rareDropsJson ??= (await http.GetStringAsync("data/rare-table-v4.json")).FixJson();
+        return JsonSerializer.Deserialize<RareDropModel>(s_rareDropsJson, s_options)!;
     }
 }
 
@@ -72,18 +73,18 @@ public class DifficultyModel
         return Viridia.Keys.Union(Greennill.Keys.Union(Skyly.Keys.Union(Bluefull.Keys.Union(Purplenum.Keys.Union(Pinkal.Keys.Union(Redria.Keys.Union(Oran.Keys.Union(Yellowboze.Keys.Union(Whitill.Keys)))))))));
     }
 
-    public IEnumerable<SectionIdModel> SectionsId()
+    public IEnumerable<NamedObject<SectionIdModel>> SectionsId()
     {
-        yield return Viridia;
-        yield return Greennill;
-        yield return Skyly;
-        yield return Bluefull;
-        yield return Purplenum;
-        yield return Pinkal;
-        yield return Redria;
-        yield return Oran;
-        yield return Yellowboze;
-        yield return Whitill;
+        yield return new("Viridia", Viridia);
+        yield return new("Greennill", Greennill);
+        yield return new("Skyly", Skyly);
+        yield return new("Bluefull", Bluefull);
+        yield return new("Purplenum", Purplenum);
+        yield return new("Pinkal", Pinkal);
+        yield return new("Redria", Redria);
+        yield return new("Oran", Oran);
+        yield return new("Yellowboze", Yellowboze);
+        yield return new("Whitill", Whitill);
     }
 }
 
@@ -127,9 +128,9 @@ public class RareSpecificationModelConverter : JsonConverter<RareSpecificationMo
     public override void Write(Utf8JsonWriter writer, RareSpecificationModel value, JsonSerializerOptions options) => throw new NotImplementedException();
 }
 
-public class NamedObject<T>(string name, T? value)
+public class NamedObject<T>(string name, T value)
 {
     public string Name { get; set; } = name;
 
-    public T? Value { get; set; } = value;
+    public T Value { get; set; } = value;
 }

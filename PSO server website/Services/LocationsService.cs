@@ -5,9 +5,12 @@ namespace PSOServerWebsite.Services;
 
 public class LocationsService(HttpClient http)
 {
+    private static IEnumerable<LocationModel>? s_locations;
+
     public async Task<IEnumerable<LocationModel>> GetLocationsAsync()
     {
-        return (await http.GetFromJsonAsync<IEnumerable<LocationModel>>("data/locations.json"))!;
+        s_locations ??= (await http.GetFromJsonAsync<IEnumerable<LocationModel>>("data/locations.json"));
+        return s_locations!;
     }
 }
 

@@ -1,5 +1,7 @@
 @using PSOServerWebsite.Services
 @inject ItemPMTService itemPMTService
+@inject RareDropsService rareDropsService
+@inject LocationsService locationsService
 
 <div id="modalInfo" class="modal">
     <div class="modal-dialog modal-dialog-scrollable modal-dialog-centered">
@@ -241,6 +243,22 @@
                             </div>
                         </div>
                     }
+
+                    <span class="modal-title h3">Where to find</span>
+                    <table class="table table-striped table-hover table-sm">
+                        <tbody>
+                            @foreach (var location in GetItemLocations())
+                            {
+                                <tr>
+                                    <td>@location.Difficulty.Name</td>
+                                    <td class="text-nowrap">@location.Episode.Name</td>
+                                    <td>@GetLocationName(location.Location, location.Episode.Name, location.Difficulty.Name)</td>
+                                    <td><span class="badge secid-@location.SectionId.Name.ToLowerInvariant()">@location.SectionId.Name</span></td>
+                                    <td>@location.Probability</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
                 }
             </div>
             <div class="modal-footer">@itemInfo?.ItemModel.Identifier</div>
@@ -257,6 +275,8 @@
 
     private ItemInfoModel? itemInfo;
     [DisallowNull] private ItemPMTModel itemPMT = default!;
+    [DisallowNull] private Dictionary<string, ItemRareDropLocation[]> rareDropsByItem = default!;
+    [DisallowNull] private LocationModel[] locations = default!;
 
     public Dictionary<string, object> MoreInfoAttributes => new Dictionary<string, object> { { "data-bs-toggle", "modal" }, { "data-bs-target", "#modalInfo" }, { "href", "#modalInfo" } };
 
@@ -278,6 +298,14 @@
     protected override async Task OnInitializedAsync()
     {
         itemPMT = await itemPMTService.GetItemsAsync();
+        var rareDrops = await rareDropsService.GetRareDropsAsync();
+        rareDropsByItem = rareDrops.Normal.Episodes().SelectMany(e => e.Value.Difficulties(), (episode, difficulty) => (episode, difficulty))
+            .SelectMany(d => d.difficulty.Value.SectionsId(), (ed, sectionId) => (ed.episode, ed.difficulty, sectionId))
+            .SelectMany(d => d.sectionId.Value, (eds, rare) => (eds.episode, eds.difficulty, eds.sectionId, location: rare.Key, rareSpecification: rare.Value))
+            .SelectMany(d => d.rareSpecification, (edsr, spec) => new ItemRareDropLocation(edsr.episode, edsr.difficulty, edsr.sectionId, edsr.location, spec.Probability, spec.ItemDescription))
+            .GroupBy(d => d.ItemDescription).ToDictionary(d => d.Key, d => d.ToArray());
+
+        locations = (await locationsService.GetLocationsAsync()).ToArray();
         OnLoaded?.Invoke();
     }
 
@@ -331,6 +359,53 @@
         return Enumerable.Empty<Tech>();
     }
 
+    private IEnumerable<ItemRareDropLocation> GetItemLocations()
+    {
+        if (rareDropsByItem.TryGetValue("0x" + ItemToShow?.Identifier, out var dropLocations))
+            return dropLocations.OrderBy(OrderByLocations);
+
+        return Enumerable.Empty<ItemRareDropLocation>();
+    }
+
+    private int OrderByLocations(ItemRareDropLocation dropLocation)
+    {
+        int episodeNumber = (int)char.GetNumericValue(dropLocation.Episode.Name[^1]);
+        int locationIndex = Array.FindIndex(locations.First(l => l.Episode == episodeNumber).Locations, l => l.Id == dropLocation.Location);
+        int DifficultyNameToOrder(string name) => name switch
+        {
+            "Normal" => 0,
+            "Hard" => 1,
+            "Very Hard" => 2,
+            "Ultimate" => 3,
+            _ => throw new NotSupportedException()
+        };
+        int SectionIdNameToId(string name) => name switch
+        {
+            "Viridia" => 0,
+            "Greennill" => 1,
+            "Skyly" => 2,
+            "Bluefull" => 3,
+            "Purplenum" => 4,
+            "Pinkal" => 5,
+            "Redria" => 6,
+            "Oran" => 7,
+            "Yellowboze" => 8,
+            "Whitill" => 9,
+            _ => throw new NotSupportedException()
+        };
+        return DifficultyNameToOrder(dropLocation.Difficulty.Name) * 100_000 + episodeNumber * 10000 + locationIndex * 10 + SectionIdNameToId(dropLocation.SectionId.Name);
+    }
+
+    private string GetLocationName(string locationId, string episode, string difficulty)
+    {
+        int episodeNumber = (int)char.GetNumericValue(episode[^1]);
+        var location = locations.First(l => l.Episode == episodeNumber).Locations.FirstOrDefault(l => l.Id == locationId);
+        if (location == null) return locationId;
+        if (difficulty == "Ultimate" && !string.IsNullOrEmpty(location.UltimateName))
+            return location.UltimateName;
+        return location.Name;
+    }
+
     private class ItemInfoModel(ItemModel itemModel, WeaponModel? weaponModel, ArmorModel? armorModel, UnitModel? unitModel, ToolModel? toolModel)
     {
         public ItemModel ItemModel { get; set; } = itemModel;
@@ -338,5 +413,15 @@
         public ArmorModel? ArmorModel { get; set; } = armorModel;
         public UnitModel? UnitModel { get; set; } = unitModel;
         public ToolModel? ToolModel { get; set; } = toolModel;
+    }
+
+    private class ItemRareDropLocation(NamedObject<EpisodeModel> episode, NamedObject<DifficultyModel> difficulty, NamedObject<SectionIdModel> sectionId, string location, string probability, string itemDescription)
+    {
+        public NamedObject<EpisodeModel> Episode { get; set; } = episode;
+        public NamedObject<DifficultyModel> Difficulty { get; set; } = difficulty;
+        public NamedObject<SectionIdModel> SectionId { get; set; } = sectionId;
+        public string Location { get; set; } = location;
+        public string Probability { get; set; } = probability;
+        public string ItemDescription { get; set; } = itemDescription;
     }
 }

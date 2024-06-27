@@ -45,8 +45,8 @@ else
                             @foreach (var sectionId in difficulty.Value.SectionsId())
                             {
                                 <td>
-                                    @if (sectionId.ContainsKey(where))
-                                        @foreach (var item in sectionId[where])
+                                    @if (sectionId.Value.ContainsKey(where))
+                                        @foreach (var item in sectionId.Value[where])
                                         {
                                             <div>
                                                 @if (HasMoreInfo(item.ItemDescription))
