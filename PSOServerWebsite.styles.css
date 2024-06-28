@@ -1,3 +1,53 @@
+/* /Components/Pages/ItemMoreInfoModal.razor.rz.scp.css */
+.secid-viridia[b-kbgh1jtcu9] {
+    background-color: green;
+    color: white;
+}
+
+.secid-greennill[b-kbgh1jtcu9] {
+    background-color: lime;
+    color: black;
+}
+
+.secid-skyly[b-kbgh1jtcu9] {
+    background-color: cyan;
+    color: black;
+}
+
+.secid-bluefull[b-kbgh1jtcu9] {
+    background-color: blue;
+    color: white;
+}
+
+.secid-purplenum[b-kbgh1jtcu9] {
+    background-color: purple;
+    color: white;
+}
+
+.secid-pinkal[b-kbgh1jtcu9] {
+    background-color: pink;
+    color: black;
+}
+
+.secid-redria[b-kbgh1jtcu9] {
+    background-color: red;
+    color: white;
+}
+
+.secid-oran[b-kbgh1jtcu9] {
+    background-color: orange;
+    color: black;
+}
+
+.secid-yellowboze[b-kbgh1jtcu9] {
+    background-color: yellow;
+    color: black;
+}
+
+.secid-whitill[b-kbgh1jtcu9] {
+    background-color: #e6e6e6;
+    color: black;
+}
 /* /Layout/MainLayout.razor.rz.scp.css */
 .page[b-x8btpx0o3k] {
     position: relative;
