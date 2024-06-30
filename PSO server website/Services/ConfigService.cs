@@ -20,6 +20,7 @@ public class ConfigModel
     // Reward 0 = Dorphon  Reward 1 = Sand Rappy  Reward 2 = Zu  Reward 4 = BPDD2
     public string[][][] QuestF95EResultItems { get; set; } = default!;
     public QuestF95FModel[] QuestF95FResultItems { get; set; } = default!;
+    public string[] SecretLotteryResultItems { get; set; } = default!;
     public QuestF95EModel ConvertQuestF95EResultItems()
     {
         QuestF95EModel questF95E = new();

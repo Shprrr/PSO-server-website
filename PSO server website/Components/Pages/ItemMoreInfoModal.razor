@@ -383,6 +383,8 @@
 
         enumerable = enumerable.Concat(config.QuestF95FResultItems.Where(q => q.ItemDescription == ItemToShow?.Identifier).Select(q => new ItemRareDropLocation("Episode 1", "", "", $"Gallon's Plan exchange {q.NumPhotonTickets} tickets", "1/1", q.ItemDescription)));
 
+        enumerable = enumerable.Concat(config.SecretLotteryResultItems.Where(i => i == ItemToShow?.Identifier).Select(i => new ItemRareDropLocation("Episode 1", "", "", $"Good Luck! exchange Secret Lottery Ticket", "1/1", i)));
+
         return enumerable.OrderBy(OrderByLocations);
     }
 
