@@ -2,6 +2,7 @@
 @inject ItemPMTService itemPMTService
 @inject RareDropsService rareDropsService
 @inject LocationsService locationsService
+@inject ConfigService configService
 
 <div id="modalInfo" class="modal">
     <div class="modal-dialog modal-dialog-scrollable modal-dialog-centered">
@@ -250,10 +251,10 @@
                             @foreach (var location in GetItemLocations())
                             {
                                 <tr>
-                                    <td>@location.Difficulty.Name</td>
-                                    <td class="text-nowrap">@location.Episode.Name</td>
-                                    <td>@GetLocationName(location.Location, location.Episode.Name, location.Difficulty.Name)</td>
-                                    <td><span class="badge secid-@location.SectionId.Name.ToLowerInvariant()">@location.SectionId.Name</span></td>
+                                    <td>@location.DifficultyName</td>
+                                    <td class="text-nowrap">@location.EpisodeName</td>
+                                    <td>@GetLocationName(location.Location, location.EpisodeName, location.DifficultyName)</td>
+                                    <td><span class="badge secid-@location.SectionId.ToLowerInvariant()">@location.SectionId</span></td>
                                     <td>@location.Probability</td>
                                 </tr>
                             }
@@ -277,6 +278,8 @@
     [DisallowNull] private ItemPMTModel itemPMT = default!;
     [DisallowNull] private Dictionary<string, ItemRareDropLocation[]> rareDropsByItem = default!;
     [DisallowNull] private LocationModel[] locations = default!;
+    [DisallowNull] private ConfigModel config = default!;
+    [DisallowNull] private Dictionary<string, ItemRareDropLocation[]> questF95EByItem = default!;
 
     public Dictionary<string, object> MoreInfoAttributes => new Dictionary<string, object> { { "data-bs-toggle", "modal" }, { "data-bs-target", "#modalInfo" }, { "href", "#modalInfo" } };
 
@@ -298,6 +301,7 @@
     protected override async Task OnInitializedAsync()
     {
         itemPMT = await itemPMTService.GetItemsAsync();
+
         var rareDrops = await rareDropsService.GetRareDropsAsync();
         rareDropsByItem = rareDrops.Normal.Episodes().SelectMany(e => e.Value.Difficulties(), (episode, difficulty) => (episode, difficulty))
             .SelectMany(d => d.difficulty.Value.SectionsId(), (ed, sectionId) => (ed.episode, ed.difficulty, sectionId))
@@ -306,6 +310,13 @@
             .GroupBy(d => d.ItemDescription).ToDictionary(d => d.Key, d => d.ToArray());
 
         locations = (await locationsService.GetLocationsAsync()).ToArray();
+
+        config = await configService.GetConfigAsync();
+        questF95EByItem = config.ConvertQuestF95EResultItems().Types()
+            .SelectMany(t => t.Value.Difficulties(), (type, difficulties) => (type, difficulties))
+            .SelectMany(q => q.difficulties.Value, (q, item) => new ItemRareDropLocation("Episode 4", q.difficulties.Name, "", q.type.Name, $"1/{q.difficulties.Value.Length}", item))
+            .GroupBy(q => q.ItemDescription).ToDictionary(q => q.Key, d => d.ToArray());
+
         OnLoaded?.Invoke();
     }
 
@@ -361,19 +372,27 @@
 
     private IEnumerable<ItemRareDropLocation> GetItemLocations()
     {
-        if (rareDropsByItem.TryGetValue("0x" + ItemToShow?.Identifier, out var dropLocations))
-            return dropLocations.OrderBy(OrderByLocations);
+        IEnumerable<ItemRareDropLocation> enumerable = Enumerable.Empty<ItemRareDropLocation>();
+        if (ItemToShow?.Identifier == null) return enumerable;
 
-        return Enumerable.Empty<ItemRareDropLocation>();
+        if (rareDropsByItem.TryGetValue("0x" + ItemToShow?.Identifier, out var dropLocations))
+            enumerable = enumerable.Concat(dropLocations);
+
+        if (questF95EByItem.TryGetValue(ItemToShow?.Identifier!, out var questF95ELocations))
+            enumerable = enumerable.Concat(questF95ELocations);
+
+        enumerable = enumerable.Concat(config.QuestF95FResultItems.Where(q => q.ItemDescription == ItemToShow?.Identifier).Select(q => new ItemRareDropLocation("Episode 1", "", "", $"Gallon's Plan exchange {q.NumPhotonTickets} tickets", "1/1", q.ItemDescription)));
+
+        return enumerable.OrderBy(OrderByLocations);
     }
 
     private int OrderByLocations(ItemRareDropLocation dropLocation)
     {
-        int episodeNumber = (int)char.GetNumericValue(dropLocation.Episode.Name[^1]);
+        int episodeNumber = (int)char.GetNumericValue(dropLocation.EpisodeName[^1]);
         int locationIndex = Array.FindIndex(locations.First(l => l.Episode == episodeNumber).Locations, l => l.Id == dropLocation.Location);
         int DifficultyNameToOrder(string name) => name switch
         {
-            "Normal" => 0,
+            "Normal" or "" => 0,
             "Hard" => 1,
             "Very Hard" => 2,
             "Ultimate" => 3,
@@ -381,7 +400,7 @@
         };
         int SectionIdNameToId(string name) => name switch
         {
-            "Viridia" => 0,
+            "Viridia" or "" => 0,
             "Greennill" => 1,
             "Skyly" => 2,
             "Bluefull" => 3,
@@ -393,7 +412,7 @@
             "Whitill" => 9,
             _ => throw new NotSupportedException()
         };
-        return DifficultyNameToOrder(dropLocation.Difficulty.Name) * 100_000 + episodeNumber * 10000 + locationIndex * 10 + SectionIdNameToId(dropLocation.SectionId.Name);
+        return DifficultyNameToOrder(dropLocation.DifficultyName) * 100_000 + episodeNumber * 10000 + locationIndex * 10 + SectionIdNameToId(dropLocation.SectionId);
     }
 
     private string GetLocationName(string locationId, string episode, string difficulty)
@@ -415,11 +434,15 @@
         public ToolModel? ToolModel { get; set; } = toolModel;
     }
 
-    private class ItemRareDropLocation(NamedObject<EpisodeModel> episode, NamedObject<DifficultyModel> difficulty, NamedObject<SectionIdModel> sectionId, string location, string probability, string itemDescription)
+    private class ItemRareDropLocation(string episodeName, string difficultyName, string sectionId, string location, string probability, string itemDescription)
     {
-        public NamedObject<EpisodeModel> Episode { get; set; } = episode;
-        public NamedObject<DifficultyModel> Difficulty { get; set; } = difficulty;
-        public NamedObject<SectionIdModel> SectionId { get; set; } = sectionId;
+        public ItemRareDropLocation(NamedObject<EpisodeModel> episode, NamedObject<DifficultyModel> difficulty, NamedObject<SectionIdModel> sectionId, string location, string probability, string itemDescription) : this(episode.Name, difficulty.Name, sectionId.Name, location, probability, itemDescription)
+        {
+        }
+
+        public string EpisodeName { get; set; } = episodeName;
+        public string DifficultyName { get; set; } = difficultyName;
+        public string SectionId { get; set; } = sectionId;
         public string Location { get; set; } = location;
         public string Probability { get; set; } = probability;
         public string ItemDescription { get; set; } = itemDescription;

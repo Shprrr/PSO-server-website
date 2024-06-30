@@ -125,7 +125,13 @@ public class RareSpecificationModelConverter : JsonConverter<RareSpecificationMo
         return new RareSpecificationModel(probability, itemDescription);
     }
 
-    public override void Write(Utf8JsonWriter writer, RareSpecificationModel value, JsonSerializerOptions options) => throw new NotImplementedException();
+    public override void Write(Utf8JsonWriter writer, RareSpecificationModel value, JsonSerializerOptions options)
+    {
+        writer.WriteStartObject();
+        writer.WriteString(nameof(value.Probability), value.Probability);
+        writer.WriteString(nameof(value.ItemDescription), value.ItemDescription);
+        writer.WriteEndObject();
+    }
 }
 
 public class NamedObject<T>(string name, T value)
