@@ -1,0 +1,237 @@
+﻿@page "/changelog"
+@using PSOServerWebsite.Services
+@using NCalc
+@inject RareDropsService rareDropsService
+@inject ItemsService itemsService
+@inject LocationsService locationsService
+
+<PageTitle>Changelog</PageTitle>
+
+<h1>Changelog</h1>
+
+<h2>2024-08-24 (v1.01)</h2>
+
+
+@if (IsLoading)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <ul>
+        <li>EXP share => Everybody gets killing experience when on the same floor</li>
+        <li>Monogrinder, Digrinder, Trigrinder, AddSlot and all Materials are now stackable</li>
+        <li>Stack limits increased to 99</li>
+        <li>
+            Rare drops
+            <table class="table table-striped table-sm">
+                <tbody>
+                    @{
+                        string? lastDiffEpisode = null;
+                        string? lastDiffDifficulty = null;
+                        string? lastDiffLocation = null;
+                        string? lastDiffSectionId = null;
+                        foreach (var diff in diffRareDrops20240824)
+                        {
+                            <tr>
+                                @if (diff.Episode != lastDiffEpisode)
+                                {
+                                    lastDiffEpisode = diff.Episode;
+                                    lastDiffDifficulty = null;
+                                    lastDiffLocation = null;
+                                    lastDiffSectionId = null;
+                                    <td rowspan="@diffRareDrops20240824.Count(d => d.Episode == diff.Episode)">@diff.Episode</td>
+                                }
+                                @if (diff.Difficulty != lastDiffDifficulty)
+                                {
+                                    lastDiffDifficulty = diff.Difficulty;
+                                    lastDiffLocation = null;
+                                    lastDiffSectionId = null;
+                                    <td rowspan="@diffRareDrops20240824.Count(d => d.Episode == diff.Episode && d.Difficulty == diff.Difficulty)">@diff.Difficulty</td>
+                                }
+                                @if (diff.Location != lastDiffLocation)
+                                {
+                                    lastDiffLocation = diff.Location;
+                                    lastDiffSectionId = null;
+                                    <td rowspan="@diffRareDrops20240824.Count(d => d.Episode == diff.Episode && d.Difficulty == diff.Difficulty && d.Location == diff.Location)">@GetLocationName(diff.Location, diff.Episode, diff.Difficulty)</td>
+                                }
+                                @if (diff.SectionId != lastDiffSectionId)
+                                {
+                                    lastDiffSectionId = diff.SectionId;
+                                    <td rowspan="@diffRareDrops20240824.Count(d => d.Episode == diff.Episode && d.Difficulty == diff.Difficulty && d.Location == diff.Location && d.SectionId == diff.SectionId)" class="secid-@diff.SectionId.ToLower()">@diff.SectionId</td>
+                                }
+                                <td class="diff-group-divider table-danger">
+                                    @if (diff.OldProbability == diff.NewProbability)
+                                    {
+                                        @diff.OldProbability @:(@GetPercentageProbability(diff.OldProbability!))
+                                    }
+                                    else if (!string.IsNullOrEmpty(diff.OldProbability))
+                                    {
+                                        <mark>@diff.OldProbability</mark> @:(@GetPercentageProbability(diff.OldProbability))
+                                    }
+                                </td>
+                                <td class="table-danger">
+                                    @if (diff.OldItemDescription == diff.NewItemDescription)
+                                    {
+                                        @GetItemName(diff.OldItemDescription)
+                                    }
+                                    else
+                                    {
+                                        <mark>@GetItemName(diff.OldItemDescription)</mark>
+                                    }
+                                </td>
+                                <td class="diff-group-divider table-success">
+                                    @if (diff.OldProbability == diff.NewProbability)
+                                    {
+                                        @diff.NewProbability @:(@GetPercentageProbability(diff.NewProbability!))
+                                    }
+                                    else if (!string.IsNullOrEmpty(diff.NewProbability))
+                                    {
+                                        <mark>@diff.NewProbability</mark> @:(@GetPercentageProbability(diff.NewProbability))
+                                    }
+                                </td>
+                                <td class="table-success">
+                                    @if (diff.OldItemDescription == diff.NewItemDescription)
+                                    {
+                                        @GetItemName(diff.NewItemDescription)
+                                    }
+                                    else
+                                    {
+                                        <mark>@GetItemName(diff.NewItemDescription)</mark>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </li>
+        <li><a href="https://github.com/fuzziqersoftware/newserv/compare/v2024-04-22...v2024-08-24">Additional changes for the server</a></li>
+    </ul>
+}
+
+<h2>2024-04-22 (v1.00)</h2>
+
+<p>First version</p>
+
+@code {
+    [DisallowNull] private RareDropModel rareDrops = default!;
+    [DisallowNull] private RareDropModel rareDrops20240422 = default!;
+    [DisallowNull] private Dictionary<string, ItemModel> items = default!;
+    [DisallowNull] private LocationModel[] locations = default!;
+    [DisallowNull] private DiffRareDrops[] diffRareDrops20240824 = default!;
+
+    [MemberNotNullWhen(false, nameof(rareDrops), nameof(rareDrops20240422), nameof(items), nameof(locations), nameof(diffRareDrops20240824))]
+    private bool IsLoading => rareDrops == null || rareDrops20240422 == null || items == null || locations == null || diffRareDrops20240824 == null;
+
+    protected override async Task OnInitializedAsync()
+    {
+        rareDrops = await rareDropsService.GetRareDropsAsync();
+        rareDrops20240422 = await rareDropsService.GetRareDropsAsync("2024-04-22");
+        items = (await itemsService.GetItemsAsync()).ToDictionary(i => i.Identifier);
+        locations = (await locationsService.GetLocationsAsync()).ToArray();
+        diffRareDrops20240824 = CompareRareDrops(rareDrops20240422, rareDrops);
+    }
+
+    private DiffRareDrops[] CompareRareDrops(RareDropModel rareDropsOld, RareDropModel rareDropsNew)
+    {
+        List<DiffRareDrops> diffRareDrops = [];
+
+        foreach (var episode in rareDropsOld.Normal.Episodes().FullOuterJoin(rareDropsNew.Normal.Episodes(), e => e.Name, e => e.Name, (olde, newe, name) => (Name: name, OldValue: olde.Value, NewValue: newe.Value)))
+        {
+            foreach (var difficulty in episode.OldValue.Difficulties().FullOuterJoin(episode.NewValue.Difficulties(), d => d.Name, d => d.Name, (oldd, newd, name) => (Name: name, OldValue: oldd.Value, NewValue: newd.Value)))
+            {
+                List<DiffRareDrops> diffRareDropsByDifficulty = [];
+                foreach (var sectionId in difficulty.OldValue.SectionsId().FullOuterJoin(difficulty.NewValue.SectionsId(), s => s.Name, s => s.Name, (olds, news, name) => (Name: name, OldValue: olds.Value, NewValue: news.Value)))
+                {
+                    var diffLocations = sectionId.OldValue
+                        .FullOuterJoin(sectionId.NewValue, l => l.Key, l => l.Key, (oldl, newl, location) => (Name: location, OldValue: oldl.Value, NewValue: newl.Value), new KeyValuePair<string, RareSpecificationModel[]>("Nowhere", []), new KeyValuePair<string, RareSpecificationModel[]>("Nowhere", []));
+                    foreach (var location in diffLocations)
+                    {
+                        int maxCount = int.Max(location.OldValue.Length, location.NewValue.Length);
+                        RareSpecificationModel[] oldValues = new RareSpecificationModel[maxCount];
+                        location.OldValue.CopyTo((Span<RareSpecificationModel>)oldValues);
+                        RareSpecificationModel[] newValues = new RareSpecificationModel[maxCount];
+                        location.NewValue.CopyTo((Span<RareSpecificationModel>)newValues);
+
+                        diffRareDropsByDifficulty.AddRange(oldValues
+                            .Zip(newValues, (oldValue, newValue) => (oldValue, newValue))
+                            .Where(d => d.oldValue != d.newValue)
+                            .Select(d => new DiffRareDrops(episode.Name, difficulty.Name, location.Name, sectionId.Name, d.oldValue?.Probability, d.oldValue?.ItemDescription, d.newValue?.Probability, d.newValue?.ItemDescription)));
+                    }
+                }
+
+                diffRareDrops.AddRange(diffRareDropsByDifficulty.OrderBy(d => d.Location, new LocationComparer(locations, episode.Name)).ThenBy(d => d.SectionId, new SectionIdComparer()));
+            }
+        }
+
+        return diffRareDrops.ToArray();
+    }
+
+    private record DiffRareDrops(string Episode, string Difficulty, string Location, string SectionId, string? OldProbability, string? OldItemDescription, string? NewProbability, string? NewItemDescription)
+    {
+    }
+
+    private ItemModel? GetItemModel(string? itemDescription)
+    {
+        if (!string.IsNullOrEmpty(itemDescription) && itemDescription.StartsWith("0x") && items.TryGetValue(itemDescription.Substring(2), out var itemModel))
+            return itemModel;
+
+        return null;
+    }
+
+    private string GetItemName(string? itemDescription)
+    {
+        var itemModel = GetItemModel(itemDescription);
+        if (itemModel != null)
+            return itemModel.Name;
+
+        return itemDescription ?? "None";
+    }
+
+    private string GetLocationName(string locationId, string episode, string difficulty)
+    {
+        int episodeNumber = (int)char.GetNumericValue(episode[^1]);
+        var location = locations.First(l => l.Episode == episodeNumber).Locations.FirstOrDefault(l => l.Id == locationId);
+        if (location == null) return locationId;
+        if (difficulty == "Ultimate" && !string.IsNullOrEmpty(location.UltimateName))
+            return location.UltimateName;
+        return location.Name;
+    }
+
+    private string GetPercentageProbability(string probability)
+    {
+        return ((double)new Expression(probability).Evaluate()!).ToString("P");
+    }
+
+    private class SectionIdComparer : IComparer<string>
+    {
+        public int Compare(string? x, string? y)
+        {
+            string[] sectionsIds = ["Viridia", "Greennill", "Skyly", "Bluefull", "Purplenum", "Pinkal", "Redria", "Oran", "Yellowboze", "Whitill"];
+            var indexX = Array.FindIndex(sectionsIds, s => s == x);
+            var indexY = Array.FindIndex(sectionsIds, s => s == y);
+            return indexX.CompareTo(indexY);
+        }
+    }
+
+    private class LocationComparer : IComparer<string>
+    {
+        private LocationModel[] locations;
+        public string Episode { get; set; }
+
+        public LocationComparer(LocationModel[] locations, string episode)
+        {
+            this.locations = locations;
+            Episode = episode;
+        }
+
+        public int Compare(string? x, string? y)
+        {
+            int episodeNumber = (int)char.GetNumericValue(Episode[^1]);
+            var indexX = Array.FindIndex(locations.First(l => l.Episode == episodeNumber).Locations, l => l.Id == x);
+            var indexY = Array.FindIndex(locations.First(l => l.Episode == episodeNumber).Locations, l => l.Id == y);
+            return indexX.CompareTo(indexY);
+        }
+    }
+}

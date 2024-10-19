@@ -6,12 +6,21 @@ namespace PSOServerWebsite.Services;
 public class RareDropsService(HttpClient http)
 {
     private static readonly JsonSerializerOptions s_options = new() { ReadCommentHandling = JsonCommentHandling.Skip, AllowTrailingCommas = true };
-    private static string? s_rareDropsJson = null;
+    private static readonly Dictionary<string, string> s_rareDropsJson = [];
 
-    public async Task<RareDropModel> GetRareDropsAsync()
+    public async Task<RareDropModel> GetRareDropsAsync(string? version = null)
     {
-        s_rareDropsJson ??= (await http.GetStringAsync("data/rare-table-v4.json")).FixJson();
-        return JsonSerializer.Deserialize<RareDropModel>(s_rareDropsJson, s_options)!;
+        string filename = "data/rare-table-v4.json";
+        if (version == null)
+            version = "current";
+        else
+            filename = $"data/rare-table-v4-{version}.json";
+        if (!s_rareDropsJson.TryGetValue(version, out string? json))
+        {
+            json = (await http.GetStringAsync(filename)).FixJson();
+            s_rareDropsJson.Add(version, json);
+        }
+        return JsonSerializer.Deserialize<RareDropModel>(json, s_options)!;
     }
 }
 
@@ -112,6 +121,14 @@ public class RareSpecificationModel(string probability, string itemDescription)
     /// logic is disabled for that item and it will drop exactly as specified.
     /// </summary>
     public string ItemDescription { get; set; } = itemDescription;
+
+    public override bool Equals(object? obj) => obj is RareSpecificationModel model && Probability == model.Probability && ItemDescription == model.ItemDescription;
+    public override int GetHashCode() => HashCode.Combine(Probability, ItemDescription);
+
+    public static bool operator ==(RareSpecificationModel? left, RareSpecificationModel? right) => EqualityComparer<RareSpecificationModel>.Default.Equals(left, right);
+    public static bool operator !=(RareSpecificationModel? left, RareSpecificationModel? right) => !(left == right);
+
+    public override string ToString() => $"{Probability} {ItemDescription}";
 }
 public class RareSpecificationModelConverter : JsonConverter<RareSpecificationModel>
 {

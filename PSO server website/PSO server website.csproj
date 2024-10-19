@@ -13,6 +13,7 @@
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="8.0.4" PrivateAssets="all" />
     <PackageReference Include="PublishSPAforGitHubPages.Build" Version="2.2.0" />
     <PackageReference Include="Blazored.LocalStorage" Version="4.5.0" />
+    <PackageReference Include="NCalcSync" Version="5.2.10" />
   </ItemGroup>
 
 </Project>
