@@ -193,6 +193,56 @@ main[b-x8btpx0o3k] {
         overflow-y: auto;
     }
 }
+/* /Pages/Changelog.razor.rz.scp.css */
+.secid-viridia[b-ntzvf8vonx] {
+    background-color: green;
+    color: white;
+}
+
+.secid-greennill[b-ntzvf8vonx] {
+    background-color: lime;
+}
+
+.secid-skyly[b-ntzvf8vonx] {
+    background-color: cyan;
+}
+
+.secid-bluefull[b-ntzvf8vonx] {
+    background-color: blue;
+    color: white;
+}
+
+.secid-purplenum[b-ntzvf8vonx] {
+    background-color: purple;
+    color: white;
+}
+
+.secid-pinkal[b-ntzvf8vonx] {
+    background-color: pink;
+}
+
+.secid-redria[b-ntzvf8vonx] {
+    background-color: red;
+    color: white;
+}
+
+.secid-oran[b-ntzvf8vonx] {
+    background-color: orange;
+}
+
+.secid-yellowboze[b-ntzvf8vonx] {
+    background-color: yellow;
+}
+
+.secid-whitill[b-ntzvf8vonx] {
+    background-color: #e6e6e6;
+}
+
+.diff-group-divider[b-ntzvf8vonx] {
+    --bs-border-width: 1px;
+    border-left: calc(var(--bs-border-width) * 2) solid currentcolor;
+    /*border-left-width: 3px !important;*/
+}
 /* /Pages/RareDrops.razor.rz.scp.css */
 .secid-viridia[b-ifimzlxf9d] {
     background-color: green;
