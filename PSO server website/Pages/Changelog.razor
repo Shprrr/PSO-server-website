@@ -9,8 +9,7 @@
 
 <h1>Changelog</h1>
 
-<h2>2024-08-24 (v1.01)</h2>
-
+<h2>2024-11-11 (v1.01)</h2>
 
 @if (IsLoading)
 {
@@ -20,8 +19,14 @@ else
 {
     <ul>
         <li>EXP share => Everybody gets killing experience when on the same floor</li>
-        <li>Monogrinder, Digrinder, Trigrinder, AddSlot and all Materials are now stackable</li>
+        <li>
+            Monogrinder, Digrinder, Trigrinder, AddSlot and all Materials are now stackable
+            <ul><li>Must manually respawn every of these items because they are glitched</li></ul>
+        </li>
         <li>Stack limits increased to 99</li>
+        <li>Switch assist (command $swa) is now active by default</li>
+        <li>Fixed techniques disk names to Foie LV1 disk</li>
+        <li>Coren spawn on ship on Normal mode</li>
         <li>
             Rare drops
             <table class="table table-striped table-sm">
@@ -31,7 +36,7 @@ else
                         string? lastDiffDifficulty = null;
                         string? lastDiffLocation = null;
                         string? lastDiffSectionId = null;
-                        foreach (var diff in diffRareDrops20240824)
+                        foreach (var diff in diffRareDrops20241111)
                         {
                             <tr>
                                 @if (diff.Episode != lastDiffEpisode)
@@ -40,25 +45,25 @@ else
                                     lastDiffDifficulty = null;
                                     lastDiffLocation = null;
                                     lastDiffSectionId = null;
-                                    <td rowspan="@diffRareDrops20240824.Count(d => d.Episode == diff.Episode)">@diff.Episode</td>
+                                    <td rowspan="@diffRareDrops20241111.Count(d => d.Episode == diff.Episode)">@diff.Episode</td>
                                 }
                                 @if (diff.Difficulty != lastDiffDifficulty)
                                 {
                                     lastDiffDifficulty = diff.Difficulty;
                                     lastDiffLocation = null;
                                     lastDiffSectionId = null;
-                                    <td rowspan="@diffRareDrops20240824.Count(d => d.Episode == diff.Episode && d.Difficulty == diff.Difficulty)">@diff.Difficulty</td>
+                                    <td rowspan="@diffRareDrops20241111.Count(d => d.Episode == diff.Episode && d.Difficulty == diff.Difficulty)">@diff.Difficulty</td>
                                 }
                                 @if (diff.Location != lastDiffLocation)
                                 {
                                     lastDiffLocation = diff.Location;
                                     lastDiffSectionId = null;
-                                    <td rowspan="@diffRareDrops20240824.Count(d => d.Episode == diff.Episode && d.Difficulty == diff.Difficulty && d.Location == diff.Location)">@GetLocationName(diff.Location, diff.Episode, diff.Difficulty)</td>
+                                    <td rowspan="@diffRareDrops20241111.Count(d => d.Episode == diff.Episode && d.Difficulty == diff.Difficulty && d.Location == diff.Location)">@GetLocationName(diff.Location, diff.Episode, diff.Difficulty)</td>
                                 }
                                 @if (diff.SectionId != lastDiffSectionId)
                                 {
                                     lastDiffSectionId = diff.SectionId;
-                                    <td rowspan="@diffRareDrops20240824.Count(d => d.Episode == diff.Episode && d.Difficulty == diff.Difficulty && d.Location == diff.Location && d.SectionId == diff.SectionId)" class="secid-@diff.SectionId.ToLower()">@diff.SectionId</td>
+                                    <td rowspan="@diffRareDrops20241111.Count(d => d.Episode == diff.Episode && d.Difficulty == diff.Difficulty && d.Location == diff.Location && d.SectionId == diff.SectionId)" class="secid-@diff.SectionId.ToLower()">@diff.SectionId</td>
                                 }
                                 <td class="diff-group-divider table-danger">
                                     @if (diff.OldProbability == diff.NewProbability)
@@ -106,23 +111,32 @@ else
                 </tbody>
             </table>
         </li>
-        <li><a href="https://github.com/fuzziqersoftware/newserv/compare/v2024-04-22...v2024-08-24">Additional changes for the server</a></li>
+        <li><a href="https://github.com/fuzziqersoftware/newserv/compare/v2024-04-22...v2024-11-11">Additional changes for the server</a></li>
     </ul>
 }
 
 <h2>2024-04-22 (v1.00)</h2>
 
-<p>First version</p>
+<ul>
+    <li>Drop rate increased to 1.5 times</li>
+    <li>Drops are generated differently for each player</li>
+    <li>Notifications on rare drops, materials, grinders, Scape Doll, AddSlot and for reaching max level</li>
+    <li>Rare enemies rate (beside Kondrieu) are increased from about 0.2% to about 0.5%</li>
+    <li>Added METEOR ROUGE as a reward for Black Paper's Dangerous Deal 1 on Sand Rappy route on Hard</li>
+    <li>Removed Meseta as a reward for Black Paper's Dangerous Deal 1</li>
+    <li>The quest Battle Training is optional to continue solo quests</li>
+    <li><a href="https://github.com/fuzziqersoftware/newserv/commits/v2024-04-22/">Additional changes for the server</a></li>
+</ul>
 
 @code {
     [DisallowNull] private RareDropModel rareDrops = default!;
     [DisallowNull] private RareDropModel rareDrops20240422 = default!;
     [DisallowNull] private Dictionary<string, ItemModel> items = default!;
     [DisallowNull] private LocationModel[] locations = default!;
-    [DisallowNull] private DiffRareDrops[] diffRareDrops20240824 = default!;
+    [DisallowNull] private DiffRareDrops[] diffRareDrops20241111 = default!;
 
-    [MemberNotNullWhen(false, nameof(rareDrops), nameof(rareDrops20240422), nameof(items), nameof(locations), nameof(diffRareDrops20240824))]
-    private bool IsLoading => rareDrops == null || rareDrops20240422 == null || items == null || locations == null || diffRareDrops20240824 == null;
+    [MemberNotNullWhen(false, nameof(rareDrops), nameof(rareDrops20240422), nameof(items), nameof(locations), nameof(diffRareDrops20241111))]
+    private bool IsLoading => rareDrops == null || rareDrops20240422 == null || items == null || locations == null || diffRareDrops20241111 == null;
 
     protected override async Task OnInitializedAsync()
     {
@@ -130,7 +144,7 @@ else
         rareDrops20240422 = await rareDropsService.GetRareDropsAsync("2024-04-22");
         items = (await itemsService.GetItemsAsync()).ToDictionary(i => i.Identifier);
         locations = (await locationsService.GetLocationsAsync()).ToArray();
-        diffRareDrops20240824 = CompareRareDrops(rareDrops20240422, rareDrops);
+        diffRareDrops20241111 = CompareRareDrops(rareDrops20240422, rareDrops);
     }
 
     private DiffRareDrops[] CompareRareDrops(RareDropModel rareDropsOld, RareDropModel rareDropsNew)
