@@ -530,7 +530,7 @@
   "QuestF960SuccessResultItems": [
     {
       "MesetaCost": 1000,
-      "BaseProbability": 0x6666665E, // 4%
+      "BaseProbability": 0x6666665E, // 4% 0x0A3D70A3 = 171798691   40% 0x6666665E = 1717986910
       "ProbabilityUpgrade": 0x6666665E, // 4%
       "Sunday": ["God/Power", "Cure/Poison", "Cure/Paralysis", "Cure/Slow", "Cure/Confuse", "Cure/Freeze", "Cure/Shock", "Tablet"],
       "Monday": ["Three Seals", "God/Mind", "God/Arm", "Hero/Ability", "HP/Revival", "PB/Create", "Devil/Battle", "Cure/Slow"],
@@ -552,7 +552,7 @@
       "Saturday": ["Kaladbolg", "Justy-23ST", "Rianov 303SNR", "Caduceus", "Sting Tip", "Suppressed Gun", "Ancient Saber", "Red Mechgun", "Windmill", "Plantain Leaf", "Fatsia", "Revival Garment", "Spirit Garment", "Stink Frame", "D-Parts ver1.01", "D-Parts ver2.10", "Sense Plate", "Graviton Plate", "Custom Frame ver.OO", "Dragon Scale"],
     }, {
       "MesetaCost": 100000,
-      "BaseProbability": 0x6666665E, // 4% 171798691  40% 6666665E
+      "BaseProbability": 0x6666665E, // 4%
       "ProbabilityUpgrade": 0x6666665E, // 4%
       "Sunday": ["Zero Divide", "Asteron Belt", "Raikiri", "Skyly Card", "Purplenum Card", "Oran Card", "Guren", "Black Odoshi Red Nimaidou", "V101"],
       "Monday": ["Earth Wand Brownie", "Viridia Card", "Greenill Card", "Yellowboze Card", "Yunchang", "Black Odoshi Domaru", "Revival Cuirass", "Gratia", "Regenerate Gear B.P.", "Honeycomb Reflector", "V501", "Heavenly/Battle"],

@@ -1,0 +1,106 @@
+﻿@page "/quests"
+@using PSOServerWebsite.Services
+@inject ItemsService itemsService
+@inject ConfigService configService
+
+<PageTitle>Quests</PageTitle>
+
+<h1>Quests</h1>
+
+@if (IsLoading)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <h2>Coren</h2>
+    @foreach (var questF960 in config.QuestF960SuccessResultItems.OrderByDescending(q => q.MesetaCost))
+    {
+        <h3>@questF960.MesetaCost.ToString("N0") Meseta</h3>
+        <p>
+            @foreach (var upgradeQuest in config.QuestF960SuccessResultItems.OrderByDescending(q => q.MesetaCost).TakeWhile(q => q.MesetaCost >= questF960.MesetaCost))
+            {
+                <text>
+                    Probability to win one of these when paying @upgradeQuest.MesetaCost.ToString("N0") Meseta:
+                    @(config.QuestF960SuccessResultItems.OrderByDescending(q => q.MesetaCost).SkipWhile(q => q.MesetaCost >= upgradeQuest.MesetaCost).TakeWhile(q => q.MesetaCost >= questF960.MesetaCost).Aggregate(ProbabilityToPercentage(upgradeQuest.BaseProbability), (sum, q) => sum + ProbabilityToPercentage(q.ProbabilityUpgrade)).ToPercentage())<br />
+                </text>
+            }
+        </p>
+        <table class="@(questF960.ItemsByDay.Max(i => i.Value.Length) > 12 ? "quests-items" : "") table table-striped table-hover table-sm header-with-probability">
+            <tbody>
+                @foreach (var items in questF960.ItemsByDay)
+                {
+                    <tr>
+                        <th>
+                            <div>
+                                @items.Key
+                                <span class="probability">1/@items.Value.Length</span>
+                                <span class="probability">@((1d / items.Value.Length).ToPercentage())</span>
+                            </div>
+                        </th>
+                        @foreach (var item in items.Value)
+                        {
+                            <td>@item</td>
+                        }
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+    <h3>Failure</h3>
+    <p>When all the other tables have failed</p>
+    <table class="table table-striped table-hover table-sm header-with-probability">
+        <tbody>
+            @foreach (var failureItems in config.QuestF960FailureResultItems)
+            {
+                <tr>
+                    <th>
+                        <div>
+                            @failureItems.Key
+                            <span class="probability">1/@failureItems.Value.Length</span>
+                            <span class="probability">@((1d / failureItems.Value.Length).ToPercentage())</span>
+                        </div>
+                    </th>
+                    @foreach (var item in failureItems.Value)
+                    {
+                        <td>@item</td>
+                    }
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    [DisallowNull] private Dictionary<string, ItemModel> items = default!;
+    [DisallowNull] private ConfigModel config = default!;
+    [DisallowNull] private Dictionary<string, LocationF95E[]> questF95EByItem = default!;
+
+    [MemberNotNullWhen(false, nameof(items))]
+    private bool IsLoading => items == null;
+
+    protected override async Task OnInitializedAsync()
+    {
+        items = (await itemsService.GetItemsAsync()).ToDictionary(i => i.Identifier);
+
+        config = await configService.GetConfigAsync();
+        questF95EByItem = config.ConvertQuestF95EResultItems().Types()
+            .SelectMany(t => t.Value.Difficulties(), (type, difficulties) => (type, difficulties))
+            .SelectMany(q => q.difficulties.Value, (q, item) => new LocationF95E(q.difficulties.Name, q.type.Name, $"1/{q.difficulties.Value.Length}", item))
+            .GroupBy(q => q.ItemDescription).ToDictionary(q => q.Key, d => d.ToArray());
+    }
+
+    public double ProbabilityToPercentage(string probability) => (double)Convert.ToUInt32(probability, 16) / uint.MaxValue;
+
+    private class LocationF95E(string difficultyName, string location, string probability, string itemDescription)
+    {
+        public LocationF95E(NamedObject<DifficultyModel> difficulty, string location, string probability, string itemDescription) : this(difficulty.Name, location, probability, itemDescription)
+        {
+        }
+
+        public string DifficultyName { get; set; } = difficultyName;
+        public string Location { get; set; } = location;
+        public string Probability { get; set; } = probability;
+        public string ItemDescription { get; set; } = itemDescription;
+    }
+}

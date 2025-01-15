@@ -21,6 +21,8 @@ public class ConfigModel
     public string[][][] QuestF95EResultItems { get; set; } = default!;
     public QuestF95FModel[] QuestF95FResultItems { get; set; } = default!;
     public string[] SecretLotteryResultItems { get; set; } = default!;
+    public QuestF960Model[] QuestF960SuccessResultItems { get; set; } = default!;
+    public Dictionary<string, string[]> QuestF960FailureResultItems { get; set; } = default!;
     public QuestF95EModel ConvertQuestF95EResultItems()
     {
         QuestF95EModel questF95E = new();
@@ -102,4 +104,13 @@ public class QuestF95FModelConverter : JsonConverter<QuestF95FModel>
         writer.WriteString(nameof(value.ItemDescription), value.ItemDescription);
         writer.WriteEndObject();
     }
+}
+public class QuestF960Model
+{
+    public int MesetaCost { get; set; }
+    public string BaseProbability { get; set; } = default!;
+    public string ProbabilityUpgrade { get; set; } = default!;
+    [JsonInclude, JsonExtensionData]
+    private Dictionary<string, JsonElement> _ItemsByDay { get; set; } = [];
+    public Dictionary<string, string[]> ItemsByDay => _ItemsByDay.ToDictionary(i => i.Key, i => i.Value.EnumerateArray().Select(v => v.GetString() ?? "None").ToArray());
 }

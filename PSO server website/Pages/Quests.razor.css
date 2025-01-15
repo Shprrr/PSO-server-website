@@ -1,0 +1,20 @@
+﻿.quests-items {
+    font-size: x-small;
+}
+.header-with-probability th > div {
+    display: grid;
+    grid-template-columns: auto max-content max-content;
+}
+
+.probability {
+    color: darkgray;
+    font-weight: normal;
+}
+
+    .probability::before {
+        content: ' (';
+    }
+
+    .probability::after {
+        content: ')';
+    }
