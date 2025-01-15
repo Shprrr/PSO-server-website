@@ -243,6 +243,27 @@ main[b-x8btpx0o3k] {
     border-left: calc(var(--bs-border-width) * 2) solid currentcolor;
     /*border-left-width: 3px !important;*/
 }
+/* /Pages/Quests.razor.rz.scp.css */
+.quests-items[b-7y5dhq6oes] {
+    font-size: x-small;
+}
+.header-with-probability th > div[b-7y5dhq6oes] {
+    display: grid;
+    grid-template-columns: auto max-content max-content;
+}
+
+.probability[b-7y5dhq6oes] {
+    color: darkgray;
+    font-weight: normal;
+}
+
+    .probability[b-7y5dhq6oes]::before {
+        content: ' (';
+    }
+
+    .probability[b-7y5dhq6oes]::after {
+        content: ')';
+    }
 /* /Pages/RareDrops.razor.rz.scp.css */
 .secid-viridia[b-ifimzlxf9d] {
     background-color: green;
