@@ -341,7 +341,7 @@
         if (itemInfo?.WeaponModel == null)
             return "";
 
-        string[] names = ["None", "Draw", "Drain", "Fill", "Gush", "Heart", "Mind", "Soul", "Geist", "Master's", "Lord's", "King's", "Charge", "Spirit", "Berserk", "Ice", "Frost", "Freeze", "Blizzard", "Bind", "Hold", "Seize", "Arrest", "Heat", "Fire", "Flame", "Burning", "Shock", "Thunder", "Storm", "Tempest", "Dim", "Shadow", "Dark", "Hell", "Panic", "Riot", "Havoc", "Chaos", "Devil's", "Demon's"];
+        string[] names = ["None", "[1]Draw", "[2]Drain", "[3]Fill", "[4]Gush", "[1]Heart", "[2]Mind", "[3]Soul", "[4]Geist", "[1]Master's", "[2]Lord's", "[3]King's", "Charge", "Spirit", "Berserk", "[1]Ice", "[2]Frost", "[3]Freeze", "[4]Blizzard", "[1]Bind", "[2]Hold", "[3]Seize", "[4]Arrest", "[1]Heat", "[2]Fire", "[3]Flame", "[4]Burning", "[1]Shock", "[2]Thunder", "[3]Storm", "[4]Tempest", "[1]Dim", "[2]Shadow", "[3]Dark", "[4]Hell", "[1]Panic", "[2]Riot", "[3]Havoc", "[4]Chaos", "[1]Devil's", "[2]Demon's"];
         return names[itemInfo.WeaponModel.Special];
     }
 
@@ -385,12 +385,16 @@
 
         enumerable = enumerable.Concat(config.SecretLotteryResultItems.Where(i => i == ItemToShow?.Identifier).Select(i => new ItemRareDropLocation("Episode 1", "", "", $"Good Luck! exchange Secret Lottery Ticket", "1/1", i)));
 
+        enumerable = enumerable.Concat(config.QuestF960SuccessResultItems.SelectMany(q => q.ItemsByDay.SelectMany(i => i.Value, (q, i) => (q.Key, i)).Where(i => i.i.Equals(ItemToShow?.Name, StringComparison.InvariantCultureIgnoreCase)).Select(i => new ItemRareDropLocation("", "", "", $"Coren {q.MesetaCost.ToString("N0")} Meseta {i.Key}", $"1/{q.ItemsByDay[i.Key].Length}", i.i))));
+
+        enumerable = enumerable.Concat(config.QuestF960FailureResultItems.SelectMany(q => q.Value.Where(i => i.Replace(" x1", "") == ItemToShow?.Name).Select(i => new ItemRareDropLocation("", "", "", $"Coren Failure {q.Key}", $"1/{q.Value.Length}", i))));
+
         return enumerable.OrderBy(OrderByLocations);
     }
 
     private int OrderByLocations(ItemRareDropLocation dropLocation)
     {
-        int episodeNumber = (int)char.GetNumericValue(dropLocation.EpisodeName[^1]);
+        int episodeNumber = string.IsNullOrEmpty(dropLocation.EpisodeName) ? 1 : (int)char.GetNumericValue(dropLocation.EpisodeName[^1]);
         int locationIndex = Array.FindIndex(locations.First(l => l.Episode == episodeNumber).Locations, l => l.Id == dropLocation.Location);
         int DifficultyNameToOrder(string name) => name switch
         {
@@ -419,7 +423,7 @@
 
     private string GetLocationName(string locationId, string episode, string difficulty)
     {
-        int episodeNumber = (int)char.GetNumericValue(episode[^1]);
+        int episodeNumber = string.IsNullOrEmpty(episode) ? 1 : (int)char.GetNumericValue(episode[^1]);
         var location = locations.First(l => l.Episode == episodeNumber).Locations.FirstOrDefault(l => l.Id == locationId);
         if (location == null) return locationId;
         if (difficulty == "Ultimate" && !string.IsNullOrEmpty(location.UltimateName))
