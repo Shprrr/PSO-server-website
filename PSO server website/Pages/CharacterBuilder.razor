@@ -152,7 +152,11 @@ else
         <div class="row small">
             <div class="col-1">
                 Target
-                <span>@(125 + MaxTPMaterial() + TargetPowerMaterial + TargetDefMaterial + TargetMindMaterial + TargetEvadeMaterial + TargetLuckMaterial)</span>/<span>@(125 + MaxTPMaterial() + MaxPowerDefEvadeMaterial())</span>
+                <span>@TargetMaterialTotal</span>/<span>@MaxTargetMaterialTotal</span>
+                <div class="form-check form-switch small">
+                    <InputCheckbox id="checkTargetEditMode" @bind-Value="TargetEditMode" DisplayName="Edit mode" class="form-check-input"></InputCheckbox>
+                    <label class="form-check-label" for="checkTargetEditMode">Edit mode</label>
+                </div>
             </div>
             <div class="col">
                 <label class="form-label">
@@ -169,31 +173,31 @@ else
             <div class="col">
                 <label class="form-label">
                     Power Material
-                    <InputNumber @bind-Value="TargetPowerMaterial" DisplayName="Target Power Material" class="form-control form-control-sm"></InputNumber>
+                    <InputNumber @bind-Value="TargetPowerMaterial" DisplayName="Target Power Material" class="form-control form-control-sm" disabled="@(!TargetEditMode)"></InputNumber>
                 </label>
             </div>
             <div class="col">
                 <label class="form-label">
                     Def Material
-                    <InputNumber @bind-Value="TargetDefMaterial" DisplayName="Target Def Material" class="form-control form-control-sm"></InputNumber>
+                    <InputNumber @bind-Value="TargetDefMaterial" DisplayName="Target Def Material" class="form-control form-control-sm" disabled="@(!TargetEditMode)"></InputNumber>
                 </label>
             </div>
             <div class="col">
                 <label class="form-label">
                     Mind Material
-                    <InputNumber @bind-Value="TargetMindMaterial" DisplayName="Target Mind Material" class="form-control form-control-sm"></InputNumber>
+                    <InputNumber @bind-Value="TargetMindMaterial" DisplayName="Target Mind Material" class="form-control form-control-sm" disabled="@(!TargetEditMode)"></InputNumber>
                 </label>
             </div>
             <div class="col">
                 <label class="form-label">
                     Evade Material
-                    <InputNumber @bind-Value="TargetEvadeMaterial" DisplayName="Target Evade Material" class="form-control form-control-sm"></InputNumber>
+                    <InputNumber @bind-Value="TargetEvadeMaterial" DisplayName="Target Evade Material" class="form-control form-control-sm" disabled="@(!TargetEditMode)"></InputNumber>
                 </label>
             </div>
             <div class="col">
                 <label class="form-label">
                     Luck Material
-                    <InputNumber @bind-Value="TargetLuckMaterial" DisplayName="Target Luck Material" class="form-control form-control-sm"></InputNumber>
+                    <InputNumber @bind-Value="TargetLuckMaterial" DisplayName="Target Luck Material" class="form-control form-control-sm" disabled="@(!TargetEditMode)"></InputNumber>
                 </label>
             </div>
         </div>
@@ -397,22 +401,22 @@ else
         const dialogConfirmDeleteCharacter = document.getElementById('dialogConfirmDeleteCharacter');
 
         function closeModalCharacterSelection() {
-            bootstrap.Modal.getInstance(document.getElementById('modalCharacterSelection')).hide();
+        bootstrap.Modal.getInstance(document.getElementById('modalCharacterSelection')).hide();
         }
         function confirmDeleteCharacter() {
-            dialogConfirmDeleteCharacter.showModal();
+        dialogConfirmDeleteCharacter.showModal();
         }
         function deleteCharacter(characterName) {
-            const wrapper = document.createElement('div')
-            wrapper.innerHTML = [
-                `<div class="alert alert-success alert-dismissible" role="alert">`,
-                `<div>${characterName} was deleted.</div>`,
-                '   <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>',
-                '</div>'
-            ].join('')
+        const wrapper = document.createElement('div')
+        wrapper.innerHTML = [
+        `<div class="alert alert-success alert-dismissible" role="alert">`,
+        `<div>${characterName} was deleted.</div>`,
+        '   <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>',
+        '</div>'
+        ].join('')
 
-            const alertPlaceholder = document.getElementById('alertPlaceholder')
-            alertPlaceholder.append(wrapper)
+        const alertPlaceholder = document.getElementById('alertPlaceholder')
+        alertPlaceholder.append(wrapper)
         }
     </script>
 
@@ -915,7 +919,7 @@ else
             if (!ClassRaceSelection.HasValue) return 0;
             int indexClass = (int)ClassRaceSelection;
             var levelDeltas = levelTable.LevelDeltas[indexClass].Take(Level);
-            return levelTable.BaseStats[indexClass].ATP + levelDeltas.Sum(l => l.ATP) + GetATPBonus() + (PowerMaterial + Mag.Pow) * 2;
+            return levelTable.BaseStats[indexClass].ATP + levelDeltas.Sum(l => l.ATP) + GetATPBonus() + GetEveryStatBoost().Sum(s => CalculateStatBoost("ATP", s.Code, s.Value)) + (PowerMaterial + Mag.Pow) * 2;
         }
     }
     public int ATP { get; set; }
@@ -927,7 +931,7 @@ else
             if (!ClassRaceSelection.HasValue) return 0;
             int indexClass = (int)ClassRaceSelection;
             var levelDeltas = levelTable.LevelDeltas[indexClass].Take(Level);
-            return levelTable.BaseStats[indexClass].MST + levelDeltas.Sum(l => l.MST) + (MindMaterial + Mag.Mind) * 2;
+            return levelTable.BaseStats[indexClass].MST + levelDeltas.Sum(l => l.MST) + GetEveryStatBoost().Sum(s => CalculateStatBoost("MST", s.Code, s.Value)) + (MindMaterial + Mag.Mind) * 2;
         }
     }
     public int MST { get; set; }
@@ -938,7 +942,7 @@ else
             if (!ClassRaceSelection.HasValue) return 0;
             int indexClass = (int)ClassRaceSelection;
             var levelDeltas = levelTable.LevelDeltas[indexClass].Take(Level);
-            return levelTable.BaseStats[indexClass].ATA + levelDeltas.Sum(l => l.ATA) / 10f + GetATABonus() + Mag.Dex / 2;
+            return levelTable.BaseStats[indexClass].ATA + levelDeltas.Sum(l => l.ATA) / 10f + GetATABonus() + GetEveryStatBoost().Sum(s => CalculateStatBoost("ATA", s.Code, s.Value)) + Mag.Dex / 2;
         }
     }
     public float ATA { get; set; }
@@ -1105,6 +1109,11 @@ else
         }
     }
 
+    public bool TargetEditMode { get; set; }
+    public int TargetMaterialTotal => 125 + MaxTPMaterial() + TargetPowerMaterial + TargetDefMaterial + TargetMindMaterial + TargetEvadeMaterial + TargetLuckMaterial;
+
+    public int MaxTargetMaterialTotal => 125 + MaxTPMaterial() + MaxPowerDefEvadeMaterial();
+
     public int ShiftaLevel
     {
         get { return Character.ShiftaLevel; }
@@ -1264,10 +1273,10 @@ else
         // Calculate stats.
         var baseStats = levelTable.BaseStats[indexClass];
         var levelDeltas = levelTable.LevelDeltas[indexClass].Take(Level);
-        var baseATP = BaseATP + Weapon.BaseAtp + GetEveryStatBoost().Sum(s => CalculateStatBoost("ATP", s.Code, s.Value));
+        var baseATP = BaseATP + Weapon.BaseAtp;
         var baseDFP = baseStats.DFP + levelDeltas.Sum(l => l.DFP) + DefMaterial * 2 + Armor.Dfp + Shield.Dfp
             + GetEveryStatBoost().Sum(s => CalculateStatBoost("DFP", s.Code, s.Value)) + Mag.Def;
-        var baseMST = BaseMST + Weapon.Mst + GetEveryStatBoost().Sum(s => CalculateStatBoost("MST", s.Code, s.Value));
+        var baseMST = BaseMST + Weapon.Mst;
         HP = (int)Math.Floor((baseStats.HP + levelDeltas.Sum(l => l.HP) + Level - 1) * GetHPMultiplier()) + HPMaterial * 2
             + GetEveryStatBoost().Sum(s => CalculateStatBoost("HP", s.Code, s.Value));
         TP = ClassRaceSelection switch
@@ -1281,7 +1290,7 @@ else
         ATP = (int)Math.Floor(baseATP + baseATP * GetShiftaDebandMultiplier(ShiftaLevel)) + Weapon.Atp - Weapon.BaseAtp;
         DFP = (int)Math.Floor(baseDFP + baseDFP * GetShiftaDebandMultiplier(DebandLevel));
         MST = baseMST;
-        ATA = BaseATA + Weapon.Ata + GetEveryStatBoost().Sum(s => CalculateStatBoost("ATA", s.Code, s.Value));
+        ATA = BaseATA + Weapon.Ata;
         EVP = baseStats.EVP + levelDeltas.Sum(l => l.EVP) + EvadeMaterial * 2 + Armor.Evp + Shield.Evp
             + GetEveryStatBoost().Sum(s => CalculateStatBoost("EVP", s.Code, s.Value));
         LCK = baseStats.LCK + levelDeltas.Sum(l => l.LCK) + LuckMaterial * 2
