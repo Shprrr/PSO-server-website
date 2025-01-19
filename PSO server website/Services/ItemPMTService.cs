@@ -359,7 +359,7 @@ public class UnitModel : ItemBaseModel
                 yield return new Stat("ATP", StatAmount);
                 yield return new Stat("DFP", StatAmount);
                 yield return new Stat("MST", StatAmount);
-                yield return new Stat("ATA", StatAmount / 10);
+                yield return new Stat("ATA", StatAmount / 10d);
                 yield return new Stat("EVP", StatAmount);
                 yield return new Stat("LCK", StatAmount);
                 break;
@@ -466,7 +466,7 @@ public enum ClassFlag
     FEMALE = 0x80,
 };
 
-public record Stat(string Code, int Value)
+public record Stat(string Code, double Value)
 {
     public string Name { get; init; } = Code switch
     {

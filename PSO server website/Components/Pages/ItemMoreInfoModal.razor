@@ -314,7 +314,22 @@
         config = await configService.GetConfigAsync();
         questF95EByItem = config.ConvertQuestF95EResultItems().Types()
             .SelectMany(t => t.Value.Difficulties(), (type, difficulties) => (type, difficulties))
-            .SelectMany(q => q.difficulties.Value, (q, item) => new ItemRareDropLocation("Episode 4", q.difficulties.Name, "", q.type.Name, $"1/{q.difficulties.Value.Length}", item))
+            .SelectMany(q => q.difficulties.Value, (q, item) =>
+            {
+                var chances = 1;
+                if (q.type.Name.StartsWith("Black Paper's Dangerous Deal 1"))
+                    chances = q.difficulties.Name switch
+                    {
+                        "Hard" => 2,
+                        "Very Hard" => 3,
+                        "Ultimate" => 4,
+                        _ => 1
+                    };
+                if (q.type.Name == "Black Paper's Dangerous Deal 2" && (q.difficulties.Name == "Very Hard" || q.difficulties.Name == "Ultimate"))
+                    chances = 2;
+                ItemRareDropLocation itemRareDropLocation = new ItemRareDropLocation("Episode 4", q.difficulties.Name, "", q.type.Name, $"{chances}/{q.difficulties.Value.Length}", item);
+                return itemRareDropLocation;
+            })
             .GroupBy(q => q.ItemDescription).ToDictionary(q => q.Key, d => d.ToArray());
 
         OnLoaded?.Invoke();

@@ -919,7 +919,7 @@ else
             if (!ClassRaceSelection.HasValue) return 0;
             int indexClass = (int)ClassRaceSelection;
             var levelDeltas = levelTable.LevelDeltas[indexClass].Take(Level);
-            return levelTable.BaseStats[indexClass].ATP + levelDeltas.Sum(l => l.ATP) + GetATPBonus() + GetEveryStatBoost().Sum(s => CalculateStatBoost("ATP", s.Code, s.Value)) + (PowerMaterial + Mag.Pow) * 2;
+            return levelTable.BaseStats[indexClass].ATP + levelDeltas.Sum(l => l.ATP) + GetATPBonus() + GetEveryStatBoost().Sum(s => (int)CalculateStatBoost("ATP", s.Code, s.Value)) + (PowerMaterial + Mag.Pow) * 2;
         }
     }
     public int ATP { get; set; }
@@ -931,7 +931,7 @@ else
             if (!ClassRaceSelection.HasValue) return 0;
             int indexClass = (int)ClassRaceSelection;
             var levelDeltas = levelTable.LevelDeltas[indexClass].Take(Level);
-            return levelTable.BaseStats[indexClass].MST + levelDeltas.Sum(l => l.MST) + GetEveryStatBoost().Sum(s => CalculateStatBoost("MST", s.Code, s.Value)) + (MindMaterial + Mag.Mind) * 2;
+            return levelTable.BaseStats[indexClass].MST + levelDeltas.Sum(l => l.MST) + GetEveryStatBoost().Sum(s => (int)CalculateStatBoost("MST", s.Code, s.Value)) + (MindMaterial + Mag.Mind) * 2;
         }
     }
     public int MST { get; set; }
@@ -942,7 +942,7 @@ else
             if (!ClassRaceSelection.HasValue) return 0;
             int indexClass = (int)ClassRaceSelection;
             var levelDeltas = levelTable.LevelDeltas[indexClass].Take(Level);
-            return levelTable.BaseStats[indexClass].ATA + levelDeltas.Sum(l => l.ATA) / 10f + GetATABonus() + GetEveryStatBoost().Sum(s => CalculateStatBoost("ATA", s.Code, s.Value)) + Mag.Dex / 2;
+            return levelTable.BaseStats[indexClass].ATA + levelDeltas.Sum(l => l.ATA) / 10f + GetATABonus() + GetEveryStatBoost().Sum(s => (float)CalculateStatBoost("ATA", s.Code, s.Value)) + Mag.Dex / 2;
         }
     }
     public float ATA { get; set; }
@@ -1278,13 +1278,13 @@ else
             + GetEveryStatBoost().Sum(s => CalculateStatBoost("DFP", s.Code, s.Value)) + Mag.Def;
         var baseMST = BaseMST + Weapon.Mst;
         HP = (int)Math.Floor((baseStats.HP + levelDeltas.Sum(l => l.HP) + Level - 1) * GetHPMultiplier()) + HPMaterial * 2
-            + GetEveryStatBoost().Sum(s => CalculateStatBoost("HP", s.Code, s.Value));
+            + GetEveryStatBoost().Sum(s => (int)CalculateStatBoost("HP", s.Code, s.Value));
         TP = ClassRaceSelection switch
         {
             ClassRace.Humar or ClassRace.Hunewearl or ClassRace.Ramar or ClassRace.Ramarl
-                => baseMST + Level - 1 + GetEveryStatBoost().Sum(s => CalculateStatBoost("TP", s.Code, s.Value)),
+                => baseMST + Level - 1 + GetEveryStatBoost().Sum(s => (int)CalculateStatBoost("TP", s.Code, s.Value)),
             ClassRace.Fomar or ClassRace.Fomarl or ClassRace.Fonewm or ClassRace.Fonewearl
-                => (int)Math.Floor((baseMST + Level - 1) * 1.5 + GetEveryStatBoost().Sum(s => CalculateStatBoost("TP", s.Code, s.Value))),
+                => (int)Math.Floor((baseMST + Level - 1) * 1.5 + GetEveryStatBoost().Sum(s => (int)CalculateStatBoost("TP", s.Code, s.Value))),
             _ => 0
         } + TPMaterial * 2;
         ATP = (int)Math.Floor(baseATP + baseATP * GetShiftaDebandMultiplier(ShiftaLevel)) + Weapon.Atp - Weapon.BaseAtp;
@@ -1292,9 +1292,9 @@ else
         MST = baseMST;
         ATA = BaseATA + Weapon.Ata;
         EVP = baseStats.EVP + levelDeltas.Sum(l => l.EVP) + EvadeMaterial * 2 + Armor.Evp + Shield.Evp
-            + GetEveryStatBoost().Sum(s => CalculateStatBoost("EVP", s.Code, s.Value));
+            + GetEveryStatBoost().Sum(s => (int)CalculateStatBoost("EVP", s.Code, s.Value));
         LCK = baseStats.LCK + levelDeltas.Sum(l => l.LCK) + LuckMaterial * 2
-            + GetEveryStatBoost().Sum(s => CalculateStatBoost("LCK", s.Code, s.Value));
+            + GetEveryStatBoost().Sum(s => (int)CalculateStatBoost("LCK", s.Code, s.Value));
 
         localStorage.SetItemAsync("characters", Characters);
     }
@@ -1358,7 +1358,7 @@ else
     private IEnumerable<Stat> GetEveryStatBoost()
         => Weapon.GetStatBoosts().Concat(Armor.GetStatBoosts().Concat(Unit1.GetStatBoosts().Concat(Unit2.GetStatBoosts().Concat(Unit3.GetStatBoosts().Concat(Unit4.GetStatBoosts().Concat(Shield.GetStatBoosts()))))));
 
-    private int CalculateStatBoost(string stat, string statBoost, int amount)
+    private double CalculateStatBoost(string stat, string statBoost, double amount)
     {
         if (ClassRaceSelection is ClassRace.Hucast or ClassRace.Hucaseal or ClassRace.Racast or ClassRace.Racaseal && stat is "MST" or "TP") return 0;
         if (statBoost == stat || statBoost == $"+{stat}" || statBoost == "+All" && stat != "HP") return amount;
