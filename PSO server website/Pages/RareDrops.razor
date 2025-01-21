@@ -1,7 +1,6 @@
 ﻿@page "/rareDrops"
 @using PSOServerWebsite.Services
 @inject RareDropsService rareDropsService
-@inject ItemsService itemsService
 @inject LocationsService locationsService
 
 <PageTitle>Rare Drops</PageTitle>
@@ -49,14 +48,7 @@ else
                                         @foreach (var item in sectionId.Value[where])
                                         {
                                             <div>
-                                                @if (HasMoreInfo(item.ItemDescription))
-                                                {
-                                                    <a @attributes="@modalMoreInfo.MoreInfoAttributes" @onclick="@(e => itemMoreInfo = GetItemModel(item.ItemDescription))">@GetItemName(item.ItemDescription)</a>
-                                                }
-                                                else
-                                                {
-                                                    <span>@GetItemName(item.ItemDescription)</span>
-                                                }
+                                                <ItemName ItemIdentifier="@item.ItemDescription" ModalMoreInfo="@modalMoreInfo" />
                                                 &nbsp;<span class="probability">@item.Probability</span>
                                             </div>
                                         }
@@ -74,22 +66,19 @@ else
     }
 }
 
-<ItemMoreInfoModal @ref="modalMoreInfo" ItemToShow="@itemMoreInfo" OnLoaded="ModalMoreInfoOnLoaded" />
+<ItemMoreInfoModal @ref="modalMoreInfo" OnLoaded="ModalMoreInfoOnLoaded" />
 
 @code {
     [DisallowNull] private RareDropModel rareDrops = default!;
-    [DisallowNull] private Dictionary<string, ItemModel> items = default!;
     [DisallowNull] private LocationModel[] locations = default!;
     [DisallowNull] private ItemMoreInfoModal modalMoreInfo = default!;
-    private ItemModel? itemMoreInfo;
 
-    [MemberNotNullWhen(false, nameof(rareDrops), nameof(items), nameof(locations), nameof(modalMoreInfo))]
-    private bool IsLoading => rareDrops == null || items == null || locations == null || modalMoreInfo == null || modalMoreInfoIsLoading;
+    [MemberNotNullWhen(false, nameof(rareDrops), nameof(locations), nameof(modalMoreInfo))]
+    private bool IsLoading => rareDrops == null || locations == null || modalMoreInfo == null || modalMoreInfoIsLoading;
 
     protected override async Task OnInitializedAsync()
     {
         rareDrops = await rareDropsService.GetRareDropsAsync();
-        items = (await itemsService.GetItemsAsync()).ToDictionary(i => i.Identifier);
         locations = (await locationsService.GetLocationsAsync()).ToArray();
     }
 
@@ -98,28 +87,6 @@ else
     {
         modalMoreInfoIsLoading = false;
         StateHasChanged();
-    }
-
-    private ItemModel? GetItemModel(string itemDescription)
-    {
-        if (itemDescription.StartsWith("0x") && items.TryGetValue(itemDescription.Substring(2), out var itemModel))
-            return itemModel;
-
-        return null;
-    }
-
-    private string GetItemName(string itemDescription)
-    {
-        var itemModel = GetItemModel(itemDescription);
-        if (itemModel != null)
-            return itemModel.Name;
-
-        return itemDescription;
-    }
-
-    private bool HasMoreInfo(string itemDescription)
-    {
-        return modalMoreInfo.HasMoreInfo(GetItemModel(itemDescription));
     }
 
     private int OrderByLocations(string locationId, string episode)

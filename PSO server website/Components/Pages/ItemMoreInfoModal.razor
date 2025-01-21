@@ -268,9 +268,6 @@
 </div>
 
 @code {
-    [Parameter, EditorRequired]
-    public ItemModel? ItemToShow { get; set; } = null;
-
     [Parameter]
     public Action? OnLoaded { get; set; } = null;
 
@@ -282,21 +279,6 @@
     [DisallowNull] private Dictionary<string, ItemRareDropLocation[]> questF95EByItem = default!;
 
     public Dictionary<string, object> MoreInfoAttributes => new Dictionary<string, object> { { "data-bs-toggle", "modal" }, { "data-bs-target", "#modalInfo" }, { "href", "#modalInfo" } };
-
-    protected override void OnParametersSet()
-    {
-        base.OnParametersSet();
-        if (HasMoreInfo(ItemToShow))
-        {
-            itemPMT.Weapons.TryGetValue(ItemToShow.Identifier, out var weaponModel);
-            itemPMT.Armors.TryGetValue(ItemToShow.Identifier, out var armorModel);
-            itemPMT.Units.TryGetValue(ItemToShow.Identifier, out var unitModel);
-            itemPMT.Tools.TryGetValue(ItemToShow.Identifier, out var toolModel);
-            itemInfo = new ItemInfoModel(ItemToShow, weaponModel, armorModel, unitModel, toolModel);
-        }
-        else
-            itemInfo = null;
-    }
 
     protected override async Task OnInitializedAsync()
     {
@@ -333,6 +315,21 @@
             .GroupBy(q => q.ItemDescription).ToDictionary(q => q.Key, d => d.ToArray());
 
         OnLoaded?.Invoke();
+    }
+
+    public void ShowItemModal(ItemModel item)
+    {
+        if (HasMoreInfo(item))
+        {
+            itemPMT.Weapons.TryGetValue(item.Identifier, out var weaponModel);
+            itemPMT.Armors.TryGetValue(item.Identifier, out var armorModel);
+            itemPMT.Units.TryGetValue(item.Identifier, out var unitModel);
+            itemPMT.Tools.TryGetValue(item.Identifier, out var toolModel);
+            itemInfo = new ItemInfoModel(item, weaponModel, armorModel, unitModel, toolModel);
+        }
+        else
+            itemInfo = null;
+        StateHasChanged();
     }
 
     public bool HasMoreInfo([NotNullWhen(true)] ItemModel? item)
@@ -388,21 +385,21 @@
     private IEnumerable<ItemRareDropLocation> GetItemLocations()
     {
         IEnumerable<ItemRareDropLocation> enumerable = Enumerable.Empty<ItemRareDropLocation>();
-        if (ItemToShow?.Identifier == null) return enumerable;
+        if (itemInfo?.ItemModel.Identifier == null) return enumerable;
 
-        if (rareDropsByItem.TryGetValue("0x" + ItemToShow?.Identifier, out var dropLocations))
+        if (rareDropsByItem.TryGetValue("0x" + itemInfo?.ItemModel.Identifier, out var dropLocations))
             enumerable = enumerable.Concat(dropLocations);
 
-        if (questF95EByItem.TryGetValue(ItemToShow?.Identifier!, out var questF95ELocations))
+        if (questF95EByItem.TryGetValue(itemInfo?.ItemModel.Identifier!, out var questF95ELocations))
             enumerable = enumerable.Concat(questF95ELocations);
 
-        enumerable = enumerable.Concat(config.QuestF95FResultItems.Where(q => q.ItemDescription == ItemToShow?.Identifier).Select(q => new ItemRareDropLocation("Episode 1", "", "", $"Gallon's Plan exchange {q.NumPhotonTickets} tickets", "1/1", q.ItemDescription)));
+        enumerable = enumerable.Concat(config.QuestF95FResultItems.Where(q => q.ItemDescription == itemInfo?.ItemModel.Identifier).Select(q => new ItemRareDropLocation("Episode 1", "", "", $"Gallon's Plan exchange {q.NumPhotonTickets} tickets", "1/1", q.ItemDescription)));
 
-        enumerable = enumerable.Concat(config.SecretLotteryResultItems.Where(i => i == ItemToShow?.Identifier).Select(i => new ItemRareDropLocation("Episode 1", "", "", $"Good Luck! exchange Secret Lottery Ticket", "1/1", i)));
+        enumerable = enumerable.Concat(config.SecretLotteryResultItems.Where(i => i == itemInfo?.ItemModel.Identifier).Select(i => new ItemRareDropLocation("Episode 1", "", "", $"Good Luck! exchange Secret Lottery Ticket", "1/1", i)));
 
-        enumerable = enumerable.Concat(config.QuestF960SuccessResultItems.SelectMany(q => q.ItemsByDay.SelectMany(i => i.Value, (q, i) => (q.Key, i)).Where(i => i.i.Equals(ItemToShow?.Name, StringComparison.InvariantCultureIgnoreCase)).Select(i => new ItemRareDropLocation("", "", "", $"Coren {q.MesetaCost.ToString("N0")} Meseta {i.Key}", $"1/{q.ItemsByDay[i.Key].Length}", i.i))));
+        enumerable = enumerable.Concat(config.QuestF960SuccessResultItems.SelectMany(q => q.ItemsByDay.SelectMany(i => i.Value, (q, i) => (q.Key, i)).Where(i => i.i.Equals(itemInfo?.ItemModel.Name, StringComparison.InvariantCultureIgnoreCase)).Select(i => new ItemRareDropLocation("", "", "", $"Coren {q.MesetaCost.ToString("N0")} Meseta {i.Key}", $"1/{q.ItemsByDay[i.Key].Length}", i.i))));
 
-        enumerable = enumerable.Concat(config.QuestF960FailureResultItems.SelectMany(q => q.Value.Where(i => i.Replace(" x1", "") == ItemToShow?.Name).Select(i => new ItemRareDropLocation("", "", "", $"Coren Failure {q.Key}", $"1/{q.Value.Length}", i))));
+        enumerable = enumerable.Concat(config.QuestF960FailureResultItems.SelectMany(q => q.Value.Where(i => i.Replace(" x1", "") == itemInfo?.ItemModel.Name).Select(i => new ItemRareDropLocation("", "", "", $"Coren Failure {q.Key}", $"1/{q.Value.Length}", i))));
 
         return enumerable.OrderBy(OrderByLocations);
     }

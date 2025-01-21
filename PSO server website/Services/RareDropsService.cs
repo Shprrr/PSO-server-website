@@ -6,7 +6,7 @@ namespace PSOServerWebsite.Services;
 public class RareDropsService(HttpClient http)
 {
     private static readonly JsonSerializerOptions s_options = new() { ReadCommentHandling = JsonCommentHandling.Skip, AllowTrailingCommas = true };
-    private static readonly Dictionary<string, string> s_rareDropsJson = [];
+    private static readonly Dictionary<string, Task<string>> s_rareDropsJson = [];
 
     public async Task<RareDropModel> GetRareDropsAsync(string? version = null)
     {
@@ -15,12 +15,13 @@ public class RareDropsService(HttpClient http)
             version = "current";
         else
             filename = $"data/rare-table-v4-{version}.json";
-        if (!s_rareDropsJson.TryGetValue(version, out string? json))
+
+        if (!s_rareDropsJson.TryGetValue(version, out Task<string>? json))
         {
-            json = (await http.GetStringAsync(filename)).FixJson();
+            json = http.GetStringAsync(filename).ContinueWith(j => j.Result.FixJson());
             s_rareDropsJson.Add(version, json);
         }
-        return JsonSerializer.Deserialize<RareDropModel>(json, s_options)!;
+        return JsonSerializer.Deserialize<RareDropModel>(await json, s_options)!;
     }
 }
 

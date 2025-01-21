@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Net.Http.Json;
 using System.Text.RegularExpressions;
@@ -7,10 +8,18 @@ namespace PSOServerWebsite.Services;
 
 public class ItemsService(HttpClient http)
 {
+    private static Task<Dictionary<string, string>>? s_namesJson = null;
+
+    [MemberNotNull(nameof(s_namesJson))]
+    public void LoadData()
+    {
+        s_namesJson ??= http.GetFromJsonAsync<Dictionary<string, string>>("data/names-v4.json")!;
+    }
+
     public async Task<IEnumerable<ItemModel>> GetItemsAsync()
     {
-        Dictionary<string, string>? names = await http.GetFromJsonAsync<Dictionary<string, string>>("data/names-v4.json");
-        return names!.Select(n => new ItemModel(n.Key, n.Value));
+        LoadData();
+        return (await s_namesJson).Select(n => new ItemModel(n.Key, n.Value));
     }
 }
 

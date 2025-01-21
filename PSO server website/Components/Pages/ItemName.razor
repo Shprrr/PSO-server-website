@@ -1,0 +1,69 @@
+﻿@using PSOServerWebsite.Services
+@inject ItemsService itemsService
+
+@if (IsLoading)
+{
+    <span>@ItemIdentifier</span>
+}
+else if (HasMoreInfo())
+{
+    <a @attributes="@ModalMoreInfo.MoreInfoAttributes" @onclick="@OnMoreInfoClicked">@GetItemName()</a>
+}
+else
+{
+    <span>@GetItemName()</span>
+}
+
+@code {
+    [Parameter, EditorRequired]
+    public required string ItemIdentifier { get; set; }
+    [Parameter]
+    public ItemMoreInfoModal? ModalMoreInfo { get; set; }
+
+    [DisallowNull] private static Dictionary<string, ItemModel> items = default!;
+
+    [MemberNotNullWhen(false, nameof(items))]
+    private bool IsLoading => items == null;
+
+    private ItemModel? itemModel;
+    protected override void OnParametersSet()
+    {
+        base.OnParametersSet();
+        itemModel = GetItemModel(ItemIdentifier);
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        items ??= (await itemsService.GetItemsAsync()).ToDictionary(i => i.Identifier);
+    }
+
+    [MemberNotNullWhen(true, nameof(ModalMoreInfo), nameof(itemModel))]
+    public bool HasMoreInfo()
+    {
+        return ModalMoreInfo?.HasMoreInfo(itemModel) ?? false;
+    }
+
+    private ItemModel? GetItemModel(string itemIdentifier)
+    {
+        if (itemIdentifier.StartsWith("0x") && items.TryGetValue(itemIdentifier.Substring(2), out var itemModel))
+            return itemModel;
+
+        if (items.TryGetValue(itemIdentifier, out itemModel))
+            return itemModel;
+
+        return null;
+    }
+
+    public string GetItemName()
+    {
+        if (itemModel != null)
+            return itemModel.Name;
+
+        return ItemIdentifier;
+    }
+
+    private void OnMoreInfoClicked()
+    {
+        ModalMoreInfo!.ShowItemModal(itemModel!); // Null verified by HasMoreInfo.
+    }
+}

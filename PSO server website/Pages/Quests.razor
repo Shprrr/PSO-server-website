@@ -40,7 +40,9 @@ else
                         </th>
                         @foreach (var item in items.Value)
                         {
-                            <td>@item</td>
+                            <td>
+                                <ItemName ItemIdentifier="@(this.items[item].FirstOrDefault()?.Identifier ?? item)" ModalMoreInfo="@modalMoreInfo" />
+                            </td>
                         }
                     </tr>
                 }
@@ -63,7 +65,9 @@ else
                     </th>
                     @foreach (var item in failureItems.Value)
                     {
-                        <td>@item</td>
+                        <td>
+                            <ItemName ItemIdentifier="@(this.items[item.Replace(" x1", "")].FirstOrDefault()?.Identifier ?? item)" ModalMoreInfo="@modalMoreInfo" />
+                        </td>
                     }
                 </tr>
             }
@@ -71,23 +75,33 @@ else
     </table>
 }
 
+<ItemMoreInfoModal @ref="modalMoreInfo" OnLoaded="ModalMoreInfoOnLoaded" />
+
 @code {
-    [DisallowNull] private Dictionary<string, ItemModel> items = default!;
+    [DisallowNull] private ILookup<string, ItemModel> items = default!;
     [DisallowNull] private ConfigModel config = default!;
     [DisallowNull] private Dictionary<string, LocationF95E[]> questF95EByItem = default!;
+    [DisallowNull] private ItemMoreInfoModal modalMoreInfo = default!;
 
-    [MemberNotNullWhen(false, nameof(items))]
-    private bool IsLoading => items == null;
+    [MemberNotNullWhen(false, nameof(items), nameof(config), nameof(modalMoreInfo))]
+    private bool IsLoading => items == null || config == null || modalMoreInfo == null || modalMoreInfoIsLoading;
 
     protected override async Task OnInitializedAsync()
     {
-        items = (await itemsService.GetItemsAsync()).ToDictionary(i => i.Identifier);
+        items = (await itemsService.GetItemsAsync()).ToLookup(i => i.Name, StringComparer.InvariantCultureIgnoreCase);
 
         config = await configService.GetConfigAsync();
         questF95EByItem = config.ConvertQuestF95EResultItems().Types()
             .SelectMany(t => t.Value.Difficulties(), (type, difficulties) => (type, difficulties))
             .SelectMany(q => q.difficulties.Value, (q, item) => new LocationF95E(q.difficulties.Name, q.type.Name, $"1/{q.difficulties.Value.Length}", item))
             .GroupBy(q => q.ItemDescription).ToDictionary(q => q.Key, d => d.ToArray());
+    }
+
+    private bool modalMoreInfoIsLoading = true;
+    private void ModalMoreInfoOnLoaded()
+    {
+        modalMoreInfoIsLoading = false;
+        StateHasChanged();
     }
 
     public double ProbabilityToPercentage(string probability) => (double)Convert.ToUInt32(probability, 16) / uint.MaxValue;

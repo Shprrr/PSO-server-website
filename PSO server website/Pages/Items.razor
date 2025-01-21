@@ -27,10 +27,10 @@ else
             {
                 <tr>
                     <td scope="row">@item.Identifier</td>
-                    <td>@item.Name</td>
+                    <td><ItemName ItemIdentifier="@item.Identifier" /></td>
                     @if (modalMoreInfo.HasMoreInfo(item))
                     {
-                        <td><button type="button" class="btn btn-link" @attributes="@modalMoreInfo.MoreInfoAttributes" @onclick="@(e => itemMoreInfo = item)">More info</button></td>
+                        <td><button type="button" class="btn btn-link" @attributes="@modalMoreInfo.MoreInfoAttributes" @onclick="@(e => modalMoreInfo.ShowItemModal(item))">More info</button></td>
                     }
                 </tr>
             }
@@ -38,7 +38,7 @@ else
     </table>
 }
 
-<ItemMoreInfoModal @ref="modalMoreInfo" ItemToShow="@itemMoreInfo" OnLoaded="ModalMoreInfoOnLoaded" />
+<ItemMoreInfoModal @ref="modalMoreInfo" OnLoaded="ModalMoreInfoOnLoaded" />
 
 @code {
     [DisallowNull] private ItemModel[] items = default!;
@@ -46,7 +46,6 @@ else
     private ItemModel[]? itemsFiltered;
 
     [DisallowNull] private ItemMoreInfoModal modalMoreInfo = default!;
-    private ItemModel? itemMoreInfo;
 
     [MemberNotNullWhen(false, nameof(itemsFiltered), nameof(modalMoreInfo))]
     private bool IsLoading => itemsFiltered == null || modalMoreInfo == null || modalMoreInfoIsLoading;
