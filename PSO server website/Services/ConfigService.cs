@@ -23,6 +23,7 @@ public class ConfigModel
     public string[] SecretLotteryResultItems { get; set; } = default!;
     public QuestF960Model[] QuestF960SuccessResultItems { get; set; } = default!;
     public Dictionary<string, string[]> QuestF960FailureResultItems { get; set; } = default!;
+    public double ServerGlobalDropRateMultiplier { get; set; } = 1;
     public QuestF95EModel ConvertQuestF95EResultItems()
     {
         QuestF95EModel questF95E = new();
@@ -43,6 +44,14 @@ public class ConfigModel
         questF95E.BPDD2.VeryHard = QuestF95EResultItems[4][2];
         questF95E.BPDD2.Ultimate = QuestF95EResultItems[4][3];
         return questF95E;
+    }
+    public string ApplyDropRateMultiplier(string probability)
+    {
+        if (ServerGlobalDropRateMultiplier == 1)
+            return probability;
+
+        string[] probabilityNumbers = probability.Split('/');
+        return $"{double.Parse(probabilityNumbers[0]) * ServerGlobalDropRateMultiplier}/{double.Parse(probabilityNumbers[1])}";
     }
 }
 

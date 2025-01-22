@@ -1,0 +1,12 @@
+﻿.probability {
+    color: darkgray;
+    font-weight: normal;
+}
+
+    .probability::before {
+        content: '(';
+    }
+
+    .probability::after {
+        content: ')';
+    }

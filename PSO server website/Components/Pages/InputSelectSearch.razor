@@ -9,7 +9,7 @@
         <li><button class="dropdown-item @(IdMember(Value) == null ? "active" : "")" value="" onclick="@(async () => SelectedValueChangeAsync(null))"><i>~ None ~</i></button></li>
         @foreach (var item in DataSourceFiltered)
         {
-            <li><button class="dropdown-item @(IdMember(Value) == IdMember(item) ? "active" : "")" value="@item" onclick="@(async () => SelectedValueChangeAsync(IdMember(item)))">@DisplayMember(item)</button></li>
+            <li><button class="dropdown-item @(IdMember(Value) == IdMember(item) ? "active" : "")" value="@item" onclick="@(async () => SelectedValueChangeAsync(IdMember(item)))"><ItemName ItemIdentifier="@IdMember(item)" /></button></li>
         }
     </ul>
 </div>

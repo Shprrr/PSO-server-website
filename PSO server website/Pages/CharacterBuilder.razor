@@ -430,7 +430,7 @@ else
                     <label class="form-label col col-12">
                         Weapon
                         <InputSelectSearch @bind-Value="Weapon.Model" DataSource="@GetItemWithRequirements(weapons)"
-                                           IdMember="@((w) => w?.Identifier)" DisplayMember="@((w) => w?.Name)" aria-label="Select a weapon"></InputSelectSearch>
+                        IdMember="@((w) => w?.Identifier)" DisplayMember="@((w) => w?.Name)" aria-label="Select a weapon"></InputSelectSearch>
                     </label>
                     <label class="form-label col col-6">
                         Grind
@@ -511,7 +511,7 @@ else
                     <label class="form-label col col-12">
                         Armor
                         <InputSelectSearch @bind-Value="Armor.Model" DataSource="@GetItemWithRequirements(armors)"
-                                           IdMember="@((a) => a?.Identifier)" DisplayMember="@((a) => a?.Name)" aria-label="Select an armor"></InputSelectSearch>
+                        IdMember="@((a) => a?.Identifier)" DisplayMember="@((a) => a?.Name)" aria-label="Select an armor"></InputSelectSearch>
                     </label>
                     <label class="form-label col col-3">
                         DFP
@@ -591,7 +591,7 @@ else
                         <label class="form-label col col-12">
                             Unit
                             <InputSelectSearch @bind-Value="EditUnitModel.Model" DataSource="@GetItemWithRequirements(units)"
-                                               IdMember="@((u) => u?.Identifier)" DisplayMember="@((u) => u?.Name)" aria-label="Select an unit"></InputSelectSearch>
+                            IdMember="@((u) => u?.Identifier)" DisplayMember="@((u) => u?.Name)" aria-label="Select an unit"></InputSelectSearch>
                         </label>
                         @if (EditUnitModel.Identifier != null && itemPMT.Units[EditUnitModel.Identifier].CanHaveModifier)
                         {
@@ -637,7 +637,7 @@ else
                     <label class="form-label col col-12">
                         Shield
                         <InputSelectSearch @bind-Value="Shield.Model" DataSource="@GetItemWithRequirements(shields)"
-                                           IdMember="@((s) => s?.Identifier)" DisplayMember="@((s) => s?.Name)" aria-label="Select a shield"></InputSelectSearch>
+                        IdMember="@((s) => s?.Identifier)" DisplayMember="@((s) => s?.Name)" aria-label="Select a shield"></InputSelectSearch>
                     </label>
                     <label class="form-label col col-3">
                         DFP
@@ -710,7 +710,7 @@ else
                 <div class="modal-body container row">
                     <label class="form-label col col-6">
                         Mag
-                        <InputSelectSearch @bind-Value="Mag.Name" DataSource="@mags.Select(m => m.Name)" aria-label="Select a mag"></InputSelectSearch>
+                        <InputSelectSearch @bind-Value="Mag.Model" DataSource="@mags" IdMember="@((s) => s?.Identifier)" DisplayMember="@((s) => s?.Name)" aria-label="Select a mag"></InputSelectSearch>
                     </label>
                     <label class="form-label col col-6">
                         Level
@@ -816,7 +816,7 @@ else
         string unit4Name = Character.Unit4Name;
         string shieldName = Character.ShieldName;
         // It's this order because each one helps with requirements for other equipment.
-        Mag = MagModel.Parse(Character.MagName);
+        Mag = MagModel.Parse(mags, Character.MagName);
         Armor = ArmorModel.Parse(itemPMT, armors, armorName);
         Unit1 = UnitModel.Parse(itemPMT, units, unit1Name);
         Unit2 = UnitModel.Parse(itemPMT, units, unit2Name);
@@ -885,7 +885,7 @@ else
     [DisallowNull] private UnitModel unit3 = default!;
     [DisallowNull] private UnitModel unit4 = default!;
     [DisallowNull] private ShieldModel shield = default!;
-    [DisallowNull] private MagModel mag = MagModel.Parse("Mag 5/0/0/0");
+    [DisallowNull] private MagModel mag = default!;
 
     public string Name
     {
@@ -1215,7 +1215,7 @@ else
             if (Character.Unit3Name != "") { Character.Unit3Name = ""; Unit3 = new(itemPMT); }
             if (Character.Unit4Name != "") { Character.Unit4Name = ""; Unit4 = new(itemPMT); }
             if (Character.ShieldName != "") { Character.ShieldName = ""; Shield = new(itemPMT); }
-            if (Character.MagName != "Mag 5/0/0/0") { Character.MagName = "Mag 5/0/0/0"; Mag = MagModel.Parse("Mag 5/0/0/0"); }
+            if (Character.MagName != "Mag 5/0/0/0") { Character.MagName = "Mag 5/0/0/0"; Mag = MagModel.Parse(mags, "Mag 5/0/0/0"); }
 
             localStorage.SetItemAsync("characters", Characters);
             return;
@@ -1769,7 +1769,9 @@ else
         private int dex;
         private int mind;
 
-        public string Name { get; set; } = "";
+        public ItemModel? Model{ get; set; }
+
+        public string Name => Model?.Name ?? "";
         public int Level => Def + Pow + Dex + Mind;
 
         public int Def
@@ -1826,12 +1828,12 @@ else
 
         public override string ToString() => string.IsNullOrEmpty(Name) ? "" : $"{Name} {Def}/{Pow}/{Dex}/{Mind}";
 
-        public static MagModel Parse(string mag)
+        public static MagModel Parse(ItemModel[] mags, string mag)
         {
             MagModel magModel = new();
             Match m = Regex.Match(mag, @"^(.+?) (\d+?)/(\d+?)/(\d+?)/(\d+?)$", RegexOptions.Singleline);
             if (!m.Success) return magModel;
-            magModel.Name = m.Groups[1].Value;
+            magModel.Model = mags.FirstOrDefault(i => i.Name == m.Groups[1].Value);
             magModel.Def = int.Parse(m.Groups[2].Value);
             magModel.Pow = int.Parse(m.Groups[3].Value);
             magModel.Dex = int.Parse(m.Groups[4].Value);

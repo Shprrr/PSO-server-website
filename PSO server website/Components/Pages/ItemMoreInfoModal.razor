@@ -13,7 +13,7 @@
             <div class="modal-body">
                 @if (itemInfo != null)
                 {
-                    <span class="modal-title h2">@itemInfo.ItemModel.Name</span>
+                    <ItemName ItemIdentifier="@itemInfo.ItemModel.Identifier" class="modal-title h2" />
                     @if (itemInfo.WeaponModel != null)
                     {
                         <div class="container">
@@ -255,7 +255,7 @@
                                     <td class="text-nowrap">@location.EpisodeName</td>
                                     <td>@GetLocationName(location.Location, location.EpisodeName, location.DifficultyName)</td>
                                     <td><span class="badge secid-@location.SectionId.ToLowerInvariant()">@location.SectionId</span></td>
-                                    <td>@location.Probability</td>
+                                    <td><Probability ProbabilityRatio="@location.Probability" /></td>
                                 </tr>
                             }
                         </tbody>
@@ -284,16 +284,16 @@
     {
         itemPMT = await itemPMTService.GetItemsAsync();
 
+        config = await configService.GetConfigAsync();
+
         var rareDrops = await rareDropsService.GetRareDropsAsync();
         rareDropsByItem = rareDrops.Normal.Episodes().SelectMany(e => e.Value.Difficulties(), (episode, difficulty) => (episode, difficulty))
             .SelectMany(d => d.difficulty.Value.SectionsId(), (ed, sectionId) => (ed.episode, ed.difficulty, sectionId))
             .SelectMany(d => d.sectionId.Value, (eds, rare) => (eds.episode, eds.difficulty, eds.sectionId, location: rare.Key, rareSpecification: rare.Value))
-            .SelectMany(d => d.rareSpecification, (edsr, spec) => new ItemRareDropLocation(edsr.episode, edsr.difficulty, edsr.sectionId, edsr.location, spec.Probability, spec.ItemDescription))
+            .SelectMany(d => d.rareSpecification, (edsr, spec) => new ItemRareDropLocation(edsr.episode, edsr.difficulty, edsr.sectionId, edsr.location, config.ApplyDropRateMultiplier(spec.Probability), spec.ItemDescription))
             .GroupBy(d => d.ItemDescription).ToDictionary(d => d.Key, d => d.ToArray());
 
         locations = (await locationsService.GetLocationsAsync()).ToArray();
-
-        config = await configService.GetConfigAsync();
         questF95EByItem = config.ConvertQuestF95EResultItems().Types()
             .SelectMany(t => t.Value.Difficulties(), (type, difficulties) => (type, difficulties))
             .SelectMany(q => q.difficulties.Value, (q, item) =>

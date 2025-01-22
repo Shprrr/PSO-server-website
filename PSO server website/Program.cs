@@ -21,4 +21,5 @@ builder.Services.AddScoped<ConfigService>();
 WebAssemblyHost build = builder.Build();
 // Preload the data
 build.Services.GetRequiredService<ItemsService>().LoadData();
+build.Services.GetRequiredService<ItemPMTService>().LoadData();
 await build.RunAsync();

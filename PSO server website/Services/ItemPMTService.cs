@@ -1,4 +1,5 @@
-﻿using System.Runtime.InteropServices;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Runtime.InteropServices;
 
 namespace PSOServerWebsite.Services;
 
@@ -60,6 +61,8 @@ public class ItemPMTService(HttpClient http)
     private const int ToolClassesCount = 0x1A;
     private const int ToolClassesIdentifierOffset = 0x300;
     private const int ToolSize = 0x18;
+    private const int AttackAnimationCount = 0xED;
+    private const int AttackAnimationSize = sizeof(byte);
     private const int SpecialCount = 0x29;
     private const int SpecialSize = 0x4;
     private const int StatBoostCount = 52;
@@ -67,9 +70,18 @@ public class ItemPMTService(HttpClient http)
     private const int TechBoostCount = 44;
     private const int TechBoostSize = 0x18;
 
+    private static Task<byte[]>? s_fileBytes = null;
+
+    [MemberNotNull(nameof(s_fileBytes))]
+    public void LoadData()
+    {
+        s_fileBytes ??= http.GetByteArrayAsync("data/ItemPMT-bb-v4.bin");
+    }
+
     public async Task<ItemPMTModel> GetItemsAsync()
     {
-        byte[] fileBytes = await http.GetByteArrayAsync("data/ItemPMT-bb-v4.bin");
+        LoadData();
+        byte[] fileBytes = await s_fileBytes;
 
         // Seek to start offset
         int offset = fileBytes.Length - OffsetStart;
@@ -77,13 +89,11 @@ public class ItemPMTService(HttpClient http)
         // Read the address
         int startAddr = (int)BitConverter.ToInt64(fileBytes, offset);
 
-        // Go to the bin table based on the offset in the lookup table
-        offset = startAddr + s_offset["weapon"];
-
-        int tableAddr = BitConverter.ToInt32(fileBytes, offset);
-
         ItemPMTModel itemPMT = new();
 
+        // Go to the bin table based on the offset in the lookup table
+        offset = startAddr + s_offset["weapon"];
+        int tableAddr = BitConverter.ToInt32(fileBytes, offset);
         Dictionary<string, WeaponModel> weapons = new(WeaponClassesCount);
         for (int i = 0; i < WeaponClassesCount; i++)
         {
@@ -99,7 +109,6 @@ public class ItemPMTService(HttpClient http)
 
         offset = startAddr + s_offset["armor"];
         tableAddr = BitConverter.ToInt32(fileBytes, offset);
-
         Dictionary<string, ArmorModel> armors = new(ArmorClassesCount);
         for (int i = 0; i < ArmorClassesCount; i++)
         {
@@ -115,7 +124,6 @@ public class ItemPMTService(HttpClient http)
 
         offset = startAddr + s_offset["unit"];
         tableAddr = BitConverter.ToInt32(fileBytes, offset);
-
         Dictionary<string, UnitModel> units = new(UnitClassesCount);
         for (int i = 0; i < UnitClassesCount; i++)
         {
@@ -131,7 +139,6 @@ public class ItemPMTService(HttpClient http)
 
         offset = startAddr + s_offset["tool"];
         tableAddr = BitConverter.ToInt32(fileBytes, offset);
-
         Dictionary<string, ToolModel> tools = new(ToolClassesCount);
         for (int i = 0; i < ToolClassesCount; i++)
         {
@@ -145,9 +152,17 @@ public class ItemPMTService(HttpClient http)
         }
         itemPMT.Tools = tools;
 
+        offset = startAddr + s_offset["AA"];
+        tableAddr = BitConverter.ToInt32(fileBytes, offset);
+        List<byte> attackAnimations = [];
+        for (int j = 0; j < AttackAnimationCount; j++)
+        {
+            attackAnimations.Add(BitConverterExtensions.ToAttackAnimationModel(fileBytes, tableAddr + AttackAnimationSize * j));
+        }
+        itemPMT.AttackAnimations = [.. attackAnimations];
+
         offset = startAddr + s_offset["special"];
         tableAddr = BitConverter.ToInt32(fileBytes, offset);
-
         List<SpecialModel> specials = [];
         for (int j = 0; j < SpecialCount; j++)
         {
@@ -157,7 +172,6 @@ public class ItemPMTService(HttpClient http)
 
         offset = startAddr + s_offset["stat-boost"];
         tableAddr = BitConverter.ToInt32(fileBytes, offset);
-
         List<StatBoostModel> statBoosts = [];
         for (int j = 0; j < StatBoostCount; j++)
         {
@@ -167,7 +181,6 @@ public class ItemPMTService(HttpClient http)
 
         offset = startAddr + s_offset["tech-boost"];
         tableAddr = BitConverter.ToInt32(fileBytes, offset);
-
         List<TechBoostModel> techBoosts = [];
         for (int j = 0; j < TechBoostCount; j++)
         {
@@ -186,6 +199,7 @@ public class ItemPMTModel
     public Dictionary<string, ArmorModel> Armors { get; set; } = [];
     public Dictionary<string, UnitModel> Units { get; set; } = [];
     public Dictionary<string, ToolModel> Tools { get; set; } = [];
+    public byte[] AttackAnimations { get; set; } = [];
     public SpecialModel[] Specials { get; set; } = [];
     public StatBoostModel[] StatBoosts { get; set; } = [];
     public TechBoostModel[] TechBoosts { get; set; } = [];
@@ -684,6 +698,13 @@ public static partial class BitConverterExtensions
         item.ItemFlag = BitConverter.ToUInt32(array, offset);
         offset += Marshal.SizeOf(item.ItemFlag);
         return item;
+    }
+
+    public static byte ToAttackAnimationModel(byte[] array, int offset)
+    {
+        byte attackAnimation = array[offset];
+        _ = Marshal.SizeOf(attackAnimation);
+        return attackAnimation;
     }
 
     public static SpecialModel ToSpecialModel(byte[] array, int offset)

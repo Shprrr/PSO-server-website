@@ -2,6 +2,7 @@
 @using PSOServerWebsite.Services
 @inject RareDropsService rareDropsService
 @inject LocationsService locationsService
+@inject ConfigService configService
 
 <PageTitle>Rare Drops</PageTitle>
 
@@ -48,8 +49,8 @@ else
                                         @foreach (var item in sectionId.Value[where])
                                         {
                                             <div>
-                                                <ItemName ItemIdentifier="@item.ItemDescription" ModalMoreInfo="@modalMoreInfo" />
-                                                &nbsp;<span class="probability">@item.Probability</span>
+                                                <ItemName ItemIdentifier="@item.ItemDescription" ModalMoreInfo="@modalMoreInfo" /><br />
+                                                <Probability ProbabilityRatio="@config.ApplyDropRateMultiplier(item.Probability)" class="probability ms-3" />
                                             </div>
                                         }
                                     else
@@ -71,15 +72,17 @@ else
 @code {
     [DisallowNull] private RareDropModel rareDrops = default!;
     [DisallowNull] private LocationModel[] locations = default!;
+    [DisallowNull] private ConfigModel config = default!;
     [DisallowNull] private ItemMoreInfoModal modalMoreInfo = default!;
 
-    [MemberNotNullWhen(false, nameof(rareDrops), nameof(locations), nameof(modalMoreInfo))]
-    private bool IsLoading => rareDrops == null || locations == null || modalMoreInfo == null || modalMoreInfoIsLoading;
+    [MemberNotNullWhen(false, nameof(rareDrops), nameof(locations), nameof(config), nameof(modalMoreInfo))]
+    private bool IsLoading => rareDrops == null || locations == null || config == null || modalMoreInfo == null || modalMoreInfoIsLoading;
 
     protected override async Task OnInitializedAsync()
     {
         rareDrops = await rareDropsService.GetRareDropsAsync();
         locations = (await locationsService.GetLocationsAsync()).ToArray();
+        config = await configService.GetConfigAsync();
     }
 
     private bool modalMoreInfoIsLoading = true;

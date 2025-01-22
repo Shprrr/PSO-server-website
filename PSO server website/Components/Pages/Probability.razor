@@ -1,0 +1,18 @@
+﻿<span @attributes="@CapturedAttributes">@ProbabilityRatio</span>
+<span class="probability">@ProbabilityPercentage</span>
+
+@code {
+    [Parameter, EditorRequired]
+    public required string ProbabilityRatio { get; set; }
+    public string ProbabilityPercentage
+    {
+        get
+        {
+            var probabilityNumbers = ProbabilityRatio.Split('/');
+            return (double.Parse(probabilityNumbers[0]) / double.Parse(probabilityNumbers[1])).ToPercentage();
+        }
+    }
+
+    [Parameter(CaptureUnmatchedValues = true)]
+    public Dictionary<string, object>? CapturedAttributes { get; set; }
+}

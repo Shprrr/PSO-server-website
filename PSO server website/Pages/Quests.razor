@@ -14,28 +14,27 @@
 else
 {
     <h2>Coren</h2>
-    @foreach (var questF960 in config.QuestF960SuccessResultItems.OrderByDescending(q => q.MesetaCost))
+    @foreach (var questF960 in questF960Success)
     {
-        <h3>@questF960.MesetaCost.ToString("N0") Meseta</h3>
+        <h3>@questF960.MesetaCost Meseta</h3>
         <p>
-            @foreach (var upgradeQuest in config.QuestF960SuccessResultItems.OrderByDescending(q => q.MesetaCost).TakeWhile(q => q.MesetaCost >= questF960.MesetaCost))
+            @foreach (var upgradeQuest in questF960.PayingMethods())
             {
                 <text>
-                    Probability to win one of these when paying @upgradeQuest.MesetaCost.ToString("N0") Meseta:
-                    @(config.QuestF960SuccessResultItems.OrderByDescending(q => q.MesetaCost).SkipWhile(q => q.MesetaCost >= upgradeQuest.MesetaCost).TakeWhile(q => q.MesetaCost >= questF960.MesetaCost).Aggregate(ProbabilityToPercentage(upgradeQuest.BaseProbability), (sum, q) => sum + ProbabilityToPercentage(q.ProbabilityUpgrade)).ToPercentage())<br />
+                    Probability to win one of these when paying @upgradeQuest.MesetaCost Meseta: @upgradeQuest.ProbabilityPercentage<br />
                 </text>
             }
         </p>
-        <table class="@(questF960.ItemsByDay.Max(i => i.Value.Length) > 12 ? "quests-items" : "") table table-striped table-hover table-sm header-with-probability">
+        <table class="@(questF960.HasALotOfItems ? "quests-items" : "") table table-striped table-hover table-sm header-with-probability">
             <tbody>
                 @foreach (var items in questF960.ItemsByDay)
                 {
                     <tr>
                         <th>
-                            <div>
+                            <div data-bs-toggle="tooltip" data-bs-html="true"
+                                 title="@(string.Join("<br />", questF960.PayingMethods().Select(p => $"When paying {p.MesetaCost}: {(p.Probability / items.Value.Length).ToPercentage()}")))">
                                 @items.Key
-                                <span class="probability">1/@items.Value.Length</span>
-                                <span class="probability">@((1d / items.Value.Length).ToPercentage())</span>
+                                <Probability ProbabilityRatio="@($"1/{items.Value.Length}")" class="probability" />
                             </div>
                         </th>
                         @foreach (var item in items.Value)
@@ -57,10 +56,10 @@ else
             {
                 <tr>
                     <th>
-                        <div>
+                        <div data-bs-toggle="tooltip" data-bs-html="true"
+                             title="@(string.Join("<br />", questF960Success.Select(p => $"When paying {p.MesetaCost}: {(p.FailureProbability / failureItems.Value.Length).ToPercentage()}")))">
                             @failureItems.Key
-                            <span class="probability">1/@failureItems.Value.Length</span>
-                            <span class="probability">@((1d / failureItems.Value.Length).ToPercentage())</span>
+                            <Probability ProbabilityRatio="@($"1/{failureItems.Value.Length}")" class="probability" />
                         </div>
                     </th>
                     @foreach (var item in failureItems.Value)
@@ -73,6 +72,12 @@ else
             }
         </tbody>
     </table>
+    <script>
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl)
+        });
+    </script>
 }
 
 <ItemMoreInfoModal @ref="modalMoreInfo" OnLoaded="ModalMoreInfoOnLoaded" />
@@ -81,6 +86,7 @@ else
     [DisallowNull] private ILookup<string, ItemModel> items = default!;
     [DisallowNull] private ConfigModel config = default!;
     [DisallowNull] private Dictionary<string, LocationF95E[]> questF95EByItem = default!;
+    [DisallowNull] private IEnumerable<QuestF960Success> questF960Success = default!;
     [DisallowNull] private ItemMoreInfoModal modalMoreInfo = default!;
 
     [MemberNotNullWhen(false, nameof(items), nameof(config), nameof(modalMoreInfo))]
@@ -95,6 +101,7 @@ else
             .SelectMany(t => t.Value.Difficulties(), (type, difficulties) => (type, difficulties))
             .SelectMany(q => q.difficulties.Value, (q, item) => new LocationF95E(q.difficulties.Name, q.type.Name, $"1/{q.difficulties.Value.Length}", item))
             .GroupBy(q => q.ItemDescription).ToDictionary(q => q.Key, d => d.ToArray());
+        questF960Success = config.QuestF960SuccessResultItems.OrderByDescending(q => q.MesetaCost).Select(q => new QuestF960Success(q, config.QuestF960SuccessResultItems));
     }
 
     private bool modalMoreInfoIsLoading = true;
@@ -103,8 +110,6 @@ else
         modalMoreInfoIsLoading = false;
         StateHasChanged();
     }
-
-    public double ProbabilityToPercentage(string probability) => (double)Convert.ToUInt32(probability, 16) / uint.MaxValue;
 
     private class LocationF95E(string difficultyName, string location, string probability, string itemDescription)
     {
@@ -116,5 +121,27 @@ else
         public string Location { get; set; } = location;
         public string Probability { get; set; } = probability;
         public string ItemDescription { get; set; } = itemDescription;
+    }
+
+    private class QuestF960Success(QuestF960Model questF960, QuestF960Model[] questF960SuccessResultItems)
+    {
+        public string MesetaCost => questF960.MesetaCost.ToString("N0");
+        public bool HasALotOfItems => questF960.ItemsByDay.Max(i => i.Value.Length) > 11;
+        public Dictionary<string, string[]> ItemsByDay => questF960.ItemsByDay;
+
+        private double ProbabilityToPercentage(string probability) => (double)Convert.ToUInt32(probability, 16) / uint.MaxValue;
+
+        public IEnumerable<(string MesetaCost, double Probability, string ProbabilityPercentage)> PayingMethods()
+        {
+            return questF960SuccessResultItems.OrderByDescending(q => q.MesetaCost).TakeWhile(q => q.MesetaCost >= questF960.MesetaCost)
+                .Select(upgradeQuest =>
+                {
+                    double probability = questF960SuccessResultItems.OrderByDescending(q => q.MesetaCost).SkipWhile(q => q.MesetaCost >= upgradeQuest.MesetaCost).TakeWhile(q => q.MesetaCost >= questF960.MesetaCost).Aggregate(ProbabilityToPercentage(upgradeQuest.BaseProbability), (sum, q) => sum + ProbabilityToPercentage(q.ProbabilityUpgrade));
+                    (string MesetaCost, double Probability, string ProbabilityPercentage) value = (upgradeQuest.MesetaCost.ToString("N0"), probability, probability.ToPercentage());
+                    return value;
+                });
+        }
+
+        public double FailureProbability => Math.Max(0, 1 - questF960SuccessResultItems.OrderByDescending(q => q.MesetaCost).SkipWhile(q => q.MesetaCost >= questF960.MesetaCost).Aggregate(ProbabilityToPercentage(questF960.BaseProbability), (sum, q) => sum + ProbabilityToPercentage(q.ProbabilityUpgrade)));
     }
 }
