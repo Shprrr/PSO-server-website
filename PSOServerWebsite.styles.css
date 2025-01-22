@@ -48,6 +48,25 @@
     background-color: #e6e6e6;
     color: black;
 }
+/* /Components/Pages/ItemName.razor.rz.scp.css */
+.icon[b-8iu89sxthw] {
+    width: 16px;
+    height: 16px;
+    margin-inline-end: 2px;
+}
+/* /Components/Pages/Probability.razor.rz.scp.css */
+.probability[b-1nryjvmqa7] {
+    color: darkgray;
+    font-weight: normal;
+}
+
+    .probability[b-1nryjvmqa7]::before {
+        content: '(';
+    }
+
+    .probability[b-1nryjvmqa7]::after {
+        content: ')';
+    }
 /* /Layout/MainLayout.razor.rz.scp.css */
 .page[b-x8btpx0o3k] {
     position: relative;
