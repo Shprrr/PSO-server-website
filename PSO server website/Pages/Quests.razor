@@ -18,10 +18,10 @@ else
     {
         <h3>@questF960.MesetaCost Meseta</h3>
         <p>
-            @foreach (var upgradeQuest in questF960.PayingMethods())
+            @foreach (var payingMethod in questF960.PayingMethodsWithProbability.OrderByDescending(p => p.Key))
             {
                 <text>
-                    Probability to win one of these when paying @upgradeQuest.MesetaCost Meseta: @upgradeQuest.ProbabilityPercentage<br />
+                    Probability to win one of these when paying @payingMethod.Key Meseta: @payingMethod.Value.ToPercentage()<br />
                 </text>
             }
         </p>
@@ -32,7 +32,7 @@ else
                     <tr>
                         <th>
                             <div data-bs-toggle="tooltip" data-bs-html="true"
-                                 title="@(string.Join("<br />", questF960.PayingMethods().Select(p => $"When paying {p.MesetaCost}: {(p.Probability / items.Value.Length).ToPercentage()}")))">
+                                 title="@(string.Join("<br />", questF960.PayingMethodsWithProbability.OrderByDescending(p => p.Key).Select(p => $"When paying {p.Key}: {(p.Value / items.Value.Length).ToPercentage()}")))">
                                 @items.Key
                                 <Probability ProbabilityRatio="@($"1/{items.Value.Length}")" class="probability" />
                             </div>
@@ -49,7 +49,14 @@ else
         </table>
     }
     <h3>Failure</h3>
-    <p>When all the other tables have failed</p>
+    <p>
+        @foreach (var payingMethod in questF960Success.OrderByDescending(p => p.MesetaCost))
+        {
+            <text>
+                When all the other tables have failed when paying @payingMethod.MesetaCost Meseta: @payingMethod.FailureProbability.ToPercentage()<br />
+            </text>
+        }
+    </p>
     <table class="table table-striped table-hover table-sm header-with-probability">
         <tbody>
             @foreach (var failureItems in config.QuestF960FailureResultItems)
@@ -101,7 +108,33 @@ else
             .SelectMany(t => t.Value.Difficulties(), (type, difficulties) => (type, difficulties))
             .SelectMany(q => q.difficulties.Value, (q, item) => new LocationF95E(q.difficulties.Name, q.type.Name, $"1/{q.difficulties.Value.Length}", item))
             .GroupBy(q => q.ItemDescription).ToDictionary(q => q.Key, d => d.ToArray());
-        questF960Success = config.QuestF960SuccessResultItems.OrderByDescending(q => q.MesetaCost).Select(q => new QuestF960Success(q, config.QuestF960SuccessResultItems));
+
+        // When a prize is requested, the server chooses a random number and checks it against the tier's probability.
+        // If the check passes, one of the items for the current weekday is chosen uniformly at random and given to the player.
+        // If the check fails, the next lower tier is checked in a similar manner, but uses BaseProbability + ProbabilityUpgrade.
+        // If that check fails, the next lower tier is checked, with 2x ProbabilityUpgrade, and so on.
+        // If no tiers produce an item, one of the QuestF960FailureResultItems is given.
+        Dictionary<string, QuestF960Success> questF960SuccessBuilder = [];
+        foreach (var questF960 in config.QuestF960SuccessResultItems.OrderByDescending(q => q.MesetaCost))
+        {
+            var questF960Success = new QuestF960Success(questF960);
+            Dictionary<string, double>? precedentPayingMethods = null;
+            foreach (var precedentTier in questF960SuccessBuilder.OrderBy(q => q.Key))
+            {
+                double precedentProbability = 0;
+                precedentPayingMethods?.TryGetValue(precedentTier.Key, out precedentProbability);
+                questF960Success.PayingMethodsWithProbability.Add(precedentTier.Key, (1 - precedentTier.Value.BaseProbability - precedentProbability) * Math.Min(questF960Success.BaseProbability + questF960Success.ProbabilityUpgrade + (precedentProbability > 0 ? questF960Success.ProbabilityUpgrade : 0), 1));
+                precedentPayingMethods = questF960SuccessBuilder[precedentTier.Key].PayingMethodsWithProbability;
+            }
+            questF960Success.PayingMethodsWithProbability.Add(questF960Success.MesetaCost, questF960Success.BaseProbability);
+            questF960SuccessBuilder.Add(questF960Success.MesetaCost, questF960Success);
+        }
+        // Calculate the failure probability for each tier when everything else is calculated.
+        foreach (var questF960 in questF960SuccessBuilder)
+        {
+            questF960.Value.FailureProbability = 1 - questF960SuccessBuilder.SelectMany(q => q.Value.PayingMethodsWithProbability).Where(q => q.Key == questF960.Key).Sum(q => q.Value);
+        }
+        questF960Success = questF960SuccessBuilder.Values;
     }
 
     private bool modalMoreInfoIsLoading = true;
@@ -123,25 +156,17 @@ else
         public string ItemDescription { get; set; } = itemDescription;
     }
 
-    private class QuestF960Success(QuestF960Model questF960, QuestF960Model[] questF960SuccessResultItems)
+    private class QuestF960Success(QuestF960Model questF960)
     {
         public string MesetaCost => questF960.MesetaCost.ToString("N0");
+        public double BaseProbability => ProbabilityToPercentage(questF960.BaseProbability);
+        public double ProbabilityUpgrade => ProbabilityToPercentage(questF960.ProbabilityUpgrade);
         public bool HasALotOfItems => questF960.ItemsByDay.Max(i => i.Value.Length) > 11;
         public Dictionary<string, string[]> ItemsByDay => questF960.ItemsByDay;
 
+        public Dictionary<string, double> PayingMethodsWithProbability = [];
+        public double FailureProbability { get; set; } = 1;
+
         private double ProbabilityToPercentage(string probability) => (double)Convert.ToUInt32(probability, 16) / uint.MaxValue;
-
-        public IEnumerable<(string MesetaCost, double Probability, string ProbabilityPercentage)> PayingMethods()
-        {
-            return questF960SuccessResultItems.OrderByDescending(q => q.MesetaCost).TakeWhile(q => q.MesetaCost >= questF960.MesetaCost)
-                .Select(upgradeQuest =>
-                {
-                    double probability = questF960SuccessResultItems.OrderByDescending(q => q.MesetaCost).SkipWhile(q => q.MesetaCost >= upgradeQuest.MesetaCost).TakeWhile(q => q.MesetaCost >= questF960.MesetaCost).Aggregate(ProbabilityToPercentage(upgradeQuest.BaseProbability), (sum, q) => sum + ProbabilityToPercentage(q.ProbabilityUpgrade));
-                    (string MesetaCost, double Probability, string ProbabilityPercentage) value = (upgradeQuest.MesetaCost.ToString("N0"), probability, probability.ToPercentage());
-                    return value;
-                });
-        }
-
-        public double FailureProbability => Math.Max(0, 1 - questF960SuccessResultItems.OrderByDescending(q => q.MesetaCost).SkipWhile(q => q.MesetaCost >= questF960.MesetaCost).Aggregate(ProbabilityToPercentage(questF960.BaseProbability), (sum, q) => sum + ProbabilityToPercentage(q.ProbabilityUpgrade)));
     }
 }
