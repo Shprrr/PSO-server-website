@@ -290,8 +290,8 @@
         rareDropsByItem = rareDrops.Normal.Episodes().SelectMany(e => e.Value.Difficulties(), (episode, difficulty) => (episode, difficulty))
             .SelectMany(d => d.difficulty.Value.SectionsId(), (ed, sectionId) => (ed.episode, ed.difficulty, sectionId))
             .SelectMany(d => d.sectionId.Value, (eds, rare) => (eds.episode, eds.difficulty, eds.sectionId, location: rare.Key, rareSpecification: rare.Value))
-            .SelectMany(d => d.rareSpecification, (edsr, spec) => new ItemRareDropLocation(edsr.episode, edsr.difficulty, edsr.sectionId, edsr.location, config.ApplyDropRateMultiplier(spec.Probability), spec.ItemDescription))
-            .GroupBy(d => d.ItemDescription).ToDictionary(d => d.Key, d => d.ToArray());
+            .SelectMany(d => d.rareSpecification, (edsr, spec) => (spec.ItemDescription, new ItemRareDropLocation(edsr.episode, edsr.difficulty, edsr.sectionId, edsr.location, config.ApplyDropRateMultiplier(spec.Probability))))
+            .GroupBy(d => d.ItemDescription).ToDictionary(d => d.Key, d => d.Select(d => d.Item2).ToArray());
 
         locations = (await locationsService.GetLocationsAsync()).ToArray();
         questF95EByItem = config.ConvertQuestF95EResultItems().Types()
@@ -309,10 +309,10 @@
                     };
                 if (q.type.Name == "Black Paper's Dangerous Deal 2" && (q.difficulties.Name == "Very Hard" || q.difficulties.Name == "Ultimate"))
                     chances = 2;
-                ItemRareDropLocation itemRareDropLocation = new ItemRareDropLocation("Episode 4", q.difficulties.Name, "", q.type.Name, $"{chances}/{q.difficulties.Value.Length}", item);
-                return itemRareDropLocation;
+                ItemRareDropLocation itemRareDropLocation = new ItemRareDropLocation("Episode 4", q.difficulties.Name, "", q.type.Name, $"{chances}/{q.difficulties.Value.Length}");
+                return (ItemDescription: item, itemRareDropLocation);
             })
-            .GroupBy(q => q.ItemDescription).ToDictionary(q => q.Key, d => d.ToArray());
+            .GroupBy(q => q.ItemDescription).ToDictionary(q => q.Key, d => d.Select(d => d.Item2).ToArray());
 
         OnLoaded?.Invoke();
     }
@@ -393,13 +393,22 @@
         if (questF95EByItem.TryGetValue(itemInfo?.ItemModel.Identifier!, out var questF95ELocations))
             enumerable = enumerable.Concat(questF95ELocations);
 
-        enumerable = enumerable.Concat(config.QuestF95FResultItems.Where(q => q.ItemDescription == itemInfo?.ItemModel.Identifier).Select(q => new ItemRareDropLocation("Episode 1", "", "", $"Gallon's Plan exchange {q.NumPhotonTickets} tickets", "1/1", q.ItemDescription)));
+        enumerable = enumerable.Concat(config.QuestF95FResultItems.Where(q => q.ItemDescription == itemInfo?.ItemModel.Identifier).Select(q => new ItemRareDropLocation("Episode 1", "", "", $"Gallon's Plan exchange {q.NumPhotonTickets} Photon Ticket", "1/1")));
 
-        enumerable = enumerable.Concat(config.SecretLotteryResultItems.Where(i => i == itemInfo?.ItemModel.Identifier).Select(i => new ItemRareDropLocation("Episode 1", "", "", $"Good Luck! exchange Secret Lottery Ticket", "1/1", i)));
+        enumerable = enumerable.Concat(config.SecretLotteryResultItems.Where(i => i == itemInfo?.ItemModel.Identifier).Select(i => new ItemRareDropLocation("Episode 1", "", "", $"Good Luck! exchange Secret Ticket", $"1/{config.SecretLotteryResultItems.Length}")));
 
-        enumerable = enumerable.Concat(config.QuestF960SuccessResultItems.SelectMany(q => q.ItemsByDay.SelectMany(i => i.Value, (q, i) => (q.Key, i)).Where(i => i.i.Equals(itemInfo?.ItemModel.Name, StringComparison.InvariantCultureIgnoreCase)).Select(i => new ItemRareDropLocation("", "", "", $"Coren {q.MesetaCost.ToString("N0")} Meseta {i.Key}", $"1/{q.ItemsByDay[i.Key].Length}", i.i))));
+        enumerable = enumerable.Concat(config.QuestF960SuccessResultItems.SelectMany(q => q.ItemsByDay.SelectMany(i => i.Value, (q, i) => (q.Key, i)).Where(i => i.i.Equals(itemInfo?.ItemModel.Name, StringComparison.InvariantCultureIgnoreCase)).Select(i => new ItemRareDropLocation("", "", "", $"Coren {q.MesetaCost.ToString("N0")} Meseta {i.Key}", $"1/{q.ItemsByDay[i.Key].Length}"))));
 
-        enumerable = enumerable.Concat(config.QuestF960FailureResultItems.SelectMany(q => q.Value.Where(i => i.Replace(" x1", "") == itemInfo?.ItemModel.Name).Select(i => new ItemRareDropLocation("", "", "", $"Coren Failure {q.Key}", $"1/{q.Value.Length}", i))));
+        enumerable = enumerable.Concat(config.QuestF960FailureResultItems.SelectMany(q => q.Value.Where(i => i.Replace(" x1", "") == itemInfo?.ItemModel.Name).Select(i => new ItemRareDropLocation("", "", "", $"Coren Failure {q.Key}", $"1/{q.Value.Length}"))));
+
+        if (itemInfo?.ItemModel.Identifier == "031004")
+            enumerable = enumerable.Concat(
+                [
+                    new ItemRareDropLocation("Episode 1", "Normal", "", "Say yes to Alicia on Gallon's Plan", "1/1"),
+                new ItemRareDropLocation("Episode 1", "Hard", "", "Say yes to Alicia on Gallon's Plan", "1/1"),
+                new ItemRareDropLocation("Episode 1", "Very Hard", "", "Say yes to Alicia on Gallon's Plan", "2/1"),
+                new ItemRareDropLocation("Episode 1", "Ultimate", "", "Say yes to Alicia on Gallon's Plan", "2/1")
+                ]);
 
         return enumerable.OrderBy(OrderByLocations);
     }
@@ -452,9 +461,9 @@
         public ToolModel? ToolModel { get; set; } = toolModel;
     }
 
-    private class ItemRareDropLocation(string episodeName, string difficultyName, string sectionId, string location, string probability, string itemDescription)
+    private class ItemRareDropLocation(string episodeName, string difficultyName, string sectionId, string location, string probability)
     {
-        public ItemRareDropLocation(NamedObject<EpisodeModel> episode, NamedObject<DifficultyModel> difficulty, NamedObject<SectionIdModel> sectionId, string location, string probability, string itemDescription) : this(episode.Name, difficulty.Name, sectionId.Name, location, probability, itemDescription)
+        public ItemRareDropLocation(NamedObject<EpisodeModel> episode, NamedObject<DifficultyModel> difficulty, NamedObject<SectionIdModel> sectionId, string location, string probability) : this(episode.Name, difficulty.Name, sectionId.Name, location, probability)
         {
         }
 
@@ -463,6 +472,5 @@
         public string SectionId { get; set; } = sectionId;
         public string Location { get; set; } = location;
         public string Probability { get; set; } = probability;
-        public string ItemDescription { get; set; } = itemDescription;
     }
 }

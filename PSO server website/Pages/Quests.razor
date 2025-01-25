@@ -13,6 +13,84 @@
 }
 else
 {
+    <h2>Good Luck!</h2>
+    <p>Exchange <ItemName ItemIdentifier="0x031003" ModalMoreInfo="@modalMoreInfo" /> for an equal chance of getting one of these items.</p>
+    <ul class="container row ps-5">
+        @foreach (var itemIdentifier in config.SecretLotteryResultItems)
+        {
+            <li class="col-3 ps-0"><ItemName ItemIdentifier="@itemIdentifier" ModalMoreInfo="@modalMoreInfo" /></li>
+        }
+    </ul>
+
+    <h2>Black Paper's Dangerous Deal 1</h2>
+    <p>Equal chance of getting one of these items.</p>
+    <h3>Dorphon route</h3>
+    @foreach (var difficulty in config.ConvertQuestF95EResultItems().Dorphon.Difficulties())
+    {
+        <h4>@difficulty.Name</h4>
+        <ul class="container row ps-5">
+            @foreach (var itemIdentifier in difficulty.Value)
+            {
+                <li class="col-3 ps-0"><ItemName ItemIdentifier="@itemIdentifier" ModalMoreInfo="@modalMoreInfo" /></li>
+            }
+        </ul>
+    }
+    <h3>Sand Rappy route</h3>
+    @foreach (var difficulty in config.ConvertQuestF95EResultItems().SandRappy.Difficulties())
+    {
+        <h4>@difficulty.Name</h4>
+        <ul class="container row ps-5">
+            @foreach (var itemIdentifier in difficulty.Value)
+            {
+                <li class="col-3 ps-0"><ItemName ItemIdentifier="@itemIdentifier" ModalMoreInfo="@modalMoreInfo" /></li>
+            }
+        </ul>
+    }
+    <h3>Zu route</h3>
+    @foreach (var difficulty in config.ConvertQuestF95EResultItems().Zu.Difficulties())
+    {
+        <h4>@difficulty.Name</h4>
+        <ul class="container row ps-5">
+            @foreach (var itemIdentifier in difficulty.Value)
+            {
+                <li class="col-3 ps-0"><ItemName ItemIdentifier="@itemIdentifier" ModalMoreInfo="@modalMoreInfo" /></li>
+            }
+        </ul>
+    }
+
+    <h2>Black Paper's Dangerous Deal 2</h2>
+    <p>Equal chance of getting one of these items.</p>
+    @foreach (var difficulty in config.ConvertQuestF95EResultItems().BPDD2.Difficulties())
+    {
+        <h4>@difficulty.Name</h4>
+        <ul class="container row ps-5">
+            @foreach (var itemIdentifier in difficulty.Value)
+            {
+                <li class="col-3 ps-0"><ItemName ItemIdentifier="@itemIdentifier" ModalMoreInfo="@modalMoreInfo" /></li>
+            }
+        </ul>
+    }
+
+    <h2>Gallon's Plan</h2>
+    <p>Exchange for a number of <ItemName ItemIdentifier="0x031004" ModalMoreInfo="@modalMoreInfo" /> to get the following items from Hopkins near the bank.</p>
+    <table class="table table-striped table-hover w-50">
+        <thead>
+            <tr>
+                <th scope="col">Number of <ItemName ItemIdentifier="0x031004" ModalMoreInfo="@modalMoreInfo" /></th>
+                <th scope="col">Item</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in config.QuestF95FResultItems.Where(q => q.NumPhotonTickets > 0))
+            {
+                <tr>
+                    <td>@item.NumPhotonTickets</td>
+                    <td><ItemName ItemIdentifier="@item.ItemDescription" ModalMoreInfo="@modalMoreInfo" /></td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
     <h2>Coren</h2>
     @foreach (var questF960 in questF960Success)
     {
@@ -92,7 +170,6 @@ else
 @code {
     [DisallowNull] private ILookup<string, ItemModel> items = default!;
     [DisallowNull] private ConfigModel config = default!;
-    [DisallowNull] private Dictionary<string, LocationF95E[]> questF95EByItem = default!;
     [DisallowNull] private IEnumerable<QuestF960Success> questF960Success = default!;
     [DisallowNull] private ItemMoreInfoModal modalMoreInfo = default!;
 
@@ -104,10 +181,6 @@ else
         items = (await itemsService.GetItemsAsync()).ToLookup(i => i.Name, StringComparer.InvariantCultureIgnoreCase);
 
         config = await configService.GetConfigAsync();
-        questF95EByItem = config.ConvertQuestF95EResultItems().Types()
-            .SelectMany(t => t.Value.Difficulties(), (type, difficulties) => (type, difficulties))
-            .SelectMany(q => q.difficulties.Value, (q, item) => new LocationF95E(q.difficulties.Name, q.type.Name, $"1/{q.difficulties.Value.Length}", item))
-            .GroupBy(q => q.ItemDescription).ToDictionary(q => q.Key, d => d.ToArray());
 
         // When a prize is requested, the server chooses a random number and checks it against the tier's probability.
         // If the check passes, one of the items for the current weekday is chosen uniformly at random and given to the player.
@@ -142,18 +215,6 @@ else
     {
         modalMoreInfoIsLoading = false;
         StateHasChanged();
-    }
-
-    private class LocationF95E(string difficultyName, string location, string probability, string itemDescription)
-    {
-        public LocationF95E(NamedObject<DifficultyModel> difficulty, string location, string probability, string itemDescription) : this(difficulty.Name, location, probability, itemDescription)
-        {
-        }
-
-        public string DifficultyName { get; set; } = difficultyName;
-        public string Location { get; set; } = location;
-        public string Probability { get; set; } = probability;
-        public string ItemDescription { get; set; } = itemDescription;
     }
 
     private class QuestF960Success(QuestF960Model questF960)
