@@ -942,7 +942,7 @@ else
             if (!ClassRaceSelection.HasValue) return 0;
             int indexClass = (int)ClassRaceSelection;
             var levelDeltas = levelTable.LevelDeltas[indexClass].Take(Level);
-            return levelTable.BaseStats[indexClass].ATA + levelDeltas.Sum(l => l.ATA) / 10f + GetATABonus() + GetEveryStatBoost().Sum(s => (float)CalculateStatBoost("ATA", s.Code, s.Value)) + Mag.Dex / 2;
+            return levelTable.BaseStats[indexClass].ATA + levelDeltas.Sum(l => l.ATA) / 10f + GetATABonus() + GetEveryStatBoost().Sum(s => (float)CalculateStatBoost("ATA", s.Code, s.Value)) + Mag.Dex / 2f;
         }
     }
     public float ATA { get; set; }

@@ -431,7 +431,7 @@ public class UnitModel : ItemBaseModel
                 break;
         }
 
-        if (Id == 966) yield return new Stat("AtkSpeed", 40);
+        if (Id == 966) yield return new Stat("AtkSpeed", 40); // V101
     }
 }
 
