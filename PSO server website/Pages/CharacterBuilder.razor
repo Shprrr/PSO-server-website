@@ -17,6 +17,7 @@
 }
 else
 {
+    <div id="alerts"></div>
     <div class="container mb-2">
         <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalCharacterSelection">Change character</button>
     </div>
@@ -53,6 +54,21 @@ else
                     Level
                     <InputNumber @bind-Value="Level" DisplayName="Level" class="form-control"></InputNumber>
                 </label>
+            </div>
+            <div class="col">
+                <label class="form-label">
+                    Loadout
+                    <InputSelect @bind-Value="LoadoutSelection" class="form-select" aria-label="Select a loadout">
+                        @foreach (var loadout in Character.Loadouts)
+                        {
+                            <option selected="@(LoadoutSelection == loadout.Key)" value="@loadout.Key">@loadout.Key</option>
+                        }
+                    </InputSelect>
+                </label>
+                <div class="btn-group btn-group-sm align-top mt-1" role="group" aria-label="Loadout controls">
+                    <button class="btn btn-success btn-sm" data-bs-toggle="modal" data-bs-target="#modalLoadoutNew"><span class="bi bi-plus" aria-hidden="true"></span></button>
+                    <button class="btn btn-danger btn-sm" onclick="confirmDeleteLoadout()"><span class="bi bi-dash" aria-hidden="true"></span></button>
+                </div>
             </div>
         </div>
         <div class="row">
@@ -364,7 +380,7 @@ else
                     <span>Character Selection</span><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body container">
-                    <div id="alertPlaceholder"></div>
+                    <div id="modalCharacterSelectionAlert"></div>
                     <dialog id="dialogConfirmDeleteCharacter" @onclose="() => CharacterToDelete = null">
                         @if (CharacterToDelete != null)
                         {
@@ -415,7 +431,71 @@ else
         '</div>'
         ].join('')
 
-        const alertPlaceholder = document.getElementById('alertPlaceholder')
+        const alertPlaceholder = document.getElementById('modalCharacterSelectionAlert')
+        alertPlaceholder.append(wrapper)
+        }
+    </script>
+
+    <div id="modalLoadoutNew" class="modal" onshow.bs.modal="@(() => { NewLoadoutName = string.Empty; })" onhidden.bs.modal="@(() => RefreshStats())">
+        <div class="modal-dialog modal-dialog-scrollable modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <span>New Loadout</span><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body container">
+                    <div id="modalLoadoutNewAlert"></div>
+                    <div>
+                        <label class="form-label">
+                            Name
+                            <InputText @bind-Value="NewLoadoutName" DisplayName="Name" class="form-control"></InputText>
+                        </label>
+                        <button class="btn btn-primary" @onclick="OnClickLoadoutNew">Create</button>
+                    </div>
+                </div>
+                <div class="modal-footer"></div>
+            </div>
+        </div>
+    </div>
+    <dialog id="dialogConfirmDeleteLoadout">
+        <form method="dialog">
+            <p>Do you want to delete @LoadoutSelection ?</p>
+            <div class="d-flex gap-2 justify-content-end">
+                <button class="btn btn-secondary" value="cancel">No</button>
+                <button class="btn btn-danger" value="ok" @onclick="OnClickLoadoutDelete">Yes</button>
+            </div>
+        </form>
+    </dialog>
+    <script type="text/javascript">
+        const dialogConfirmDeleteLoadout = document.getElementById('dialogConfirmDeleteLoadout');
+
+        function closeModalLoadoutNew() {
+        bootstrap.Modal.getInstance(document.getElementById('modalLoadoutNew')).hide();
+        }
+        function alertModalLoadoutNew(message) {
+        const wrapper = document.createElement('div')
+        wrapper.innerHTML = [
+        `<div class="alert alert-warning alert-dismissible" role="alert">`,
+        `<div>${message}</div>`,
+        '   <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>',
+        '</div>'
+        ].join('')
+
+        const alertPlaceholder = document.getElementById('modalLoadoutNewAlert')
+        alertPlaceholder.append(wrapper)
+        }
+        function confirmDeleteLoadout() {
+        dialogConfirmDeleteLoadout.showModal();
+        }
+        function deleteLoadout(loadoutName) {
+        const wrapper = document.createElement('div')
+        wrapper.innerHTML = [
+        `<div class="alert alert-success alert-dismissible" role="alert">`,
+        `<div>${loadoutName} was deleted.</div>`,
+        '   <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>',
+        '</div>'
+        ].join('')
+
+        const alertPlaceholder = document.getElementById('alerts')
         alertPlaceholder.append(wrapper)
         }
     </script>
@@ -430,7 +510,7 @@ else
                     <label class="form-label col col-12">
                         Weapon
                         <InputSelectSearch @bind-Value="Weapon.Model" DataSource="@GetItemWithRequirements(weapons)"
-                        IdMember="@((w) => w?.Identifier)" DisplayMember="@((w) => w?.Name)" aria-label="Select a weapon"></InputSelectSearch>
+                                           IdMember="@((w) => w?.Identifier)" DisplayMember="@((w) => w?.Name)" aria-label="Select a weapon"></InputSelectSearch>
                     </label>
                     <label class="form-label col col-6">
                         Grind
@@ -511,7 +591,7 @@ else
                     <label class="form-label col col-12">
                         Armor
                         <InputSelectSearch @bind-Value="Armor.Model" DataSource="@GetItemWithRequirements(armors)"
-                        IdMember="@((a) => a?.Identifier)" DisplayMember="@((a) => a?.Name)" aria-label="Select an armor"></InputSelectSearch>
+                                           IdMember="@((a) => a?.Identifier)" DisplayMember="@((a) => a?.Name)" aria-label="Select an armor"></InputSelectSearch>
                     </label>
                     <label class="form-label col col-3">
                         DFP
@@ -591,7 +671,7 @@ else
                         <label class="form-label col col-12">
                             Unit
                             <InputSelectSearch @bind-Value="EditUnitModel.Model" DataSource="@GetItemWithRequirements(units)"
-                            IdMember="@((u) => u?.Identifier)" DisplayMember="@((u) => u?.Name)" aria-label="Select an unit"></InputSelectSearch>
+                                               IdMember="@((u) => u?.Identifier)" DisplayMember="@((u) => u?.Name)" aria-label="Select an unit"></InputSelectSearch>
                         </label>
                         @if (EditUnitModel.Identifier != null && itemPMT.Units[EditUnitModel.Identifier].CanHaveModifier)
                         {
@@ -637,7 +717,7 @@ else
                     <label class="form-label col col-12">
                         Shield
                         <InputSelectSearch @bind-Value="Shield.Model" DataSource="@GetItemWithRequirements(shields)"
-                        IdMember="@((s) => s?.Identifier)" DisplayMember="@((s) => s?.Name)" aria-label="Select a shield"></InputSelectSearch>
+                                           IdMember="@((s) => s?.Identifier)" DisplayMember="@((s) => s?.Name)" aria-label="Select a shield"></InputSelectSearch>
                     </label>
                     <label class="form-label col col-3">
                         DFP
@@ -759,6 +839,7 @@ else
 
     [DisallowNull] public List<CharacterModel> Characters { get; set; } = new();
     [DisallowNull] public CharacterModel Character { get; set; } = default!;
+    private string NewLoadoutName { get; set; } = string.Empty;
     private int EditUnit { get; set; }
     private UnitModel EditUnitModel => EditUnit switch
     {
@@ -807,24 +888,7 @@ else
     private void LoadCharacter(CharacterModel character)
     {
         Character = character;
-        // Keep equipment names because they will be erased when assigning other equipment.
-        string weaponName = Character.WeaponName;
-        string armorName = Character.ArmorName;
-        string unit1Name = Character.Unit1Name;
-        string unit2Name = Character.Unit2Name;
-        string unit3Name = Character.Unit3Name;
-        string unit4Name = Character.Unit4Name;
-        string shieldName = Character.ShieldName;
-        // It's this order because each one helps with requirements for other equipment.
-        Mag = MagModel.Parse(mags, Character.MagName);
-        Armor = ArmorModel.Parse(itemPMT, armors, armorName);
-        Unit1 = UnitModel.Parse(itemPMT, units, unit1Name);
-        Unit2 = UnitModel.Parse(itemPMT, units, unit2Name);
-        Unit3 = UnitModel.Parse(itemPMT, units, unit3Name);
-        Unit4 = UnitModel.Parse(itemPMT, units, unit4Name);
-        Shield = ShieldModel.Parse(itemPMT, shields, shieldName);
-        Weapon = WeaponModel.Parse(itemPMT, weapons, weaponName);
-        RefreshStats();
+        RefreshEquipmentModels();
     }
 
     private void OnClickCharacterSelection(CharacterModel? newSelection)
@@ -859,6 +923,35 @@ else
         else
             RefreshStats();
         JsRuntime.InvokeVoidAsync("deleteCharacter", character.Name);
+    }
+
+    private void OnClickLoadoutNew()
+    {
+        if (string.IsNullOrWhiteSpace(NewLoadoutName))
+        {
+            JsRuntime.InvokeVoidAsync("alertModalLoadoutNew", "Please enter a name for the new loadout.");
+            return;
+        }
+        if (Character.Loadouts.ContainsKey(NewLoadoutName))
+        {
+            JsRuntime.InvokeVoidAsync("alertModalLoadoutNew", "A loadout with that name already exists.");
+            return;
+        }
+        Character.Loadouts.Add(NewLoadoutName, new());
+        LoadoutSelection = NewLoadoutName;
+        JsRuntime.InvokeVoidAsync("closeModalLoadoutNew").ConfigureAwait(false);
+    }
+
+    private void OnClickLoadoutDelete()
+    {
+        string oldLoadoutName = LoadoutSelection;
+        Character.Loadouts.Remove(LoadoutSelection);
+
+        if (Character.Loadouts.Count == 0)
+            Character.Loadouts.Add("Default", new());
+
+        LoadoutSelection = Character.Loadouts.Keys.First();
+        JsRuntime.InvokeVoidAsync("deleteLoadout", oldLoadoutName);
     }
 
     public enum ClassRace
@@ -897,6 +990,12 @@ else
     {
         get { return Character.ClassRaceSelection; }
         set { Character.ClassRaceSelection = value; RefreshStats(); }
+    }
+
+    public string LoadoutSelection
+    {
+        get { return Character.LoadoutSelection; }
+        set { Character.LoadoutSelection = value; RefreshEquipmentModels(); }
     }
 
     public int Level
@@ -1180,6 +1279,28 @@ else
         set { Character.Notes = value; RefreshStats(); }
     }
 
+    public void RefreshEquipmentModels()
+    {
+        // Keep equipment names because they will be erased when assigning the new loadout.
+        string weaponName = Character.WeaponName;
+        string armorName = Character.ArmorName;
+        string unit1Name = Character.Unit1Name;
+        string unit2Name = Character.Unit2Name;
+        string unit3Name = Character.Unit3Name;
+        string unit4Name = Character.Unit4Name;
+        string shieldName = Character.ShieldName;
+        string magName = Character.MagName;
+        // It's this order because each one helps with requirements for other equipment.
+        Mag = MagModel.Parse(mags, magName);
+        Armor = ArmorModel.Parse(itemPMT, armors, armorName);
+        Unit1 = UnitModel.Parse(itemPMT, units, unit1Name);
+        Unit2 = UnitModel.Parse(itemPMT, units, unit2Name);
+        Unit3 = UnitModel.Parse(itemPMT, units, unit3Name);
+        Unit4 = UnitModel.Parse(itemPMT, units, unit4Name);
+        Shield = ShieldModel.Parse(itemPMT, shields, shieldName);
+        Weapon = WeaponModel.Parse(itemPMT, weapons, weaponName);
+    }
+
     public void RefreshStats()
     {
         if (!ClassRaceSelection.HasValue)
@@ -1454,6 +1575,18 @@ else
     {
         public string Name { get; set; } = "";
         public ClassRace? ClassRaceSelection { get; set; }
+        public string LoadoutSelection { get; set; } = "Default";
+        public Dictionary<string, LoadoutModel> Loadouts { get; set; } = new() { ["Default"] = new() };
+        [System.Text.Json.Serialization.JsonIgnore]
+        public LoadoutModel CurrentLoadout
+        {
+            get
+            {
+                if (!Loadouts.ContainsKey(LoadoutSelection))
+                    LoadoutSelection = Loadouts.Keys.First();
+                return Loadouts[LoadoutSelection];
+            }
+        }
 
         public int Level { get; set; } = 1;
 
@@ -1474,6 +1607,20 @@ else
         public int ShiftaLevel { get; set; }
         public int DebandLevel { get; set; }
 
+        public string WeaponName { get => CurrentLoadout.WeaponName; set { CurrentLoadout.WeaponName = value; } }
+        public string ArmorName { get => CurrentLoadout.ArmorName; set { CurrentLoadout.ArmorName = value; } }
+        public string Unit1Name { get => CurrentLoadout.Unit1Name; set { CurrentLoadout.Unit1Name = value; } }
+        public string Unit2Name { get => CurrentLoadout.Unit2Name; set { CurrentLoadout.Unit2Name = value; } }
+        public string Unit3Name { get => CurrentLoadout.Unit3Name; set { CurrentLoadout.Unit3Name = value; } }
+        public string Unit4Name { get => CurrentLoadout.Unit4Name; set { CurrentLoadout.Unit4Name = value; } }
+        public string ShieldName { get => CurrentLoadout.ShieldName; set { CurrentLoadout.ShieldName = value; } }
+        public string MagName { get => CurrentLoadout.MagName; set { CurrentLoadout.MagName = value; } }
+
+        public string? Notes { get => CurrentLoadout.Notes; set { CurrentLoadout.Notes = value; } }
+    }
+
+    public class LoadoutModel
+    {
         public string WeaponName { get; set; } = "";
         public string ArmorName { get; set; } = "";
         public string Unit1Name { get; set; } = "";
@@ -1769,7 +1916,7 @@ else
         private int dex;
         private int mind;
 
-        public ItemModel? Model{ get; set; }
+        public ItemModel? Model { get; set; }
 
         public string Name => Model?.Name ?? "";
         public int Level => Def + Pow + Dex + Mind;
