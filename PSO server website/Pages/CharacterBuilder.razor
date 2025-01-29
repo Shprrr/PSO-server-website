@@ -67,6 +67,7 @@ else
                 </label>
                 <div class="btn-group btn-group-sm align-top mt-1" role="group" aria-label="Loadout controls">
                     <button class="btn btn-success btn-sm" data-bs-toggle="modal" data-bs-target="#modalLoadoutNew"><span class="bi bi-plus" aria-hidden="true"></span></button>
+                    <button class="btn btn-outline-secondary btn-sm" data-bs-toggle="modal" data-bs-target="#modalLoadoutEdit"><span class="bi bi-pencil" aria-hidden="true"></span></button>
                     <button class="btn btn-danger btn-sm" onclick="confirmDeleteLoadout()"><span class="bi bi-dash" aria-hidden="true"></span></button>
                 </div>
             </div>
@@ -450,6 +451,27 @@ else
                             <InputText @bind-Value="NewLoadoutName" DisplayName="Name" class="form-control"></InputText>
                         </label>
                         <button class="btn btn-primary" @onclick="OnClickLoadoutNew">Create</button>
+                        <button class="btn btn-secondary" @onclick="OnClickLoadoutDuplicate">Duplicate</button>
+                    </div>
+                </div>
+                <div class="modal-footer"></div>
+            </div>
+        </div>
+    </div>
+    <div id="modalLoadoutEdit" class="modal" onshow.bs.modal="@(() => { NewLoadoutName = LoadoutSelection; })" onhidden.bs.modal="@(() => RefreshStats())">
+        <div class="modal-dialog modal-dialog-scrollable modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <span>Edit loadout name</span><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body container">
+                    <div id="modalLoadoutEditAlert"></div>
+                    <div>
+                        <label class="form-label">
+                            Name
+                            <InputText @bind-Value="NewLoadoutName" DisplayName="Name" class="form-control"></InputText>
+                        </label>
+                        <button class="btn btn-primary" @onclick="OnClickLoadoutEdit">Save</button>
                     </div>
                 </div>
                 <div class="modal-footer"></div>
@@ -483,6 +505,23 @@ else
         const alertPlaceholder = document.getElementById('modalLoadoutNewAlert')
         alertPlaceholder.append(wrapper)
         }
+
+        function closeModalLoadoutEdit() {
+        bootstrap.Modal.getInstance(document.getElementById('modalLoadoutEdit')).hide();
+        }
+        function alertModalLoadoutEdit(message) {
+        const wrapper = document.createElement('div')
+        wrapper.innerHTML = [
+        `<div class="alert alert-warning alert-dismissible" role="alert">`,
+        `<div>${message}</div>`,
+        '   <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>',
+        '</div>'
+        ].join('')
+
+        const alertPlaceholder = document.getElementById('modalLoadoutEditAlert')
+        alertPlaceholder.append(wrapper)
+        }
+
         function confirmDeleteLoadout() {
         dialogConfirmDeleteLoadout.showModal();
         }
@@ -940,6 +979,41 @@ else
         Character.Loadouts.Add(NewLoadoutName, new());
         LoadoutSelection = NewLoadoutName;
         JsRuntime.InvokeVoidAsync("closeModalLoadoutNew").ConfigureAwait(false);
+    }
+
+    private void OnClickLoadoutDuplicate()
+    {
+        if (string.IsNullOrWhiteSpace(NewLoadoutName))
+        {
+            JsRuntime.InvokeVoidAsync("alertModalLoadoutNew", "Please enter a name for the new loadout.");
+            return;
+        }
+        if (Character.Loadouts.ContainsKey(NewLoadoutName))
+        {
+            JsRuntime.InvokeVoidAsync("alertModalLoadoutNew", "A loadout with that name already exists.");
+            return;
+        }
+        Character.Loadouts.Add(NewLoadoutName, new(Character.CurrentLoadout));
+        LoadoutSelection = NewLoadoutName;
+        JsRuntime.InvokeVoidAsync("closeModalLoadoutNew").ConfigureAwait(false);
+    }
+
+    private void OnClickLoadoutEdit()
+    {
+        if (string.IsNullOrWhiteSpace(NewLoadoutName))
+        {
+            JsRuntime.InvokeVoidAsync("alertModalLoadoutEdit", "Please enter a name for the new loadout.");
+            return;
+        }
+        if (Character.Loadouts.ContainsKey(NewLoadoutName))
+        {
+            JsRuntime.InvokeVoidAsync("alertModalLoadoutEdit", "A loadout with that name already exists.");
+            return;
+        }
+        Character.Loadouts.Add(NewLoadoutName, Character.CurrentLoadout);
+        Character.Loadouts.Remove(LoadoutSelection);
+        LoadoutSelection = NewLoadoutName;
+        JsRuntime.InvokeVoidAsync("closeModalLoadoutEdit").ConfigureAwait(false);
     }
 
     private void OnClickLoadoutDelete()
@@ -1604,8 +1678,8 @@ else
         public int TargetEvadeMaterial { get; set; }
         public int TargetLuckMaterial { get; set; }
 
-        public int ShiftaLevel { get; set; }
-        public int DebandLevel { get; set; }
+        public int ShiftaLevel { get => CurrentLoadout.ShiftaLevel; set { CurrentLoadout.ShiftaLevel = value; } }
+        public int DebandLevel { get => CurrentLoadout.DebandLevel; set { CurrentLoadout.DebandLevel = value; } }
 
         public string WeaponName { get => CurrentLoadout.WeaponName; set { CurrentLoadout.WeaponName = value; } }
         public string ArmorName { get => CurrentLoadout.ArmorName; set { CurrentLoadout.ArmorName = value; } }
@@ -1621,6 +1695,9 @@ else
 
     public class LoadoutModel
     {
+        public int ShiftaLevel { get; set; }
+        public int DebandLevel { get; set; }
+
         public string WeaponName { get; set; } = "";
         public string ArmorName { get; set; } = "";
         public string Unit1Name { get; set; } = "";
@@ -1631,6 +1708,22 @@ else
         public string MagName { get; set; } = "Mag 5/0/0/0";
 
         public string? Notes { get; set; }
+
+        public LoadoutModel() { }
+
+        public LoadoutModel(LoadoutModel original)
+        {
+            ShiftaLevel = original.ShiftaLevel;
+            DebandLevel = original.DebandLevel;
+            WeaponName = original.WeaponName;
+            ArmorName = original.ArmorName;
+            Unit1Name = original.Unit1Name;
+            Unit2Name = original.Unit2Name;
+            Unit3Name = original.Unit3Name;
+            Unit4Name = original.Unit4Name;
+            ShieldName = original.ShieldName;
+            MagName = original.MagName;
+        }
     }
 
     public class WeaponModel(ItemPMTModel itemPMT)
