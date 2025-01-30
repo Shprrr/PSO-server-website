@@ -910,10 +910,12 @@ else
         unit4 = new(itemPMT);
         shield = new(itemPMT);
 
+        var characterSelectedIndex = await localStorage.GetItemAsync<int>("characterSelectedIndex");
         Characters = await localStorage.GetItemAsync<List<CharacterModel>>("characters") ?? new();
+        if (characterSelectedIndex >= Characters.Count) characterSelectedIndex = 0;
         if (Characters.Count > 0)
         {
-            LoadCharacter(Characters[0]);
+            LoadCharacter(Characters[characterSelectedIndex]);
         }
         else
         {
@@ -927,6 +929,7 @@ else
     private void LoadCharacter(CharacterModel character)
     {
         Character = character;
+        localStorage.SetItemAsync("characterSelectedIndex", Characters.IndexOf(character));
         RefreshEquipmentModels();
     }
 
