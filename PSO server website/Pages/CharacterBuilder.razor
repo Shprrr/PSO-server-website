@@ -368,11 +368,20 @@ else
             <div class="col">
                 <label class="form-label w-100">
                     Notes
-                    <InputTextArea @bind-Value="Notes" DisplayName="Notes" class="form-control"></InputTextArea>
+                    <textarea id="textAreaNotes" class="form-control" @bind="Notes"></textarea>
                 </label>
             </div>
         </div>
     </div>
+
+    <script type="text/javascript">
+        const textAreaNotes = document.getElementById('textAreaNotes');
+        textAreaNotes.addEventListener('input', adjustNotesSize);
+        function adjustNotesSize() {
+        textAreaNotes.style.height = 'auto';
+        textAreaNotes.style.height = `${textAreaNotes.scrollHeight}px`;
+        }
+    </script>
 
     <div id="modalCharacterSelection" class="modal" onhidden.bs.modal="@(() => RefreshStats())">
         <div class="modal-dialog modal-dialog-scrollable modal-dialog-centered">
@@ -924,6 +933,13 @@ else
         }
 
         await base.OnInitializedAsync();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await base.OnAfterRenderAsync(firstRender);
+        if (!firstRender)
+            await JsRuntime.InvokeVoidAsync("adjustNotesSize");
     }
 
     private void LoadCharacter(CharacterModel character)
