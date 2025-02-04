@@ -1,0 +1,621 @@
+﻿@using PSOServerWebsite.Pages.CharacterBuilderModels
+@using UnitModel = PSOServerWebsite.Pages.CharacterBuilderModels.UnitModel
+@using PSOServerWebsite.Services
+@inject IJSRuntime JsRuntime
+
+<div id="modalCharacterSelection" class="modal" onhidden.bs.modal="@(() => OnClose?.Invoke())">
+    <div class="modal-dialog modal-dialog-scrollable modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <span>Character Selection</span><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body container">
+                <div id="modalCharacterSelectionAlert"></div>
+                <dialog id="dialogConfirmDeleteCharacter" @onclose="() => CharacterToDelete = null">
+                    @if (CharacterToDelete != null)
+                    {
+                        <form method="dialog">
+                            <p>Do you want to delete @CharacterToDelete.Name ?</p>
+                            <div class="d-flex gap-2 justify-content-end">
+                                <button class="btn btn-secondary" value="cancel">No</button>
+                                <button class="btn btn-danger" value="ok" @onclick="() => OnClickCharacterDelete(CharacterToDelete)">Yes</button>
+                            </div>
+                        </form>
+                    }
+                </dialog>
+                <div class="btn-group-vertical vstack" role="group">
+                    @foreach (var character in Parent.Characters)
+                    {
+                        <label class="btn btn-outline-primary d-flex @(character == Parent.Character ? "active": "")">
+                            <input type="radio" class="btn-check" name="vbtn-radio-character-selection" autocomplete="off" checked="@(character == Parent.Character)" @onchange="(e) => OnClickCharacterSelection(character)">
+                            <span>@character.Name</span>
+                            <button class="btn btn-sm btn-danger ms-auto" @onclick="() => OnClickConfirmCharacterDelete(character)">Delete</button>
+                        </label>
+                    }
+
+                    <label class="btn btn-outline-secondary d-flex">
+                        <input type="radio" class="btn-check" name="vbtn-radio-character-selection" autocomplete="off" @onchange="(e) => OnClickCharacterSelection(null)">
+                        ~ New Character ~
+                    </label>
+                </div>
+            </div>
+            <div class="modal-footer"></div>
+        </div>
+    </div>
+</div>
+<script type="text/javascript">
+    const dialogConfirmDeleteCharacter = document.getElementById('dialogConfirmDeleteCharacter');
+
+    function closeModalCharacterSelection() {
+    bootstrap.Modal.getInstance(document.getElementById('modalCharacterSelection')).hide();
+    }
+    function confirmDeleteCharacter() {
+    dialogConfirmDeleteCharacter.showModal();
+    }
+    function deleteCharacter(characterName) {
+    const wrapper = document.createElement('div')
+    wrapper.innerHTML = [
+    `<div class="alert alert-success alert-dismissible" role="alert">`,
+    `<div>${characterName} was deleted.</div>`,
+    '   <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>',
+    '</div>'
+    ].join('')
+
+    const alertPlaceholder = document.getElementById('modalCharacterSelectionAlert')
+    alertPlaceholder.append(wrapper)
+    }
+</script>
+
+<div id="modalLoadoutNew" class="modal" onshow.bs.modal="@(() => { NewLoadoutName = string.Empty; })" onhidden.bs.modal="@(() => OnClose?.Invoke())">
+    <div class="modal-dialog modal-dialog-scrollable modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <span>New Loadout</span><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body container">
+                <div id="modalLoadoutNewAlert"></div>
+                <div>
+                    <label class="form-label">
+                        Name
+                        <InputText @bind-Value="NewLoadoutName" DisplayName="Name" class="form-control"></InputText>
+                    </label>
+                    <button class="btn btn-primary" @onclick="OnClickLoadoutNew">Create</button>
+                    <button class="btn btn-secondary" @onclick="OnClickLoadoutDuplicate">Duplicate</button>
+                </div>
+            </div>
+            <div class="modal-footer"></div>
+        </div>
+    </div>
+</div>
+<div id="modalLoadoutEdit" class="modal" onshow.bs.modal="@(() => { NewLoadoutName = Parent.LoadoutSelection; })" onhidden.bs.modal="@(() => OnClose?.Invoke())">
+    <div class="modal-dialog modal-dialog-scrollable modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <span>Edit loadout name</span><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body container">
+                <div id="modalLoadoutEditAlert"></div>
+                <div>
+                    <label class="form-label">
+                        Name
+                        <InputText @bind-Value="NewLoadoutName" DisplayName="Name" class="form-control"></InputText>
+                    </label>
+                    <button class="btn btn-primary" @onclick="OnClickLoadoutEdit">Save</button>
+                </div>
+            </div>
+            <div class="modal-footer"></div>
+        </div>
+    </div>
+</div>
+<dialog id="dialogConfirmDeleteLoadout">
+    <form method="dialog">
+        <p>Do you want to delete @Parent.LoadoutSelection ?</p>
+        <div class="d-flex gap-2 justify-content-end">
+            <button class="btn btn-secondary" value="cancel">No</button>
+            <button class="btn btn-danger" value="ok" @onclick="OnClickLoadoutDelete">Yes</button>
+        </div>
+    </form>
+</dialog>
+<script type="text/javascript">
+    const dialogConfirmDeleteLoadout = document.getElementById('dialogConfirmDeleteLoadout');
+
+    function closeModalLoadoutNew() {
+    bootstrap.Modal.getInstance(document.getElementById('modalLoadoutNew')).hide();
+    }
+    function alertModalLoadoutNew(message) {
+    const wrapper = document.createElement('div')
+    wrapper.innerHTML = [
+    `<div class="alert alert-warning alert-dismissible" role="alert">`,
+    `<div>${message}</div>`,
+    '   <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>',
+    '</div>'
+    ].join('')
+
+    const alertPlaceholder = document.getElementById('modalLoadoutNewAlert')
+    alertPlaceholder.append(wrapper)
+    }
+
+    function closeModalLoadoutEdit() {
+    bootstrap.Modal.getInstance(document.getElementById('modalLoadoutEdit')).hide();
+    }
+    function alertModalLoadoutEdit(message) {
+    const wrapper = document.createElement('div')
+    wrapper.innerHTML = [
+    `<div class="alert alert-warning alert-dismissible" role="alert">`,
+    `<div>${message}</div>`,
+    '   <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>',
+    '</div>'
+    ].join('')
+
+    const alertPlaceholder = document.getElementById('modalLoadoutEditAlert')
+    alertPlaceholder.append(wrapper)
+    }
+
+    function confirmDeleteLoadout() {
+    dialogConfirmDeleteLoadout.showModal();
+    }
+    function deleteLoadout(loadoutName) {
+    const wrapper = document.createElement('div')
+    wrapper.innerHTML = [
+    `<div class="alert alert-success alert-dismissible" role="alert">`,
+    `<div>${loadoutName} was deleted.</div>`,
+    '   <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>',
+    '</div>'
+    ].join('')
+
+    const alertPlaceholder = document.getElementById('alerts')
+    alertPlaceholder.append(wrapper)
+    }
+</script>
+
+<div id="modalEditWeapon" class="modal" onhidden.bs.modal="@(() => OnClose?.Invoke())">
+    <div class="modal-dialog modal-dialog-scrollable modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <span>Weapon</span><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body container row">
+                <label class="form-label col col-12">
+                    Weapon
+                    <InputSelectSearch @bind-Value="Parent.Weapon.Model" DataSource="@Parent.GetItemWithRequirements(Weapons)"
+                                       IdMember="@((w) => w?.Identifier)" DisplayMember="@((w) => w?.Name)" aria-label="Select a weapon"></InputSelectSearch>
+                </label>
+                <label class="form-label col col-6">
+                    Grind
+                    <InputNumber @bind-Value="Parent.Weapon.Grind" DisplayName="Grind" class="form-control"></InputNumber>
+                </label>
+                <label class="form-label col col-6">
+                    Hit
+                    <span class="input-group">
+                        <InputNumber @bind-Value="Parent.Weapon.Hit" DisplayName="Hit" class="form-control"></InputNumber>
+                        <span class="input-group-append input-group-text">%</span>
+                    </span>
+                </label>
+                <label class="form-label col col-3">
+                    ATP
+                    <InputNumber Value="@Parent.Weapon.Atp" ValueExpression="@(() => Parent.Weapon.Atp)" DisplayName="ATP" class="form-control" disabled></InputNumber>
+                </label>
+                <label class="form-label col col-3">
+                    ATA
+                    <InputNumber Value="@Parent.Weapon.Ata" ValueExpression="@(() => Parent.Weapon.Ata)" DisplayName="ATA" class="form-control" disabled></InputNumber>
+                </label>
+                <label class="form-label col col-3">
+                    MST
+                    <InputNumber Value="@Parent.Weapon.Mst" ValueExpression="@(() => Parent.Weapon.Mst)" DisplayName="MST" class="form-control" disabled></InputNumber>
+                </label>
+                @foreach (var statBoost in Parent.Weapon.GetStatBoosts())
+                {
+                    <label class="form-label col @(statBoost.Prefix != null ? "col-6" : statBoost.Suffix != null ? "col-4" : "col-3")">
+                        @statBoost.Name
+                        <span class="input-group">
+                            @if (statBoost.Prefix != null)
+                            {
+                                <span class="input-group-prepend input-group-text">@statBoost.Prefix</span>
+                            }
+                            @if (statBoost.Value != 0)
+                            {
+                                <InputNumber Value="@statBoost.Value" ValueExpression="@(() => statBoost.Value)" DisplayName="@statBoost.Name" class="form-control" disabled></InputNumber>
+                            }
+                            @if (statBoost.Suffix != null)
+                            {
+                                <span class="input-group-append input-group-text">@statBoost.Suffix</span>
+                            }
+                        </span>
+                    </label>
+                }
+                @foreach (var techBoost in Parent.Weapon.GetTechBoosts())
+                {
+                    <label class="form-label col col-6">
+                        @techBoost.Name
+                        <span class="input-group">
+                            @if (techBoost.Name == "Megid")
+                            {
+                                <InputText Value="@techBoost.Suffix" ValueExpression="@(() => techBoost.Suffix)" DisplayName="@techBoost.Name" class="form-control" disabled></InputText>
+                            }
+                            else
+                            {
+                                <InputNumber Value="@techBoost.Value" ValueExpression="@(() => techBoost.Value)" DisplayName="@techBoost.Name" class="form-control" disabled></InputNumber>
+                                @if (techBoost.Suffix != null)
+                                {
+                                    <span class="input-group-append input-group-text">@techBoost.Suffix</span>
+                                }
+                            }
+                        </span>
+                    </label>
+                }
+            </div>
+            <div class="modal-footer">@Parent.Weapon</div>
+        </div>
+    </div>
+</div>
+
+<div id="modalEditArmor" class="modal" onhidden.bs.modal="@(() => OnClose?.Invoke())">
+    <div class="modal-dialog modal-dialog-scrollable modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <span>Armor</span><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body container row">
+                <label class="form-label col col-12">
+                    Armor
+                    <InputSelectSearch @bind-Value="Parent.Armor.Model" DataSource="@Parent.GetItemWithRequirements(Armors)"
+                                       IdMember="@((a) => a?.Identifier)" DisplayMember="@((a) => a?.Name)" aria-label="Select an armor"></InputSelectSearch>
+                </label>
+                <label class="form-label col col-3">
+                    DFP
+                    <InputNumber Value="@Parent.Armor.Dfp" ValueExpression="@(() => Parent.Armor.Dfp)" DisplayName="DFP" class="form-control" disabled></InputNumber>
+                </label>
+                <label class="form-label col col-3">
+                    DFP Bonus
+                    <InputNumber @bind-Value="Parent.Armor.DfpBonus" DisplayName="DFP Bonus" class="form-control"></InputNumber>
+                </label>
+                <label class="form-label col col-3">
+                    EVP
+                    <InputNumber Value="@Parent.Armor.Evp" ValueExpression="@(() => Parent.Armor.Evp)" DisplayName="EVP" class="form-control" disabled></InputNumber>
+                </label>
+                <label class="form-label col col-3">
+                    EVP Bonus
+                    <InputNumber @bind-Value="Parent.Armor.EvpBonus" DisplayName="EVP Bonus" class="form-control"></InputNumber>
+                </label>
+                @foreach (var statBoost in Parent.Armor.GetStatBoosts())
+                {
+                    <label class="form-label col @(statBoost.Prefix != null ? "col-6" : statBoost.Suffix != null ? "col-4" : "col-3")">
+                        @statBoost.Name
+                        <span class="input-group">
+                            @if (statBoost.Prefix != null)
+                            {
+                                <span class="input-group-prepend input-group-text">@statBoost.Prefix</span>
+                            }
+                            @if (statBoost.Value != 0)
+                            {
+                                <InputNumber Value="@statBoost.Value" ValueExpression="@(() => statBoost.Value)" DisplayName="@statBoost.Name" class="form-control" disabled></InputNumber>
+                            }
+                            @if (statBoost.Suffix != null)
+                            {
+                                <span class="input-group-append input-group-text">@statBoost.Suffix</span>
+                            }
+                        </span>
+                    </label>
+                }
+                <label class="form-label col col-12">
+                    Slots
+                    <InputNumber @bind-Value="Parent.Armor.NumberSlots" DisplayName="Slots" class="form-control"></InputNumber>
+                </label>
+                @foreach (var techBoost in Parent.Armor.GetTechBoosts())
+                {
+                    <label class="form-label col col-6">
+                        @techBoost.Name
+                        <span class="input-group">
+                            @if (techBoost.Name == "Megid")
+                            {
+                                <InputText Value="@techBoost.Suffix" ValueExpression="@(() => techBoost.Suffix)" DisplayName="@techBoost.Name" class="form-control" disabled></InputText>
+                            }
+                            else
+                            {
+                                <InputNumber Value="@techBoost.Value" ValueExpression="@(() => techBoost.Value)" DisplayName="@techBoost.Name" class="form-control" disabled></InputNumber>
+                                @if (techBoost.Suffix != null)
+                                {
+                                    <span class="input-group-append input-group-text">@techBoost.Suffix</span>
+                                }
+                            }
+                        </span>
+                    </label>
+                }
+            </div>
+            <div class="modal-footer">@Parent.Armor</div>
+        </div>
+    </div>
+</div>
+
+<div id="modalEditUnit" class="modal" onhidden.bs.modal="@(() => OnClose?.Invoke())">
+    <div class="modal-dialog modal-dialog-scrollable modal-dialog-centered">
+        @if (EditUnitIndex > 0)
+        {
+            <div class="modal-content">
+                <div class="modal-header">
+                    <span>Unit</span><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body container row">
+                    <label class="form-label col col-12">
+                        Unit
+                        <InputSelectSearch @bind-Value="EditUnitModel.Model" DataSource="@Parent.GetItemWithRequirements(Units)"
+                                           IdMember="@((u) => u?.Identifier)" DisplayMember="@((u) => u?.Name)" aria-label="Select an unit"></InputSelectSearch>
+                    </label>
+                    @if (EditUnitModel.Identifier != null && ItemPMT.Units[EditUnitModel.Identifier].CanHaveModifier)
+                    {
+                        <label class="form-label col col-3">
+                            +/-
+                            <InputNumber @bind-Value="EditUnitModel.Modifier" DisplayName="+/-" class="form-control"></InputNumber>
+                        </label>
+                    }
+                    @foreach (var statBoost in EditUnitModel.GetStatBoosts())
+                    {
+                        <label class="form-label col @(statBoost.Prefix != null ? "col-6" : statBoost.Suffix != null ? "col-4" : "col-3")">
+                            @statBoost.Name
+                            <span class="input-group">
+                                @if (statBoost.Prefix != null)
+                                {
+                                    <span class="input-group-prepend input-group-text">@statBoost.Prefix</span>
+                                }
+                                @if (statBoost.Value != 0)
+                                {
+                                    <InputNumber Value="@statBoost.Value" ValueExpression="@(() => statBoost.Value)" DisplayName="@statBoost.Name" class="form-control" disabled></InputNumber>
+                                }
+                                @if (statBoost.Suffix != null)
+                                {
+                                    <span class="input-group-append input-group-text">@statBoost.Suffix</span>
+                                }
+                            </span>
+                        </label>
+                    }
+                </div>
+                <div class="modal-footer">@EditUnitModel.ToString()</div>
+            </div>
+        }
+    </div>
+</div>
+
+<div id="modalEditShield" class="modal" onhidden.bs.modal="@(() => OnClose?.Invoke())">
+    <div class="modal-dialog modal-dialog-scrollable modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <span>Shield</span><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body container row">
+                <label class="form-label col col-12">
+                    Shield
+                    <InputSelectSearch @bind-Value="Parent.Shield.Model" DataSource="@Parent.GetItemWithRequirements(Shields)"
+                                       IdMember="@((s) => s?.Identifier)" DisplayMember="@((s) => s?.Name)" aria-label="Select a shield"></InputSelectSearch>
+                </label>
+                <label class="form-label col col-3">
+                    DFP
+                    <InputNumber Value="@Parent.Shield.Dfp" ValueExpression="@(() => Parent.Shield.Dfp)" DisplayName="DFP" class="form-control" disabled></InputNumber>
+                </label>
+                <label class="form-label col col-3">
+                    DFP Bonus
+                    <InputNumber @bind-Value="Parent.Shield.DfpBonus" DisplayName="DFP Bonus" class="form-control"></InputNumber>
+                </label>
+                <label class="form-label col col-3">
+                    EVP
+                    <InputNumber Value="@Parent.Shield.Evp" ValueExpression="@(() => Parent.Shield.Evp)" DisplayName="EVP" class="form-control" disabled></InputNumber>
+                </label>
+                <label class="form-label col col-3">
+                    EVP Bonus
+                    <InputNumber @bind-Value="Parent.Shield.EvpBonus" DisplayName="EVP Bonus" class="form-control"></InputNumber>
+                </label>
+                @foreach (var statBoost in Parent.Shield.GetStatBoosts())
+                {
+                    <label class="form-label col col-3">
+                        @statBoost.Name
+                        <span class="input-group">
+                            @if (statBoost.Prefix != null)
+                            {
+                                <span class="input-group-prepend input-group-text">@statBoost.Prefix</span>
+                            }
+                            @if (statBoost.Value != 0)
+                            {
+                                <InputNumber Value="@statBoost.Value" ValueExpression="@(() => statBoost.Value)" DisplayName="@statBoost.Name" class="form-control" disabled></InputNumber>
+                            }
+                            @if (statBoost.Suffix != null)
+                            {
+                                <span class="input-group-append input-group-text">@statBoost.Suffix</span>
+                            }
+                        </span>
+                    </label>
+                }
+                @foreach (var techBoost in Parent.Shield.GetTechBoosts())
+                {
+                    <label class="form-label col col-6">
+                        @techBoost.Name
+                        <span class="input-group">
+                            @if (techBoost.Name == "Megid")
+                            {
+                                <InputText Value="@techBoost.Suffix" ValueExpression="@(() => techBoost.Suffix)" DisplayName="@techBoost.Name" class="form-control" disabled></InputText>
+                            }
+                            else
+                            {
+                                <InputNumber Value="@techBoost.Value" ValueExpression="@(() => techBoost.Value)" DisplayName="@techBoost.Name" class="form-control" disabled></InputNumber>
+                                @if (techBoost.Suffix != null)
+                                {
+                                    <span class="input-group-append input-group-text">@techBoost.Suffix</span>
+                                }
+                            }
+                        </span>
+                    </label>
+                }
+            </div>
+            <div class="modal-footer">@Parent.Shield</div>
+        </div>
+    </div>
+</div>
+
+<div id="modalEditMag" class="modal" onhidden.bs.modal="@(() => OnClose?.Invoke())">
+    <div class="modal-dialog modal-dialog-scrollable modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <span>Mag</span><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body container row">
+                <label class="form-label col col-6">
+                    Mag
+                    <InputSelectSearch @bind-Value="Parent.Mag.Model" DataSource="@Mags" IdMember="@((s) => s?.Identifier)" DisplayMember="@((s) => s?.Name)" aria-label="Select a mag"></InputSelectSearch>
+                </label>
+                <label class="form-label col col-6">
+                    Level
+                    <InputNumber Value="@Parent.Mag.Level" ValueExpression="@(() => Parent.Mag.Level)" DisplayName="Level" class="form-control" disabled></InputNumber>
+                </label>
+                <label class="form-label col col-3">
+                    DEF
+                    <InputNumber @bind-Value="Parent.Mag.Def" DisplayName="DEF" class="form-control"></InputNumber>
+                </label>
+                <label class="form-label col col-3">
+                    POW
+                    <InputNumber @bind-Value="Parent.Mag.Pow" DisplayName="POW" class="form-control"></InputNumber>
+                </label>
+                <label class="form-label col col-3">
+                    DEX
+                    <InputNumber @bind-Value="Parent.Mag.Dex" DisplayName="DEX" class="form-control"></InputNumber>
+                </label>
+                <label class="form-label col col-3">
+                    MIND
+                    <InputNumber @bind-Value="Parent.Mag.Mind" DisplayName="MIND" class="form-control"></InputNumber>
+                </label>
+                <label class="form-label col col-6 visually-hidden">
+                    Syncro
+                </label>
+                <label class="form-label col col-6 visually-hidden">
+                    IQ
+                </label>
+                <label class="form-label col col-6 visually-hidden">
+                    PB
+                </label>
+            </div>
+            <div class="modal-footer">@Parent.Mag</div>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter, EditorRequired]
+    public required CharacterBuilder Parent { get; set; }
+    [Parameter]
+    public int EditUnitIndex { get; set; }
+    [Parameter, EditorRequired] public required ItemPMTModel ItemPMT { get; set; }
+    [Parameter, EditorRequired] public required ItemModel[] Weapons { get; set; }
+    [Parameter, EditorRequired] public required ItemModel[] Armors { get; set; }
+    [Parameter, EditorRequired] public required ItemModel[] Shields { get; set; }
+    [Parameter, EditorRequired] public required ItemModel[] Units { get; set; }
+    [Parameter, EditorRequired] public required ItemModel[] Mags { get; set; }
+
+    [Parameter]
+    public Action? OnClose { get; set; }
+
+    private string NewLoadoutName { get; set; } = string.Empty;
+    private UnitModel EditUnitModel => EditUnitIndex switch
+    {
+        1 => Parent.Unit1,
+        2 => Parent.Unit2,
+        3 => Parent.Unit3,
+        4 => Parent.Unit4,
+        _ => throw new NotSupportedException()
+    };
+
+    private void OnClickCharacterSelection(CharacterModel? newSelection)
+    {
+        if (newSelection == null)
+        {
+            newSelection = new();
+            Parent.Characters.Add(newSelection);
+        }
+
+        Parent.LoadCharacter(newSelection);
+        JsRuntime.InvokeVoidAsync("closeModalCharacterSelection").ConfigureAwait(false);
+    }
+
+    public CharacterModel? CharacterToDelete { get; set; }
+    private void OnClickConfirmCharacterDelete(CharacterModel character)
+    {
+        CharacterToDelete = character;
+        JsRuntime.InvokeVoidAsync("confirmDeleteCharacter");
+    }
+
+    private void OnClickCharacterDelete(CharacterModel character)
+    {
+        Parent.Characters.Remove(character);
+
+        if (character == Parent.Character)
+        {
+            if (Parent.Characters.Count == 0)
+                Parent.Characters.Add(new());
+            Parent.LoadCharacter(Parent.Characters[0]);
+        }
+        else
+            OnClose?.Invoke();
+        JsRuntime.InvokeVoidAsync("deleteCharacter", character.Name);
+    }
+
+    private void OnClickLoadoutNew()
+    {
+        if (string.IsNullOrWhiteSpace(NewLoadoutName))
+        {
+            JsRuntime.InvokeVoidAsync("alertModalLoadoutNew", "Please enter a name for the new loadout.");
+            return;
+        }
+        if (Parent.Character.Loadouts.ContainsKey(NewLoadoutName))
+        {
+            JsRuntime.InvokeVoidAsync("alertModalLoadoutNew", "A loadout with that name already exists.");
+            return;
+        }
+        Parent.Character.Loadouts.Add(NewLoadoutName, new());
+        Parent.LoadoutSelection = NewLoadoutName;
+        JsRuntime.InvokeVoidAsync("closeModalLoadoutNew").ConfigureAwait(false);
+    }
+
+    private void OnClickLoadoutDuplicate()
+    {
+        if (string.IsNullOrWhiteSpace(NewLoadoutName))
+        {
+            JsRuntime.InvokeVoidAsync("alertModalLoadoutNew", "Please enter a name for the new loadout.");
+            return;
+        }
+        if (Parent.Character.Loadouts.ContainsKey(NewLoadoutName))
+        {
+            JsRuntime.InvokeVoidAsync("alertModalLoadoutNew", "A loadout with that name already exists.");
+            return;
+        }
+        Parent.Character.Loadouts.Add(NewLoadoutName, new(Parent.Character.CurrentLoadout));
+        Parent.LoadoutSelection = NewLoadoutName;
+        JsRuntime.InvokeVoidAsync("closeModalLoadoutNew").ConfigureAwait(false);
+    }
+
+    private void OnClickLoadoutEdit()
+    {
+        if (string.IsNullOrWhiteSpace(NewLoadoutName))
+        {
+            JsRuntime.InvokeVoidAsync("alertModalLoadoutEdit", "Please enter a name for the new loadout.");
+            return;
+        }
+        if (Parent.Character.Loadouts.ContainsKey(NewLoadoutName))
+        {
+            JsRuntime.InvokeVoidAsync("alertModalLoadoutEdit", "A loadout with that name already exists.");
+            return;
+        }
+        Parent.Character.Loadouts.Add(NewLoadoutName, Parent.Character.CurrentLoadout);
+        Parent.Character.Loadouts.Remove(Parent.LoadoutSelection);
+        Parent.LoadoutSelection = NewLoadoutName;
+        JsRuntime.InvokeVoidAsync("closeModalLoadoutEdit").ConfigureAwait(false);
+    }
+
+    private void OnClickLoadoutDelete()
+    {
+        string oldLoadoutName = Parent.LoadoutSelection;
+        Parent.Character.Loadouts.Remove(Parent.LoadoutSelection);
+
+        if (Parent.Character.Loadouts.Count == 0)
+            Parent.Character.Loadouts.Add("Default", new());
+
+        Parent.LoadoutSelection = Parent.Character.Loadouts.Keys.First();
+        Parent.RefreshComponent();
+        JsRuntime.InvokeVoidAsync("deleteLoadout", oldLoadoutName);
+    }
+}
