@@ -65,6 +65,8 @@ public class CharacterModel
     public string MagName { get => CurrentLoadout.MagName; set { CurrentLoadout.MagName = value; } }
 
     public string? Notes { get => CurrentLoadout.Notes; set { CurrentLoadout.Notes = value; } }
+
+    public List<string> Wishlist { get; set; } = [];
 }
 
 public class LoadoutModel

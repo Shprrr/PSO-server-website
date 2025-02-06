@@ -378,6 +378,24 @@ else
                 </label>
             </div>
         </div>
+        <div class="row">
+            <div class="col">
+                <label class="form-label w-100">Wishlist</label>
+                <div class="btn-group-vertical vstack" role="group">
+                    @foreach (var wishItem in Character.Wishlist)
+                    {
+                        <button type="button" class="btn btn-outline-primary d-flex" @onclick="@(()=> modals!.ShowEditWishlist(wishItem))">
+                            <span>@wishItem</span>
+                            <div class="btn btn-sm btn-danger ms-auto" @onclick="@(()=> modals!.ShowDeleteWishlist(wishItem))" @onclick:stopPropagation="true">Delete</div>
+                        </button>
+                    }
+
+                    <button type="button" class="btn btn-outline-secondary d-flex" data-bs-toggle="modal" data-bs-target="#modalWishlistNew">
+                        ~ Add to Wishlist ~
+                    </button>
+                </div>
+            </div>
+        </div>
     </div>
 
     <script type="text/javascript">
@@ -389,10 +407,12 @@ else
         }
     </script>
 
-    <CharacterBuilder_Modals Parent="this" EditUnitIndex="EditUnit" ItemPMT="itemPMT" Weapons="weapons" Armors="armors" Shields="shields" Units="units" Mags="mags" OnClose="() => { RefreshStats(); StateHasChanged(); }" />
+    <CharacterBuilder_Modals @ref="modals" Parent="this" EditUnitIndex="EditUnit" ItemPMT="itemPMT" Weapons="weapons" Armors="armors" Shields="shields" Units="units" Mags="mags" OnClose="() => { RefreshStats(); StateHasChanged(); }" />
 }
 
 @code {
+    private CharacterBuilder_Modals? modals;
+
     [DisallowNull] private LevelTableModel levelTable = default!;
     [DisallowNull] private ItemPMTModel itemPMT = default!;
     [DisallowNull] private ItemModel[] weapons = default!;
@@ -1063,4 +1083,9 @@ else
     }
     private IEnumerable<Stat> GetEverySpecialStats() => GetClassStatBoost().Concat(GetEveryStatBoost())
         .Where(s => !new string[] { "ATP", "MST", "ATA", "EVP", "HP", "TP", "DFP", "LCK", "EFR", "EIC", "ETH", "ELT", "EDK", "+ATP", "+ATA", "+EVP", "+DFP", "+MST", "+HP", "+LCK", "+All", "-ATP", "-ATA", "-EVP", "-DFP", "-MST", "-HP", "-LCK", "-All" }.Contains(s.Code));
+
+    public ItemModel? GetItemByName(string name)
+    {
+        return weapons.Concat(armors.Concat(shields.Concat(units.Concat(mags)))).FirstOrDefault(i => i.Name == name);
+    }
 }

@@ -495,6 +495,179 @@
     </div>
 </div>
 
+<div id="modalWishlistNew" class="modal" onshow.bs.modal="@(() => { WishlistItem = null; })" onhidden.bs.modal="@(() => OnClose?.Invoke())">
+    <div class="modal-dialog modal-dialog-scrollable modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <span>Add to Wishlist</span><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body container">
+                <div id="modalWishlistNewAlert"></div>
+                <div class="row">
+                    <ul class="nav nav-tabs" role="tablist">
+                        <li class="nav-item" role="presentation"><button type="button" class="nav-link active" data-bs-toggle="tab" data-bs-target="#wishlistNewWeapon" role="tab">Weapon</button></li>
+                        <li class="nav-item" role="presentation"><button type="button" class="nav-link" data-bs-toggle="tab" data-bs-target="#wishlistNewArmor" role="tab">Armor</button></li>
+                        <li class="nav-item" role="presentation"><button type="button" class="nav-link" data-bs-toggle="tab" data-bs-target="#wishlistNewUnit" role="tab">Unit</button></li>
+                        <li class="nav-item" role="presentation"><button type="button" class="nav-link" data-bs-toggle="tab" data-bs-target="#wishlistNewShield" role="tab">Shield</button></li>
+                    </ul>
+                    <div class="tab-content">
+                        <label id="wishlistNewWeapon" class="tab-pane fade show active form-label col col-12">
+                            Weapon
+                            <InputSelectSearch @bind-Value="WishlistItem" DataSource="@Weapons"
+                                               IdMember="@((w) => w?.Identifier)" DisplayMember="@((w) => w?.Name)" aria-label="Select a weapon"></InputSelectSearch>
+                        </label>
+                        <label id="wishlistNewArmor" class="tab-pane fade form-label col col-12">
+                            Armor
+                            <InputSelectSearch @bind-Value="WishlistItem" DataSource="@Armors"
+                                               IdMember="@((w) => w?.Identifier)" DisplayMember="@((w) => w?.Name)" aria-label="Select an armor"></InputSelectSearch>
+                        </label>
+                        <label id="wishlistNewUnit" class="tab-pane fade form-label col col-12">
+                            Unit
+                            <InputSelectSearch @bind-Value="WishlistItem" DataSource="@Units"
+                                               IdMember="@((w) => w?.Identifier)" DisplayMember="@((w) => w?.Name)" aria-label="Select an unit"></InputSelectSearch>
+                        </label>
+                        <label id="wishlistNewShield" class="tab-pane fade form-label col col-12">
+                            Shield
+                            <InputSelectSearch @bind-Value="WishlistItem" DataSource="@Shields"
+                                               IdMember="@((w) => w?.Identifier)" DisplayMember="@((w) => w?.Name)" aria-label="Select a shield"></InputSelectSearch>
+                        </label>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col">
+                        <button class="btn btn-primary float-end" @onclick="OnClickWishlistNew">Add</button>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer"></div>
+        </div>
+    </div>
+</div>
+<div id="modalWishlistEdit" class="modal" onhidden.bs.modal="@(() => OnClose?.Invoke())">
+    <div class="modal-dialog modal-dialog-scrollable modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <span>Edit Wishlist</span><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body container">
+                <div id="modalWishlistEditAlert"></div>
+                <div class="row">
+                    <ul class="nav nav-tabs" role="tablist">
+                        <li class="nav-item" role="presentation"><button type="button" class="nav-link active" data-bs-toggle="tab" data-bs-target="#wishlistEditWeapon" role="tab">Weapon</button></li>
+                        <li class="nav-item" role="presentation"><button type="button" class="nav-link" data-bs-toggle="tab" data-bs-target="#wishlistEditArmor" role="tab">Armor</button></li>
+                        <li class="nav-item" role="presentation"><button type="button" class="nav-link" data-bs-toggle="tab" data-bs-target="#wishlistEditUnit" role="tab">Unit</button></li>
+                        <li class="nav-item" role="presentation"><button type="button" class="nav-link" data-bs-toggle="tab" data-bs-target="#wishlistEditShield" role="tab">Shield</button></li>
+                    </ul>
+                    <div class="tab-content">
+                        <label id="wishlistEditWeapon" class="tab-pane fade show active form-label col col-12">
+                            Weapon
+                            <InputSelectSearch @bind-Value="WishlistItem" DataSource="@Weapons"
+                                               IdMember="@((w) => w?.Identifier)" DisplayMember="@((w) => w?.Name)" aria-label="Select a weapon"></InputSelectSearch>
+                        </label>
+                        <label id="wishlistEditArmor" class="tab-pane fade form-label col col-12">
+                            Armor
+                            <InputSelectSearch @bind-Value="WishlistItem" DataSource="@Armors"
+                                               IdMember="@((w) => w?.Identifier)" DisplayMember="@((w) => w?.Name)" aria-label="Select an armor"></InputSelectSearch>
+                        </label>
+                        <label id="wishlistEditUnit" class="tab-pane fade form-label col col-12">
+                            Unit
+                            <InputSelectSearch @bind-Value="WishlistItem" DataSource="@Units"
+                                               IdMember="@((w) => w?.Identifier)" DisplayMember="@((w) => w?.Name)" aria-label="Select an unit"></InputSelectSearch>
+                        </label>
+                        <label id="wishlistEditShield" class="tab-pane fade form-label col col-12">
+                            Shield
+                            <InputSelectSearch @bind-Value="WishlistItem" DataSource="@Shields"
+                                               IdMember="@((w) => w?.Identifier)" DisplayMember="@((w) => w?.Name)" aria-label="Select a shield"></InputSelectSearch>
+                        </label>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col">
+                        <button class="btn btn-primary float-end" @onclick="OnClickWishlistEdit">Change</button>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer"></div>
+        </div>
+    </div>
+</div>
+<dialog id="dialogConfirmDeleteWishlist">
+    <form method="dialog">
+        <p>Do you want to delete @EditWishlistName ?</p>
+        <div class="d-flex gap-2 justify-content-end">
+            <button class="btn btn-secondary" value="cancel">No</button>
+            <button class="btn btn-danger" value="ok" @onclick="OnClickWishlistDelete">Yes</button>
+        </div>
+    </form>
+</dialog>
+<script type="text/javascript">
+    const dialogConfirmDeleteWishlist = document.getElementById('dialogConfirmDeleteWishlist');
+
+    function closeModalWishlistNew() {
+    bootstrap.Modal.getInstance(document.getElementById('modalWishlistNew')).hide();
+    }
+    function alertModalWishlistNew(message) {
+    const wrapper = document.createElement('div')
+    wrapper.innerHTML = [
+    `<div class="alert alert-warning alert-dismissible" role="alert">`,
+    `<div>${message}</div>`,
+    '   <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>',
+    '</div>'
+    ].join('')
+
+    const alertPlaceholder = document.getElementById('modalWishlistNewAlert')
+    alertPlaceholder.append(wrapper)
+    }
+
+    function showWishlistEdit() {
+    new bootstrap.Modal(document.getElementById('modalWishlistEdit')).show();
+    }
+    function changeActiveTabWishlistEdit(category) {
+    const tabs = document.querySelectorAll('#modalWishlistEdit .nav-link');
+    const tabPanes = document.querySelectorAll('#modalWishlistEdit .tab-pane');
+    tabs.forEach((tab, index) => {
+    if (tab.getAttribute('data-bs-target') === `#wishlistEdit${category}`) {
+    tab.classList.add('active');
+    tabPanes[index].classList.add('show', 'active');
+    } else {
+    tab.classList.remove('active');
+    tabPanes[index].classList.remove('show', 'active');
+    }
+    });
+    }
+    function closeModalWishlistEdit() {
+    bootstrap.Modal.getInstance(document.getElementById('modalWishlistEdit')).hide();
+    }
+    function alertModalWishlistEdit(message) {
+    const wrapper = document.createElement('div')
+    wrapper.innerHTML = [
+    `<div class="alert alert-warning alert-dismissible" role="alert">`,
+    `<div>${message}</div>`,
+    '   <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>',
+    '</div>'
+    ].join('')
+
+    const alertPlaceholder = document.getElementById('modalWishlistEditAlert')
+    alertPlaceholder.append(wrapper)
+    }
+
+    function confirmDeleteWishlist() {
+    dialogConfirmDeleteWishlist.showModal();
+    }
+    function deleteWishlist(wishlistItemName) {
+    const wrapper = document.createElement('div')
+    wrapper.innerHTML = [
+    `<div class="alert alert-success alert-dismissible" role="alert">`,
+    `<div>${wishlistItemName} was deleted.</div>`,
+    '   <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>',
+    '</div>'
+    ].join('')
+
+    const alertPlaceholder = document.getElementById('alerts')
+    alertPlaceholder.append(wrapper)
+    }
+</script>
+
 @code {
     [Parameter, EditorRequired]
     public required CharacterBuilder Parent { get; set; }
@@ -617,5 +790,67 @@
         Parent.LoadoutSelection = Parent.Character.Loadouts.Keys.First();
         Parent.RefreshComponent();
         JsRuntime.InvokeVoidAsync("deleteLoadout", oldLoadoutName);
+    }
+
+    private ItemModel? WishlistItem { get; set; } = null;
+    private void OnClickWishlistNew()
+    {
+        if (WishlistItem == null)
+        {
+            JsRuntime.InvokeVoidAsync("alertModalWishlistNew", "Please choose an item to wishlist.");
+            return;
+        }
+        if (Parent.Character.Wishlist.Contains(WishlistItem.Name))
+        {
+            JsRuntime.InvokeVoidAsync("alertModalWishlistNew", "This item is already on the wishlist.");
+            return;
+        }
+        Parent.Character.Wishlist.Add(WishlistItem.Name);
+        JsRuntime.InvokeVoidAsync("closeModalWishlistNew").ConfigureAwait(false);
+    }
+
+    private string? EditWishlistName { get; set; }
+    public async Task ShowEditWishlist(string wishlistItem)
+    {
+        await JsRuntime.InvokeVoidAsync("showWishlistEdit");
+        EditWishlistName = wishlistItem;
+        WishlistItem = Parent.GetItemByName(wishlistItem);
+        string category = WishlistItem?.Identifier switch
+        {
+            { } when WishlistItem.Identifier.StartsWith("00") => "Weapon",
+            { } when WishlistItem.Identifier.StartsWith("0101") => "Armor",
+            { } when WishlistItem.Identifier.StartsWith("0103") => "Unit",
+            { } when WishlistItem.Identifier.StartsWith("0102") => "Shield",
+            _ => throw new NotSupportedException()
+        };
+        await JsRuntime.InvokeVoidAsync("changeActiveTabWishlistEdit", category);
+    }
+    private void OnClickWishlistEdit()
+    {
+        if (WishlistItem == null)
+        {
+            JsRuntime.InvokeVoidAsync("alertModalWishlistEdit", "Please choose an item to wishlist.");
+            return;
+        }
+        if (WishlistItem.Name != EditWishlistName && Parent.Character.Wishlist.Contains(WishlistItem.Name))
+        {
+            JsRuntime.InvokeVoidAsync("alertModalWishlistEdit", "This item is already on the wishlist.");
+            return;
+        }
+        Parent.Character.Wishlist[Parent.Character.Wishlist.IndexOf(EditWishlistName!)] = WishlistItem.Name;
+        JsRuntime.InvokeVoidAsync("closeModalWishlistEdit").ConfigureAwait(false);
+    }
+
+    public void ShowDeleteWishlist(string wishlistItem)
+    {
+        EditWishlistName = wishlistItem;
+        WishlistItem = Parent.GetItemByName(wishlistItem);
+        JsRuntime.InvokeVoidAsync("confirmDeleteWishlist");
+    }
+    private void OnClickWishlistDelete()
+    {
+        Parent.Character.Wishlist.Remove(EditWishlistName!);
+        Parent.RefreshComponent();
+        JsRuntime.InvokeVoidAsync("deleteWishlist", EditWishlistName);
     }
 }
