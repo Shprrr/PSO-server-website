@@ -255,72 +255,98 @@
             <div class="modal-header">
                 <span>Armor</span><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <div class="modal-body container row">
-                <label class="form-label col col-12">
-                    Armor
-                    <InputSelectSearch @bind-Value="Parent.Armor.Model" DataSource="@Parent.GetItemWithRequirements(Armors)"
-                                       IdMember="@((a) => a?.Identifier)" DisplayMember="@((a) => a?.Name)" aria-label="Select an armor"></InputSelectSearch>
-                </label>
-                <label class="form-label col col-3">
-                    DFP
-                    <InputNumber Value="@Parent.Armor.Dfp" ValueExpression="@(() => Parent.Armor.Dfp)" DisplayName="DFP" class="form-control" disabled></InputNumber>
-                </label>
-                <label class="form-label col col-3">
-                    DFP Bonus
-                    <InputNumber @bind-Value="Parent.Armor.DfpBonus" DisplayName="DFP Bonus" class="form-control"></InputNumber>
-                </label>
-                <label class="form-label col col-3">
-                    EVP
-                    <InputNumber Value="@Parent.Armor.Evp" ValueExpression="@(() => Parent.Armor.Evp)" DisplayName="EVP" class="form-control" disabled></InputNumber>
-                </label>
-                <label class="form-label col col-3">
-                    EVP Bonus
-                    <InputNumber @bind-Value="Parent.Armor.EvpBonus" DisplayName="EVP Bonus" class="form-control"></InputNumber>
-                </label>
-                @foreach (var statBoost in Parent.Armor.GetStatBoosts())
-                {
-                    <label class="form-label col @(statBoost.Prefix != null ? "col-6" : statBoost.Suffix != null ? "col-4" : "col-3")">
-                        @statBoost.Name
-                        <span class="input-group">
-                            @if (statBoost.Prefix != null)
-                            {
-                                <span class="input-group-prepend input-group-text">@statBoost.Prefix</span>
-                            }
-                            @if (statBoost.Value != 0)
-                            {
-                                <InputNumber Value="@statBoost.Value" ValueExpression="@(() => statBoost.Value)" DisplayName="@statBoost.Name" class="form-control" disabled></InputNumber>
-                            }
-                            @if (statBoost.Suffix != null)
-                            {
-                                <span class="input-group-append input-group-text">@statBoost.Suffix</span>
-                            }
-                        </span>
+            <div class="modal-body container">
+                <div class="row">
+                    <label class="form-label col col-12">
+                        Armor
+                        <InputSelectSearch @bind-Value="Parent.Armor.Model" DataSource="@Parent.GetItemWithRequirements(Armors)"
+                                           IdMember="@((a) => a?.Identifier)" DisplayMember="@((a) => a?.Name)" aria-label="Select an armor"></InputSelectSearch>
                     </label>
-                }
-                <label class="form-label col col-12">
-                    Slots
-                    <InputNumber @bind-Value="Parent.Armor.NumberSlots" DisplayName="Slots" class="form-control"></InputNumber>
-                </label>
-                @foreach (var techBoost in Parent.Armor.GetTechBoosts())
-                {
-                    <label class="form-label col col-6">
-                        @techBoost.Name
-                        <span class="input-group">
-                            @if (techBoost.Name == "Megid")
-                            {
-                                <InputText Value="@techBoost.Suffix" ValueExpression="@(() => techBoost.Suffix)" DisplayName="@techBoost.Name" class="form-control" disabled></InputText>
-                            }
-                            else
-                            {
-                                <InputNumber Value="@techBoost.Value" ValueExpression="@(() => techBoost.Value)" DisplayName="@techBoost.Name" class="form-control" disabled></InputNumber>
-                                @if (techBoost.Suffix != null)
+                    <label class="form-label col col-3">
+                        DFP
+                        <InputNumber Value="@Parent.Armor.Dfp" ValueExpression="@(() => Parent.Armor.Dfp)" DisplayName="DFP" class="form-control" disabled></InputNumber>
+                    </label>
+                    <label class="form-label col col-3">
+                        DFP Bonus
+                        <InputNumber @bind-Value="Parent.Armor.DfpBonus" DisplayName="DFP Bonus" class="form-control"></InputNumber>
+                    </label>
+                    <label class="form-label col col-3">
+                        EVP
+                        <InputNumber Value="@Parent.Armor.Evp" ValueExpression="@(() => Parent.Armor.Evp)" DisplayName="EVP" class="form-control" disabled></InputNumber>
+                    </label>
+                    <label class="form-label col col-3">
+                        EVP Bonus
+                        <InputNumber @bind-Value="Parent.Armor.EvpBonus" DisplayName="EVP Bonus" class="form-control"></InputNumber>
+                    </label>
+                </div>
+                <div class="row">
+                    <label class="form-label col col">
+                        EFR
+                        <InputNumber Value="@Parent.Armor.Efr" ValueExpression="@(() => Parent.Armor.Efr)" DisplayName="EFR" class="form-control" disabled></InputNumber>
+                    </label>
+                    <label class="form-label col col">
+                        EIC
+                        <InputNumber Value="@Parent.Armor.Eic" ValueExpression="@(() => Parent.Armor.Eic)" DisplayName="EIC" class="form-control" disabled></InputNumber>
+                    </label>
+                    <label class="form-label col col">
+                        ETH
+                        <InputNumber Value="@Parent.Armor.Eth" ValueExpression="@(() => Parent.Armor.Eth)" DisplayName="ETH" class="form-control" disabled></InputNumber>
+                    </label>
+                    <label class="form-label col col">
+                        EDK
+                        <InputNumber Value="@Parent.Armor.Edk" ValueExpression="@(() => Parent.Armor.Edk)" DisplayName="EDK" class="form-control" disabled></InputNumber>
+                    </label>
+                    <label class="form-label col col">
+                        ELT
+                        <InputNumber Value="@Parent.Armor.Elt" ValueExpression="@(() => Parent.Armor.Elt)" DisplayName="ELT" class="form-control" disabled></InputNumber>
+                    </label>
+                </div>
+                <div class="row">
+                    @foreach (var statBoost in Parent.Armor.GetStatBoosts())
+                    {
+                        <label class="form-label col @(statBoost.Prefix != null ? "col-6" : statBoost.Suffix != null ? "col-4" : "col-3")">
+                            @statBoost.Name
+                            <span class="input-group">
+                                @if (statBoost.Prefix != null)
                                 {
-                                    <span class="input-group-append input-group-text">@techBoost.Suffix</span>
+                                    <span class="input-group-prepend input-group-text">@statBoost.Prefix</span>
                                 }
-                            }
-                        </span>
+                                @if (statBoost.Value != 0)
+                                {
+                                    <InputNumber Value="@statBoost.Value" ValueExpression="@(() => statBoost.Value)" DisplayName="@statBoost.Name" class="form-control" disabled></InputNumber>
+                                }
+                                @if (statBoost.Suffix != null)
+                                {
+                                    <span class="input-group-append input-group-text">@statBoost.Suffix</span>
+                                }
+                            </span>
+                        </label>
+                    }
+                    <label class="form-label col col-12">
+                        Slots
+                        <InputNumber @bind-Value="Parent.Armor.NumberSlots" DisplayName="Slots" class="form-control"></InputNumber>
                     </label>
-                }
+                    @foreach (var techBoost in Parent.Armor.GetTechBoosts())
+                    {
+                        <label class="form-label col col-6">
+                            @techBoost.Name
+                            <span class="input-group">
+                                @if (techBoost.Name == "Megid")
+                                {
+                                    <InputText Value="@techBoost.Suffix" ValueExpression="@(() => techBoost.Suffix)" DisplayName="@techBoost.Name" class="form-control" disabled></InputText>
+                                }
+                                else
+                                {
+                                    <InputNumber Value="@techBoost.Value" ValueExpression="@(() => techBoost.Value)" DisplayName="@techBoost.Name" class="form-control" disabled></InputNumber>
+                                    @if (techBoost.Suffix != null)
+                                    {
+                                        <span class="input-group-append input-group-text">@techBoost.Suffix</span>
+                                    }
+                                }
+                            </span>
+                        </label>
+                    }
+                </div>
             </div>
             <div class="modal-footer">@Parent.Armor</div>
         </div>
@@ -381,68 +407,94 @@
             <div class="modal-header">
                 <span>Shield</span><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <div class="modal-body container row">
-                <label class="form-label col col-12">
-                    Shield
-                    <InputSelectSearch @bind-Value="Parent.Shield.Model" DataSource="@Parent.GetItemWithRequirements(Shields)"
-                                       IdMember="@((s) => s?.Identifier)" DisplayMember="@((s) => s?.Name)" aria-label="Select a shield"></InputSelectSearch>
-                </label>
-                <label class="form-label col col-3">
-                    DFP
-                    <InputNumber Value="@Parent.Shield.Dfp" ValueExpression="@(() => Parent.Shield.Dfp)" DisplayName="DFP" class="form-control" disabled></InputNumber>
-                </label>
-                <label class="form-label col col-3">
-                    DFP Bonus
-                    <InputNumber @bind-Value="Parent.Shield.DfpBonus" DisplayName="DFP Bonus" class="form-control"></InputNumber>
-                </label>
-                <label class="form-label col col-3">
-                    EVP
-                    <InputNumber Value="@Parent.Shield.Evp" ValueExpression="@(() => Parent.Shield.Evp)" DisplayName="EVP" class="form-control" disabled></InputNumber>
-                </label>
-                <label class="form-label col col-3">
-                    EVP Bonus
-                    <InputNumber @bind-Value="Parent.Shield.EvpBonus" DisplayName="EVP Bonus" class="form-control"></InputNumber>
-                </label>
-                @foreach (var statBoost in Parent.Shield.GetStatBoosts())
-                {
+            <div class="modal-body container">
+                <div class="row">
+                    <label class="form-label col col-12">
+                        Shield
+                        <InputSelectSearch @bind-Value="Parent.Shield.Model" DataSource="@Parent.GetItemWithRequirements(Shields)"
+                                           IdMember="@((s) => s?.Identifier)" DisplayMember="@((s) => s?.Name)" aria-label="Select a shield"></InputSelectSearch>
+                    </label>
                     <label class="form-label col col-3">
-                        @statBoost.Name
-                        <span class="input-group">
-                            @if (statBoost.Prefix != null)
-                            {
-                                <span class="input-group-prepend input-group-text">@statBoost.Prefix</span>
-                            }
-                            @if (statBoost.Value != 0)
-                            {
-                                <InputNumber Value="@statBoost.Value" ValueExpression="@(() => statBoost.Value)" DisplayName="@statBoost.Name" class="form-control" disabled></InputNumber>
-                            }
-                            @if (statBoost.Suffix != null)
-                            {
-                                <span class="input-group-append input-group-text">@statBoost.Suffix</span>
-                            }
-                        </span>
+                        DFP
+                        <InputNumber Value="@Parent.Shield.Dfp" ValueExpression="@(() => Parent.Shield.Dfp)" DisplayName="DFP" class="form-control" disabled></InputNumber>
                     </label>
-                }
-                @foreach (var techBoost in Parent.Shield.GetTechBoosts())
-                {
-                    <label class="form-label col col-6">
-                        @techBoost.Name
-                        <span class="input-group">
-                            @if (techBoost.Name == "Megid")
-                            {
-                                <InputText Value="@techBoost.Suffix" ValueExpression="@(() => techBoost.Suffix)" DisplayName="@techBoost.Name" class="form-control" disabled></InputText>
-                            }
-                            else
-                            {
-                                <InputNumber Value="@techBoost.Value" ValueExpression="@(() => techBoost.Value)" DisplayName="@techBoost.Name" class="form-control" disabled></InputNumber>
-                                @if (techBoost.Suffix != null)
+                    <label class="form-label col col-3">
+                        DFP Bonus
+                        <InputNumber @bind-Value="Parent.Shield.DfpBonus" DisplayName="DFP Bonus" class="form-control"></InputNumber>
+                    </label>
+                    <label class="form-label col col-3">
+                        EVP
+                        <InputNumber Value="@Parent.Shield.Evp" ValueExpression="@(() => Parent.Shield.Evp)" DisplayName="EVP" class="form-control" disabled></InputNumber>
+                    </label>
+                    <label class="form-label col col-3">
+                        EVP Bonus
+                        <InputNumber @bind-Value="Parent.Shield.EvpBonus" DisplayName="EVP Bonus" class="form-control"></InputNumber>
+                    </label>
+                </div>
+                <div class="row">
+                    <label class="form-label col col">
+                        EFR
+                        <InputNumber Value="@Parent.Shield.Efr" ValueExpression="@(() => Parent.Shield.Efr)" DisplayName="EFR" class="form-control" disabled></InputNumber>
+                    </label>
+                    <label class="form-label col col">
+                        EIC
+                        <InputNumber Value="@Parent.Shield.Eic" ValueExpression="@(() => Parent.Shield.Eic)" DisplayName="EIC" class="form-control" disabled></InputNumber>
+                    </label>
+                    <label class="form-label col col">
+                        ETH
+                        <InputNumber Value="@Parent.Shield.Eth" ValueExpression="@(() => Parent.Shield.Eth)" DisplayName="ETH" class="form-control" disabled></InputNumber>
+                    </label>
+                    <label class="form-label col col">
+                        EDK
+                        <InputNumber Value="@Parent.Shield.Edk" ValueExpression="@(() => Parent.Shield.Edk)" DisplayName="EDK" class="form-control" disabled></InputNumber>
+                    </label>
+                    <label class="form-label col col">
+                        ELT
+                        <InputNumber Value="@Parent.Shield.Elt" ValueExpression="@(() => Parent.Shield.Elt)" DisplayName="ELT" class="form-control" disabled></InputNumber>
+                    </label>
+                </div>
+                <div class="row">
+                    @foreach (var statBoost in Parent.Shield.GetStatBoosts())
+                    {
+                        <label class="form-label col col-3">
+                            @statBoost.Name
+                            <span class="input-group">
+                                @if (statBoost.Prefix != null)
                                 {
-                                    <span class="input-group-append input-group-text">@techBoost.Suffix</span>
+                                    <span class="input-group-prepend input-group-text">@statBoost.Prefix</span>
                                 }
-                            }
-                        </span>
-                    </label>
-                }
+                                @if (statBoost.Value != 0)
+                                {
+                                    <InputNumber Value="@statBoost.Value" ValueExpression="@(() => statBoost.Value)" DisplayName="@statBoost.Name" class="form-control" disabled></InputNumber>
+                                }
+                                @if (statBoost.Suffix != null)
+                                {
+                                    <span class="input-group-append input-group-text">@statBoost.Suffix</span>
+                                }
+                            </span>
+                        </label>
+                    }
+                    @foreach (var techBoost in Parent.Shield.GetTechBoosts())
+                    {
+                        <label class="form-label col col-6">
+                            @techBoost.Name
+                            <span class="input-group">
+                                @if (techBoost.Name == "Megid")
+                                {
+                                    <InputText Value="@techBoost.Suffix" ValueExpression="@(() => techBoost.Suffix)" DisplayName="@techBoost.Name" class="form-control" disabled></InputText>
+                                }
+                                else
+                                {
+                                    <InputNumber Value="@techBoost.Value" ValueExpression="@(() => techBoost.Value)" DisplayName="@techBoost.Name" class="form-control" disabled></InputNumber>
+                                    @if (techBoost.Suffix != null)
+                                    {
+                                        <span class="input-group-append input-group-text">@techBoost.Suffix</span>
+                                    }
+                                }
+                            </span>
+                        </label>
+                    }
+                </div>
             </div>
             <div class="modal-footer">@Parent.Shield</div>
         </div>

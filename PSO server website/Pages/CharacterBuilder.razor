@@ -132,6 +132,38 @@ else
             </div>
         </div>
         <div class="row">
+            <div class="col">
+                <label class="form-label">
+                    EFR
+                    <InputNumber @bind-Value="EFR" DisplayName="EFR" class="form-control" disabled></InputNumber>
+                </label>
+            </div>
+            <div class="col">
+                <label class="form-label">
+                    EIC
+                    <InputNumber @bind-Value="EIC" DisplayName="EIC" class="form-control" disabled></InputNumber>
+                </label>
+            </div>
+            <div class="col">
+                <label class="form-label">
+                    ETH
+                    <InputNumber @bind-Value="ETH" DisplayName="ETH" class="form-control" disabled></InputNumber>
+                </label>
+            </div>
+            <div class="col">
+                <label class="form-label">
+                    EDK
+                    <InputNumber @bind-Value="EDK" DisplayName="EDK" class="form-control" disabled></InputNumber>
+                </label>
+            </div>
+            <div class="col">
+                <label class="form-label">
+                    ELT
+                    <InputNumber @bind-Value="ELT" DisplayName="ELT" class="form-control" disabled></InputNumber>
+                </label>
+            </div>
+        </div>
+        <div class="row">
             <div class="col offset-1">
                 <label class="form-label">
                     HP Material
@@ -617,6 +649,11 @@ else
     public float ATA { get; set; }
     public int EVP { get; set; }
     public int LCK { get; set; }
+    public int EFR { get; set; }
+    public int EIC { get; set; }
+    public int ETH { get; set; }
+    public int EDK { get; set; }
+    public int ELT { get; set; }
 
     public int HPMaterial
     {
@@ -885,6 +922,11 @@ else
             ATA = 0;
             EVP = 0;
             LCK = 0;
+            EFR = 0;
+            EIC = 0;
+            ETH = 0;
+            EDK = 0;
+            ELT = 0;
             if (HPMaterial != 0) Character.HPMaterial = 0;
             if (TPMaterial != 0) Character.TPMaterial = 0;
             if (PowerMaterial != 0) Character.PowerMaterial = 0;
@@ -986,6 +1028,11 @@ else
             + GetEveryStatBoost().Sum(s => (int)CalculateStatBoost("EVP", s.Code, s.Value));
         LCK = baseStats.LCK + levelDeltas.Sum(l => l.LCK) + LuckMaterial * 2
             + GetEveryStatBoost().Sum(s => (int)CalculateStatBoost("LCK", s.Code, s.Value));
+        EFR = Armor.Efr + Shield.Efr + GetEveryStatBoost().Sum(s => (int)CalculateStatBoost("EFR", s.Code, s.Value));
+        EIC = Armor.Eic + Shield.Eic + GetEveryStatBoost().Sum(s => (int)CalculateStatBoost("EIC", s.Code, s.Value));
+        ETH = Armor.Eth + Shield.Eth + GetEveryStatBoost().Sum(s => (int)CalculateStatBoost("ETH", s.Code, s.Value));
+        EDK = Armor.Edk + Shield.Edk + GetEveryStatBoost().Sum(s => (int)CalculateStatBoost("EDK", s.Code, s.Value));
+        ELT = Armor.Elt + Shield.Elt + GetEveryStatBoost().Sum(s => (int)CalculateStatBoost("ELT", s.Code, s.Value));
 
         localStorage.SetItemAsync("characters", Characters);
     }

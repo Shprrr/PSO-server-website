@@ -245,6 +245,12 @@ public class BaseArmorModel(ItemPMTModel itemPMT)
         }
     }
 
+    public int Efr => string.IsNullOrEmpty(Identifier) ? 0 : itemPMT.Armors[Identifier].EFR;
+    public int Eic => string.IsNullOrEmpty(Identifier) ? 0 : itemPMT.Armors[Identifier].EIC;
+    public int Eth => string.IsNullOrEmpty(Identifier) ? 0 : itemPMT.Armors[Identifier].ETH;
+    public int Edk => string.IsNullOrEmpty(Identifier) ? 0 : itemPMT.Armors[Identifier].EDK;
+    public int Elt => string.IsNullOrEmpty(Identifier) ? 0 : itemPMT.Armors[Identifier].ELT;
+
     public IEnumerable<Stat> GetStatBoosts()
     {
         if (string.IsNullOrEmpty(Identifier))
