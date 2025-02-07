@@ -12,6 +12,9 @@
 @inject LevelTableService levelTableService
 @inject ItemsService itemsService
 @inject ItemPMTService itemPMTService
+@inject RareDropsService rareDropsService
+@inject LocationsService locationsService
+@inject ConfigService configService
 
 <PageTitle>Character Builder</PageTitle>
 
@@ -396,6 +399,26 @@ else
                 </div>
             </div>
         </div>
+        <div class="row">
+            <div class="col">
+                <label class="form-label w-100">Where to find</label>
+                <table class="table table-striped table-hover table-sm">
+                    <tbody>
+                        @foreach (var location in GetItemLocations())
+                        {
+                            <tr>
+                                <th>@GetItemNameById(location.ItemId)</th>
+                                <td>@location.DifficultyName</td>
+                                <td class="text-nowrap">@location.EpisodeName</td>
+                                <td>@GetLocationName(location.Location, location.EpisodeName, location.DifficultyName)</td>
+                                <td><span class="badge secid-@location.SectionId.ToLowerInvariant()">@location.SectionId</span></td>
+                                <td><Probability ProbabilityRatio="@location.Probability" /></td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
     </div>
 
     <script type="text/javascript">
@@ -420,13 +443,17 @@ else
     [DisallowNull] private ItemModel[] units = default!;
     [DisallowNull] private ItemModel[] shields = default!;
     [DisallowNull] private ItemModel[] mags = default!;
+    [DisallowNull] private Dictionary<string, ItemRareDropLocation[]> rareDropsByItem = default!;
+    [DisallowNull] private LocationModel[] locations = default!;
+    [DisallowNull] private ConfigModel config = default!;
+    [DisallowNull] private Dictionary<string, ItemRareDropLocation[]> questF95EByItem = default!;
 
     [DisallowNull] public List<CharacterModel> Characters { get; set; } = new();
     [DisallowNull] public CharacterModel Character { get; set; } = default!;
     private int EditUnit { get; set; }
 
-    [MemberNotNullWhen(false, nameof(levelTable), nameof(itemPMT), nameof(weapons), nameof(armors), nameof(units), nameof(shields), nameof(mags))]
-    private bool IsLoading => levelTable == null || itemPMT == null || weapons == null || armors == null || units == null || shields == null || mags == null;
+    [MemberNotNullWhen(false, nameof(levelTable), nameof(itemPMT), nameof(weapons), nameof(armors), nameof(units), nameof(shields), nameof(mags), nameof(config), nameof(rareDropsByItem), nameof(locations))]
+    private bool IsLoading => levelTable == null || itemPMT == null || weapons == null || armors == null || units == null || shields == null || mags == null || config == null || rareDropsByItem == null || locations == null;
 
     protected override async Task OnInitializedAsync()
     {
@@ -445,6 +472,36 @@ else
         unit3 = new(itemPMT);
         unit4 = new(itemPMT);
         shield = new(itemPMT);
+
+        config = await configService.GetConfigAsync();
+
+        var rareDrops = await rareDropsService.GetRareDropsAsync();
+        rareDropsByItem = rareDrops.Normal.Episodes().SelectMany(e => e.Value.Difficulties(), (episode, difficulty) => (episode, difficulty))
+            .SelectMany(d => d.difficulty.Value.SectionsId(), (ed, sectionId) => (ed.episode, ed.difficulty, sectionId))
+            .SelectMany(d => d.sectionId.Value, (eds, rare) => (eds.episode, eds.difficulty, eds.sectionId, location: rare.Key, rareSpecification: rare.Value))
+            .SelectMany(d => d.rareSpecification, (edsr, spec) => (spec.ItemDescription, new ItemRareDropLocation(spec.ItemDescription.Replace("0x", ""), edsr.episode, edsr.difficulty, edsr.sectionId, edsr.location, config.ApplyDropRateMultiplier(spec.Probability))))
+            .GroupBy(d => d.ItemDescription).ToDictionary(d => d.Key, d => d.Select(d => d.Item2).ToArray());
+
+        locations = (await locationsService.GetLocationsAsync()).ToArray();
+        questF95EByItem = config.ConvertQuestF95EResultItems().Types()
+            .SelectMany(t => t.Value.Difficulties(), (type, difficulties) => (type, difficulties))
+            .SelectMany(q => q.difficulties.Value, (q, item) =>
+            {
+                var chances = 1;
+                if (q.type.Name.StartsWith("Black Paper's Dangerous Deal 1"))
+                    chances = q.difficulties.Name switch
+                    {
+                        "Hard" => 2,
+                        "Very Hard" => 3,
+                        "Ultimate" => 4,
+                        _ => 1
+                    };
+                if (q.type.Name == "Black Paper's Dangerous Deal 2" && (q.difficulties.Name == "Very Hard" || q.difficulties.Name == "Ultimate"))
+                    chances = 2;
+                ItemRareDropLocation itemRareDropLocation = new ItemRareDropLocation(item, "Episode 4", q.difficulties.Name, "", q.type.Name, $"{chances}/{q.difficulties.Value.Length}");
+                return (ItemDescription: item, itemRareDropLocation);
+            })
+            .GroupBy(q => q.ItemDescription).ToDictionary(q => q.Key, d => d.Select(d => d.Item2).ToArray());
 
         var characterSelectedIndex = await localStorage.GetItemAsync<int>("characterSelectedIndex");
         Characters = await localStorage.GetItemAsync<List<CharacterModel>>("characters") ?? new();
@@ -1084,8 +1141,85 @@ else
     private IEnumerable<Stat> GetEverySpecialStats() => GetClassStatBoost().Concat(GetEveryStatBoost())
         .Where(s => !new string[] { "ATP", "MST", "ATA", "EVP", "HP", "TP", "DFP", "LCK", "EFR", "EIC", "ETH", "ELT", "EDK", "+ATP", "+ATA", "+EVP", "+DFP", "+MST", "+HP", "+LCK", "+All", "-ATP", "-ATA", "-EVP", "-DFP", "-MST", "-HP", "-LCK", "-All" }.Contains(s.Code));
 
+    public string GetItemNameById(string id)
+    {
+        return weapons.Concat(armors.Concat(shields.Concat(units.Concat(mags)))).FirstOrDefault(i => i.Identifier == id)?.Name ?? id;
+    }
+
     public ItemModel? GetItemByName(string name)
     {
         return weapons.Concat(armors.Concat(shields.Concat(units.Concat(mags)))).FirstOrDefault(i => i.Name == name);
+    }
+
+    private IEnumerable<ItemRareDropLocation> GetItemLocations()
+    {
+        IEnumerable<ItemRareDropLocation> enumerable = Enumerable.Empty<ItemRareDropLocation>();
+        var items = weapons.Concat(armors.Concat(shields.Concat(units.Concat(mags))));
+        foreach (var item in Character.Wishlist.Join(items, w => w, i => i.Name, (w, i) => i))
+        {
+            if (rareDropsByItem.TryGetValue("0x" + item.Identifier, out var dropLocations))
+                enumerable = enumerable.Concat(dropLocations);
+
+            if (questF95EByItem.TryGetValue(item.Identifier!, out var questF95ELocations))
+                enumerable = enumerable.Concat(questF95ELocations);
+
+            enumerable = enumerable.Concat(config.QuestF95FResultItems.Where(q => q.ItemDescription == item.Identifier).Select(q => new ItemRareDropLocation(item.Identifier, "Episode 1", "", "", $"Gallon's Plan exchange {q.NumPhotonTickets} Photon Ticket", "1/1")));
+
+            enumerable = enumerable.Concat(config.SecretLotteryResultItems.Where(i => i == item.Identifier).Select(i => new ItemRareDropLocation(item.Identifier, "Episode 1", "", "", $"Good Luck! exchange Secret Ticket", $"1/{config.SecretLotteryResultItems.Length}")));
+
+            enumerable = enumerable.Concat(config.QuestF960SuccessResultItems.SelectMany(q => q.ItemsByDay.SelectMany(i => i.Value, (q, i) => (q.Key, i)).Where(i => i.i.Equals(item.Name, StringComparison.InvariantCultureIgnoreCase)).Select(i => new ItemRareDropLocation(item.Identifier, "", "", "", $"Coren {q.MesetaCost.ToString("N0")} Meseta {i.Key}", $"1/{q.ItemsByDay[i.Key].Length}"))));
+
+            enumerable = enumerable.Concat(config.QuestF960FailureResultItems.SelectMany(q => q.Value.Where(i => i.Replace(" x1", "") == item.Name).Select(i => new ItemRareDropLocation(item.Identifier, "", "", "", $"Coren Failure {q.Key}", $"1/{q.Value.Length}"))));
+
+            if (item.Identifier == "031004")
+                enumerable = enumerable.Concat(
+                    [
+                        new ItemRareDropLocation(item.Identifier, "Episode 1", "Normal", "", "Say yes to Alicia on Gallon's Plan", "1/1"),
+                        new ItemRareDropLocation(item.Identifier, "Episode 1", "Hard", "", "Say yes to Alicia on Gallon's Plan", "1/1"),
+                        new ItemRareDropLocation(item.Identifier, "Episode 1", "Very Hard", "", "Say yes to Alicia on Gallon's Plan", "2/1"),
+                        new ItemRareDropLocation(item.Identifier, "Episode 1", "Ultimate", "", "Say yes to Alicia on Gallon's Plan", "2/1")
+                    ]);
+        }
+
+        return enumerable.OrderBy(OrderByLocations);
+    }
+
+    private int OrderByLocations(ItemRareDropLocation dropLocation)
+    {
+        int episodeNumber = string.IsNullOrEmpty(dropLocation.EpisodeName) ? 1 : (int)char.GetNumericValue(dropLocation.EpisodeName[^1]);
+        int locationIndex = Array.FindIndex(locations.First(l => l.Episode == episodeNumber).Locations, l => l.Id == dropLocation.Location);
+        int DifficultyNameToOrder(string name) => name switch
+        {
+            "Normal" or "" => 0,
+            "Hard" => 1,
+            "Very Hard" => 2,
+            "Ultimate" => 3,
+            _ => throw new NotSupportedException()
+        };
+        int SectionIdNameToId(string name) => name switch
+        {
+            "Viridia" or "" => 0,
+            "Greennill" => 1,
+            "Skyly" => 2,
+            "Bluefull" => 3,
+            "Purplenum" => 4,
+            "Pinkal" => 5,
+            "Redria" => 6,
+            "Oran" => 7,
+            "Yellowboze" => 8,
+            "Whitill" => 9,
+            _ => throw new NotSupportedException()
+        };
+        return DifficultyNameToOrder(dropLocation.DifficultyName) * 100_000 + episodeNumber * 10000 + locationIndex * 10 + SectionIdNameToId(dropLocation.SectionId);
+    }
+
+    private string GetLocationName(string locationId, string episode, string difficulty)
+    {
+        int episodeNumber = string.IsNullOrEmpty(episode) ? 1 : (int)char.GetNumericValue(episode[^1]);
+        var location = locations.First(l => l.Episode == episodeNumber).Locations.FirstOrDefault(l => l.Id == locationId);
+        if (location == null) return locationId;
+        if (difficulty == "Ultimate" && !string.IsNullOrEmpty(location.UltimateName))
+            return location.UltimateName;
+        return location.Name;
     }
 }
