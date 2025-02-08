@@ -281,6 +281,56 @@ main[b-x8btpx0o3k] {
     border-left: calc(var(--bs-border-width) * 2) solid currentcolor;
     /*border-left-width: 3px !important;*/
 }
+/* /Pages/CharacterBuilder.razor.rz.scp.css */
+.secid-viridia[b-16829gpfme] {
+    background-color: green;
+    color: white;
+}
+
+.secid-greennill[b-16829gpfme] {
+    background-color: lime;
+    color: black;
+}
+
+.secid-skyly[b-16829gpfme] {
+    background-color: cyan;
+    color: black;
+}
+
+.secid-bluefull[b-16829gpfme] {
+    background-color: blue;
+    color: white;
+}
+
+.secid-purplenum[b-16829gpfme] {
+    background-color: purple;
+    color: white;
+}
+
+.secid-pinkal[b-16829gpfme] {
+    background-color: pink;
+    color: black;
+}
+
+.secid-redria[b-16829gpfme] {
+    background-color: red;
+    color: white;
+}
+
+.secid-oran[b-16829gpfme] {
+    background-color: orange;
+    color: black;
+}
+
+.secid-yellowboze[b-16829gpfme] {
+    background-color: yellow;
+    color: black;
+}
+
+.secid-whitill[b-16829gpfme] {
+    background-color: #e6e6e6;
+    color: black;
+}
 /* /Pages/Quests.razor.rz.scp.css */
 .quests-items[b-7y5dhq6oes] {
     font-size: x-small;
