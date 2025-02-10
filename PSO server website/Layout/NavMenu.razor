@@ -9,7 +9,17 @@
     </div>
 
     <div class="@NavMenuCssClass nav-scrollable" @onclick="ToggleNavMenu">
-        <nav class="flex-column">
+        <input type="hidden" id="screenWidth" @bind="ScreenWidth" />
+        <script>
+            let screenWidth = document.getElementById('screenWidth');
+            function changeScreenWidth() {
+                screenWidth.value = window.innerWidth;
+                screenWidth.dispatchEvent(new Event('change'));
+            };
+            changeScreenWidth();
+            window.onresize = changeScreenWidth;
+        </script>
+        <nav class="flex-column" @onclick:stopPropagation="@(ScreenWidth >= 768)">
             <div class="nav-item px-3">
                 <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
                     <span class="bi bi-house-door-fill" aria-hidden="true"></span> <span class="label">Home</span>
@@ -48,6 +58,7 @@
 </div>
 
 @code {
+    private int ScreenWidth { get; set; }
     private bool collapseNavMenu = true;
 
     private string? NavMenuCssClass => collapseNavMenu ? "collapse" : null; // Start collapsed
