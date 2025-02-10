@@ -1,66 +1,37 @@
-﻿.secid-viridia {
-    background-color: green;
-    color: white;
-    border-bottom-color: black !important;
-}
-.secid-greennill {
-    background-color: lime;
-}
-.secid-skyly {
-    background-color: cyan;
-}
-.secid-bluefull {
-    background-color: blue;
-    color: white;
-    border-bottom-color: black !important;
-}
-.secid-purplenum {
-    background-color: purple;
-    color: white;
-    border-bottom-color: black !important;
-}
-.secid-pinkal {
-    background-color: pink;
-}
-.secid-redria {
-    background-color: red;
-    color: white;
-    border-bottom-color: black !important;
-}
-.secid-oran {
-    background-color: orange;
-}
-.secid-yellowboze {
-    background-color: yellow;
-}
-.secid-whitill {
-    background-color: #e6e6e6;
-}
-
-h3, h4 {
+﻿h3, h4 {
     position: sticky;
     background-color: white;
 }
+
 h3 {
     top: 3.5rem;
 }
+
 h4 {
     top: 5.5rem;
 }
+
 .rare-drops {
     font-size: x-small;
 }
-.rare-drops thead {
-    position: sticky;
-    top: 5.9rem;
-}
+
+    .rare-drops thead {
+        position: sticky;
+        top: 5.9rem;
+    }
+
+    .rare-drops > :not(:last-child) > :last-child > ::deep * {
+        border-bottom-color: black !important;
+    }
 
 .probability {
     color: darkgray;
 }
+
     .probability::before {
         content: '(';
     }
+
     .probability::after {
         content: ')';
     }

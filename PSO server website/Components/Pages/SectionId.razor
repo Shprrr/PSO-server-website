@@ -1,0 +1,29 @@
+﻿@switch (Type)
+{
+    case ComponentType.Badge:
+        <span class="badge secid-@Value.ToLowerInvariant()" @attributes="CapturedAttributes">@Value</span>
+        break;
+    case ComponentType.CellHeader:
+        <th class="secid-@Value.ToLowerInvariant()" @attributes="CapturedAttributes">@Value</th>
+        break;
+    case ComponentType.Cell:
+        <td class="secid-@Value.ToLowerInvariant()" @attributes="CapturedAttributes">@Value</td>
+        break;
+}
+
+@code {
+    [Parameter, EditorRequired]
+    public required string Value { get; set; }
+
+    public enum ComponentType
+    {
+        Badge,
+        CellHeader,
+        Cell
+    }
+    [Parameter]
+    public ComponentType Type { get; set; }
+
+    [Parameter(CaptureUnmatchedValues = true)]
+    public Dictionary<string, object>? CapturedAttributes { get; set; }
+}

@@ -72,7 +72,7 @@ else
                                 @if (diff.SectionId != lastDiffSectionId)
                                 {
                                     lastDiffSectionId = diff.SectionId;
-                                    <td rowspan="@diffRareDrops20241111.Count(d => d.Episode == diff.Episode && d.Difficulty == diff.Difficulty && d.Location == diff.Location && d.SectionId == diff.SectionId)" class="secid-@diff.SectionId.ToLower()">@diff.SectionId</td>
+                                    <SectionId Value="@diff.SectionId" Type="SectionId.ComponentType.Cell" rowspan="@diffRareDrops20241111.Count(d => d.Episode == diff.Episode && d.Difficulty == diff.Difficulty && d.Location == diff.Location && d.SectionId == diff.SectionId)" />
                                 }
                                 <td class="diff-group-divider table-danger">
                                     @if (diff.OldProbability == diff.NewProbability)

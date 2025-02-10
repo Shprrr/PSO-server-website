@@ -68,7 +68,8 @@ public class EpisodeModel
 public class DifficultyModel
 {
     public SectionIdModel Viridia { get; set; } = [];
-    public SectionIdModel Greennill { get; set; } = [];
+    [JsonPropertyName("Greennill")]
+    public SectionIdModel Greenill { get; set; } = [];
     public SectionIdModel Skyly { get; set; } = [];
     public SectionIdModel Bluefull { get; set; } = [];
     public SectionIdModel Purplenum { get; set; } = [];
@@ -80,13 +81,13 @@ public class DifficultyModel
 
     public IEnumerable<string> Where()
     {
-        return Viridia.Keys.Union(Greennill.Keys.Union(Skyly.Keys.Union(Bluefull.Keys.Union(Purplenum.Keys.Union(Pinkal.Keys.Union(Redria.Keys.Union(Oran.Keys.Union(Yellowboze.Keys.Union(Whitill.Keys)))))))));
+        return Viridia.Keys.Union(Greenill.Keys.Union(Skyly.Keys.Union(Bluefull.Keys.Union(Purplenum.Keys.Union(Pinkal.Keys.Union(Redria.Keys.Union(Oran.Keys.Union(Yellowboze.Keys.Union(Whitill.Keys)))))))));
     }
 
     public IEnumerable<NamedObject<SectionIdModel>> SectionsId()
     {
         yield return new("Viridia", Viridia);
-        yield return new("Greennill", Greennill);
+        yield return new("Greenill", Greenill);
         yield return new("Skyly", Skyly);
         yield return new("Bluefull", Bluefull);
         yield return new("Purplenum", Purplenum);

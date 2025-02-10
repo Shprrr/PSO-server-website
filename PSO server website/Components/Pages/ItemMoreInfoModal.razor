@@ -254,7 +254,7 @@
                                     <td>@location.DifficultyName</td>
                                     <td class="text-nowrap">@location.EpisodeName</td>
                                     <td>@GetLocationName(location.Location, location.EpisodeName, location.DifficultyName)</td>
-                                    <td><span class="badge secid-@location.SectionId.ToLowerInvariant()">@location.SectionId</span></td>
+                                    <td><SectionId Value="@location.SectionId" /></td>
                                     <td><Probability ProbabilityRatio="@location.Probability" /></td>
                                 </tr>
                             }
@@ -428,7 +428,7 @@
         int SectionIdNameToId(string name) => name switch
         {
             "Viridia" or "" => 0,
-            "Greennill" => 1,
+            "Greenill" => 1,
             "Skyly" => 2,
             "Bluefull" => 3,
             "Purplenum" => 4,
