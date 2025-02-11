@@ -420,7 +420,7 @@ else
                     @foreach (var wishItem in Character.Wishlist)
                     {
                         <button type="button" class="btn btn-outline-primary d-flex" @onclick="@(()=> modals!.ShowEditWishlist(wishItem))">
-                            <span>@wishItem</span>
+                            <ItemName ItemIdentifier="@GetItemByName(wishItem)?.Identifier" />
                             <div class="btn btn-sm btn-danger ms-auto" @onclick="@(()=> modals!.ShowDeleteWishlist(wishItem))" @onclick:stopPropagation="true">Delete</div>
                         </button>
                     }
@@ -439,7 +439,7 @@ else
                         @foreach (var location in GetItemLocations())
                         {
                             <tr>
-                                <th>@GetItemNameById(location.ItemId)</th>
+                                <th><ItemName ItemIdentifier="@location.ItemId" /></th>
                                 <td>@location.DifficultyName</td>
                                 <td class="text-nowrap">@location.EpisodeName</td>
                                 <td>@GetLocationName(location.Location, location.EpisodeName, location.DifficultyName)</td>
@@ -1187,11 +1187,6 @@ else
     }
     private IEnumerable<Stat> GetEverySpecialStats() => GetClassStatBoost().Concat(GetEveryStatBoost())
         .Where(s => !new string[] { "ATP", "MST", "ATA", "EVP", "HP", "TP", "DFP", "LCK", "EFR", "EIC", "ETH", "ELT", "EDK", "+ATP", "+ATA", "+EVP", "+DFP", "+MST", "+HP", "+LCK", "+All", "-ATP", "-ATA", "-EVP", "-DFP", "-MST", "-HP", "-LCK", "-All" }.Contains(s.Code));
-
-    public string GetItemNameById(string id)
-    {
-        return weapons.Concat(armors.Concat(shields.Concat(units.Concat(mags)))).FirstOrDefault(i => i.Identifier == id)?.Name ?? id;
-    }
 
     public ItemModel? GetItemByName(string name)
     {
