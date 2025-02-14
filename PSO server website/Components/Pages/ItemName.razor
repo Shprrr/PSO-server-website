@@ -1,6 +1,6 @@
-﻿@using PSOServerWebsite.Services
-@inject ItemsService itemsService
-@inject ItemPMTService itemPMTService
+﻿@using PSOServerWebsite.Repositories
+@inject ItemsRepository itemsRepository
+@inject ItemPMTRepository itemPMTRepository
 
 @if (IsLoading)
 {
@@ -62,8 +62,8 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-        items ??= (await itemsService.GetItemsAsync()).ToDictionary(i => i.Identifier);
-        itemPMT ??= await itemPMTService.GetItemsAsync();
+        items ??= (await itemsRepository.GetItemsAsync()).ToDictionary(i => i.Identifier);
+        itemPMT ??= await itemPMTRepository.GetItemsAsync();
     }
 
     [MemberNotNullWhen(true, nameof(ModalMoreInfo), nameof(itemModel))]

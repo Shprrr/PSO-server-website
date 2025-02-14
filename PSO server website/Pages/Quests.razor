@@ -1,7 +1,7 @@
 ﻿@page "/quests"
-@using PSOServerWebsite.Services
-@inject ItemsService itemsService
-@inject ConfigService configService
+@using PSOServerWebsite.Repositories
+@inject ItemsRepository itemsRepository
+@inject ConfigurationRepository configurationRepository
 
 <PageTitle>Quests</PageTitle>
 
@@ -418,9 +418,9 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-        items = (await itemsService.GetItemsAsync()).ToLookup(i => i.Name, StringComparer.InvariantCultureIgnoreCase);
+        items = (await itemsRepository.GetItemsAsync()).ToLookup(i => i.Name, StringComparer.InvariantCultureIgnoreCase);
 
-        config = await configService.GetConfigAsync();
+        config = await configurationRepository.GetConfigAsync();
 
         // When a prize is requested, the server chooses a random number and checks it against the tier's probability.
         // If the check passes, one of the items for the current weekday is chosen uniformly at random and given to the player.

@@ -5,16 +5,16 @@
 @using ShieldModel = PSOServerWebsite.Pages.CharacterBuilderModels.ShieldModel
 @using UnitModel = PSOServerWebsite.Pages.CharacterBuilderModels.UnitModel
 @using MagModel = PSOServerWebsite.Pages.CharacterBuilderModels.MagModel
-@using PSOServerWebsite.Services
+@using PSOServerWebsite.Repositories
 @using System.Text.RegularExpressions
 @inject IJSRuntime JsRuntime
 @inject Blazored.LocalStorage.ILocalStorageService localStorage
-@inject LevelTableService levelTableService
-@inject ItemsService itemsService
-@inject ItemPMTService itemPMTService
-@inject RareDropsService rareDropsService
-@inject LocationsService locationsService
-@inject ConfigService configService
+@inject LevelTableRepository levelTableRepository
+@inject ItemsRepository itemsRepository
+@inject ItemPMTRepository itemPMTRepository
+@inject RareDropsRepository rareDropsRepository
+@inject LocationsRepository locationsRepository
+@inject ConfigurationRepository configurationRepository
 
 <PageTitle>Character Builder</PageTitle>
 
@@ -489,9 +489,9 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-        levelTable = await levelTableService.GetLevelTableAsync();
-        itemPMT = await itemPMTService.GetItemsAsync();
-        var items = (await itemsService.GetItemsAsync()).ToArray();
+        levelTable = await levelTableRepository.GetLevelTableAsync();
+        itemPMT = await itemPMTRepository.GetItemsAsync();
+        var items = (await itemsRepository.GetItemsAsync()).ToArray();
         weapons = items.Where(i => i.Identifier.StartsWith("00")).ToArray();
         armors = items.Where(i => i.Identifier.StartsWith("0101")).ToArray();
         shields = items.Where(i => i.Identifier.StartsWith("0102")).ToArray();
@@ -505,16 +505,16 @@ else
         unit4 = new(itemPMT);
         shield = new(itemPMT);
 
-        config = await configService.GetConfigAsync();
+        config = await configurationRepository.GetConfigAsync();
 
-        var rareDrops = await rareDropsService.GetRareDropsAsync();
+        var rareDrops = await rareDropsRepository.GetRareDropsAsync();
         rareDropsByItem = rareDrops.Normal.Episodes().SelectMany(e => e.Value.Difficulties(), (episode, difficulty) => (episode, difficulty))
             .SelectMany(d => d.difficulty.Value.SectionsId(), (ed, sectionId) => (ed.episode, ed.difficulty, sectionId))
             .SelectMany(d => d.sectionId.Value, (eds, rare) => (eds.episode, eds.difficulty, eds.sectionId, location: rare.Key, rareSpecification: rare.Value))
             .SelectMany(d => d.rareSpecification, (edsr, spec) => (spec.ItemDescription, new ItemRareDropLocation(spec.ItemDescription.Replace("0x", ""), edsr.episode, edsr.difficulty, edsr.sectionId, edsr.location, config.ApplyDropRateMultiplier(spec.Probability))))
             .GroupBy(d => d.ItemDescription).ToDictionary(d => d.Key, d => d.Select(d => d.Item2).ToArray());
 
-        locations = (await locationsService.GetLocationsAsync()).ToArray();
+        locations = (await locationsRepository.GetLocationsAsync()).ToArray();
         questF95EByItem = config.ConvertQuestF95EResultItems().Types()
             .SelectMany(t => t.Value.Difficulties(), (type, difficulties) => (type, difficulties))
             .SelectMany(q => q.difficulties.Value, (q, item) =>
@@ -1072,7 +1072,7 @@ else
 
         foreach (var (item, weapon) in items.Join(itemPMT.Weapons, i => i.Identifier, w => w.Key, (i, w) => (item: i, weapon: w.Value)))
         {
-            bool meetRequirement = weapon.ClassFlags.HasFlag(ItemPMTService.ClassFlagsByClass[(int)ClassRaceSelection]);
+            bool meetRequirement = weapon.ClassFlags.HasFlag(ItemPMTRepository.ClassFlagsByClass[(int)ClassRaceSelection]);
             meetRequirement &= BaseATP >= weapon.ATPRequired;
             meetRequirement &= BaseATA >= weapon.ATARequired;
             meetRequirement &= BaseMST >= weapon.MSTRequired;
@@ -1081,14 +1081,14 @@ else
 
         foreach (var (item, armor) in items.Join(itemPMT.Armors, i => i.Identifier, a => a.Key, (i, a) => (item: i, armor: a.Value)))
         {
-            bool meetRequirement = armor.ClassFlags.HasFlag(ItemPMTService.ClassFlagsByClass[(int)ClassRaceSelection]);
+            bool meetRequirement = armor.ClassFlags.HasFlag(ItemPMTRepository.ClassFlagsByClass[(int)ClassRaceSelection]);
             meetRequirement &= Level > armor.RequiredLevel;
             if (meetRequirement) yield return item;
         }
 
         foreach (var (item, unit) in items.Join(itemPMT.Units, i => i.Identifier, u => u.Key, (i, u) => (item: i, unit: u.Value)))
         {
-            bool meetRequirement = unit.ClassFlags.HasFlag(ItemPMTService.ClassFlagsByClass[(int)ClassRaceSelection]);
+            bool meetRequirement = unit.ClassFlags.HasFlag(ItemPMTRepository.ClassFlagsByClass[(int)ClassRaceSelection]);
             if (meetRequirement) yield return item;
         }
     }

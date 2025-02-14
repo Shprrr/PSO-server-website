@@ -1,8 +1,8 @@
 ﻿@page "/rareDrops"
-@using PSOServerWebsite.Services
-@inject RareDropsService rareDropsService
-@inject LocationsService locationsService
-@inject ConfigService configService
+@using PSOServerWebsite.Repositories
+@inject RareDropsRepository rareDropsRepository
+@inject LocationsRepository locationsRepository
+@inject ConfigurationRepository configurationRepository
 
 <PageTitle>Rare Drops</PageTitle>
 
@@ -80,9 +80,9 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-        rareDrops = await rareDropsService.GetRareDropsAsync();
-        locations = (await locationsService.GetLocationsAsync()).ToArray();
-        config = await configService.GetConfigAsync();
+        rareDrops = await rareDropsRepository.GetRareDropsAsync();
+        locations = (await locationsRepository.GetLocationsAsync()).ToArray();
+        config = await configurationRepository.GetConfigAsync();
     }
 
     private bool modalMoreInfoIsLoading = true;

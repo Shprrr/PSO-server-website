@@ -1,8 +1,8 @@
-﻿@using PSOServerWebsite.Services
-@inject ItemPMTService itemPMTService
-@inject RareDropsService rareDropsService
-@inject LocationsService locationsService
-@inject ConfigService configService
+﻿@using PSOServerWebsite.Repositories
+@inject ItemPMTRepository itemPMTRepository
+@inject RareDropsRepository rareDropsRepository
+@inject LocationsRepository locationsRepository
+@inject ConfigurationRepository configurationRepository
 
 <div id="modalInfo" class="modal">
     <div class="modal-dialog modal-dialog-scrollable modal-dialog-centered">
@@ -282,18 +282,18 @@
 
     protected override async Task OnInitializedAsync()
     {
-        itemPMT = await itemPMTService.GetItemsAsync();
+        itemPMT = await itemPMTRepository.GetItemsAsync();
 
-        config = await configService.GetConfigAsync();
+        config = await configurationRepository.GetConfigAsync();
 
-        var rareDrops = await rareDropsService.GetRareDropsAsync();
+        var rareDrops = await rareDropsRepository.GetRareDropsAsync();
         rareDropsByItem = rareDrops.Normal.Episodes().SelectMany(e => e.Value.Difficulties(), (episode, difficulty) => (episode, difficulty))
             .SelectMany(d => d.difficulty.Value.SectionsId(), (ed, sectionId) => (ed.episode, ed.difficulty, sectionId))
             .SelectMany(d => d.sectionId.Value, (eds, rare) => (eds.episode, eds.difficulty, eds.sectionId, location: rare.Key, rareSpecification: rare.Value))
             .SelectMany(d => d.rareSpecification, (edsr, spec) => (spec.ItemDescription, new ItemRareDropLocation(edsr.episode, edsr.difficulty, edsr.sectionId, edsr.location, config.ApplyDropRateMultiplier(spec.Probability))))
             .GroupBy(d => d.ItemDescription).ToDictionary(d => d.Key, d => d.Select(d => d.Item2).ToArray());
 
-        locations = (await locationsService.GetLocationsAsync()).ToArray();
+        locations = (await locationsRepository.GetLocationsAsync()).ToArray();
         questF95EByItem = config.ConvertQuestF95EResultItems().Types()
             .SelectMany(t => t.Value.Difficulties(), (type, difficulties) => (type, difficulties))
             .SelectMany(q => q.difficulties.Value, (q, item) =>

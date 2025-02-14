@@ -1,5 +1,5 @@
-﻿@using PSOServerWebsite.Services
-@using ClassFlagsEnum = PSOServerWebsite.Services.ClassFlag
+﻿@using PSOServerWebsite.Repositories
+@using ClassFlagsEnum = PSOServerWebsite.Repositories.ClassFlag
 
 <div class="class-flags container px-0">
     <div class="row row-cols-4">
@@ -26,16 +26,16 @@
     [Parameter]
     public ClassFlagsEnum Value { get; set; }
 
-    public bool IsHumar => Value.HasFlag(ItemPMTService.ClassFlagsByClass[0]);
-    public bool IsHunewearl => Value.HasFlag(ItemPMTService.ClassFlagsByClass[1]);
-    public bool IsHucast => Value.HasFlag(ItemPMTService.ClassFlagsByClass[2]);
-    public bool IsHucaseal => Value.HasFlag(ItemPMTService.ClassFlagsByClass[3]);
-    public bool IsRamar => Value.HasFlag(ItemPMTService.ClassFlagsByClass[4]);
-    public bool IsRamarl => Value.HasFlag(ItemPMTService.ClassFlagsByClass[5]);
-    public bool IsRacast => Value.HasFlag(ItemPMTService.ClassFlagsByClass[6]);
-    public bool IsRacaseal => Value.HasFlag(ItemPMTService.ClassFlagsByClass[7]);
-    public bool IsFomar => Value.HasFlag(ItemPMTService.ClassFlagsByClass[8]);
-    public bool IsFomarl => Value.HasFlag(ItemPMTService.ClassFlagsByClass[9]);
-    public bool IsFonewm => Value.HasFlag(ItemPMTService.ClassFlagsByClass[10]);
-    public bool IsFonewearl => Value.HasFlag(ItemPMTService.ClassFlagsByClass[11]);
+    public bool IsHumar => Value.HasFlag(ItemPMTRepository.ClassFlagsByClass[0]);
+    public bool IsHunewearl => Value.HasFlag(ItemPMTRepository.ClassFlagsByClass[1]);
+    public bool IsHucast => Value.HasFlag(ItemPMTRepository.ClassFlagsByClass[2]);
+    public bool IsHucaseal => Value.HasFlag(ItemPMTRepository.ClassFlagsByClass[3]);
+    public bool IsRamar => Value.HasFlag(ItemPMTRepository.ClassFlagsByClass[4]);
+    public bool IsRamarl => Value.HasFlag(ItemPMTRepository.ClassFlagsByClass[5]);
+    public bool IsRacast => Value.HasFlag(ItemPMTRepository.ClassFlagsByClass[6]);
+    public bool IsRacaseal => Value.HasFlag(ItemPMTRepository.ClassFlagsByClass[7]);
+    public bool IsFomar => Value.HasFlag(ItemPMTRepository.ClassFlagsByClass[8]);
+    public bool IsFomarl => Value.HasFlag(ItemPMTRepository.ClassFlagsByClass[9]);
+    public bool IsFonewm => Value.HasFlag(ItemPMTRepository.ClassFlagsByClass[10]);
+    public bool IsFonewearl => Value.HasFlag(ItemPMTRepository.ClassFlagsByClass[11]);
 }

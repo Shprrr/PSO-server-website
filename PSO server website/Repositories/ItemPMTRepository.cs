@@ -1,9 +1,9 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
 
-namespace PSOServerWebsite.Services;
+namespace PSOServerWebsite.Repositories;
 
-public class ItemPMTService(HttpClient http)
+public class ItemPMTRepository(HttpClient http)
 {
     public static readonly ClassFlag[] ClassFlagsByClass =
     [

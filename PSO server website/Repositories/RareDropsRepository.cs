@@ -1,9 +1,9 @@
 ﻿using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace PSOServerWebsite.Services;
+namespace PSOServerWebsite.Repositories;
 
-public class RareDropsService(HttpClient http)
+public class RareDropsRepository(HttpClient http)
 {
     private static readonly JsonSerializerOptions s_options = new() { ReadCommentHandling = JsonCommentHandling.Skip, AllowTrailingCommas = true };
     private static readonly Dictionary<string, Task<string>> s_rareDropsJson = [];

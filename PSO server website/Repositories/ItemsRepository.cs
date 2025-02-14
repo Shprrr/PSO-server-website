@@ -4,9 +4,9 @@ using System.Globalization;
 using System.Net.Http.Json;
 using System.Text.RegularExpressions;
 
-namespace PSOServerWebsite.Services;
+namespace PSOServerWebsite.Repositories;
 
-public class ItemsService(HttpClient http)
+public class ItemsRepository(HttpClient http)
 {
     private static Task<Dictionary<string, string>>? s_namesJson = null;
 

@@ -1,9 +1,9 @@
 ﻿@page "/changelog"
-@using PSOServerWebsite.Services
+@using PSOServerWebsite.Repositories
 @using NCalc
-@inject RareDropsService rareDropsService
-@inject ItemsService itemsService
-@inject LocationsService locationsService
+@inject RareDropsRepository rareDropsRepository
+@inject ItemsRepository itemsRepository
+@inject LocationsRepository locationsRepository
 
 <PageTitle>Changelog</PageTitle>
 
@@ -149,10 +149,10 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-        rareDrops = await rareDropsService.GetRareDropsAsync();
-        rareDrops20240422 = await rareDropsService.GetRareDropsAsync("2024-04-22");
-        items = (await itemsService.GetItemsAsync()).ToDictionary(i => i.Identifier);
-        locations = (await locationsService.GetLocationsAsync()).ToArray();
+        rareDrops = await rareDropsRepository.GetRareDropsAsync();
+        rareDrops20240422 = await rareDropsRepository.GetRareDropsAsync("2024-04-22");
+        items = (await itemsRepository.GetItemsAsync()).ToDictionary(i => i.Identifier);
+        locations = (await locationsRepository.GetLocationsAsync()).ToArray();
         diffRareDrops20241111 = CompareRareDrops(rareDrops20240422, rareDrops);
     }
 

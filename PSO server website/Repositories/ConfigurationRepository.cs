@@ -1,9 +1,9 @@
 ﻿using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace PSOServerWebsite.Services;
+namespace PSOServerWebsite.Repositories;
 
-public class ConfigService(HttpClient http)
+public class ConfigurationRepository(HttpClient http)
 {
     private static readonly JsonSerializerOptions s_options = new() { ReadCommentHandling = JsonCommentHandling.Skip, AllowTrailingCommas = true };
     private static string? s_configJson = null;

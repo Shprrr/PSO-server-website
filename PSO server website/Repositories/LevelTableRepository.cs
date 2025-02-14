@@ -1,8 +1,8 @@
 ﻿using System.Runtime.InteropServices;
 
-namespace PSOServerWebsite.Services;
+namespace PSOServerWebsite.Repositories;
 
-public class LevelTableService(HttpClient http)
+public class LevelTableRepository(HttpClient http)
 {
     public const int NumberClasses = 12;
     public const int MaxLevel = 200;
@@ -59,8 +59,8 @@ public class LevelTableService(HttpClient http)
 
 public class LevelTableModel
 {
-    public CharacterStatsModel[] BaseStats { get; set; } = new CharacterStatsModel[LevelTableService.NumberClasses];
-    public LevelStatsDeltaModel[][] LevelDeltas { get; set; } = new LevelStatsDeltaModel[LevelTableService.NumberClasses][];
+    public CharacterStatsModel[] BaseStats { get; set; } = new CharacterStatsModel[LevelTableRepository.NumberClasses];
+    public LevelStatsDeltaModel[][] LevelDeltas { get; set; } = new LevelStatsDeltaModel[LevelTableRepository.NumberClasses][];
 }
 
 public class CharacterStatsModel

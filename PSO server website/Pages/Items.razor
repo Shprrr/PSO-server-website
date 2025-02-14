@@ -1,7 +1,7 @@
 ﻿@page "/items"
-@using PSOServerWebsite.Services
+@using PSOServerWebsite.Repositories
 @using System.Text.RegularExpressions
-@inject ItemsService itemsService
+@inject ItemsRepository itemsRepository
 
 <PageTitle>Items</PageTitle>
 
@@ -53,7 +53,7 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-        items = (await itemsService.GetItemsAsync()).ToArray();
+        items = (await itemsRepository.GetItemsAsync()).ToArray();
         OnFilterValueChanged();
     }
 

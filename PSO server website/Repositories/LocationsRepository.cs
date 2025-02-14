@@ -1,9 +1,9 @@
 ﻿using System.Net.Http.Json;
 using System.Text.Json.Serialization;
 
-namespace PSOServerWebsite.Services;
+namespace PSOServerWebsite.Repositories;
 
-public class LocationsService(HttpClient http)
+public class LocationsRepository(HttpClient http)
 {
     private static Task<IEnumerable<LocationModel>>? s_locations;
 

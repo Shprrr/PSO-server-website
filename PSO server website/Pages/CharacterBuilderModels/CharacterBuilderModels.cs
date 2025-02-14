@@ -1,4 +1,4 @@
-﻿using PSOServerWebsite.Services;
+﻿using PSOServerWebsite.Repositories;
 using System.Text.RegularExpressions;
 
 namespace PSOServerWebsite.Pages.CharacterBuilderModels;

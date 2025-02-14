@@ -1,6 +1,6 @@
 ﻿@using PSOServerWebsite.Pages.CharacterBuilderModels
 @using UnitModel = PSOServerWebsite.Pages.CharacterBuilderModels.UnitModel
-@using PSOServerWebsite.Services
+@using PSOServerWebsite.Repositories
 @inject IJSRuntime JsRuntime
 
 <div id="modalCharacterSelection" class="modal" onhidden.bs.modal="@(() => OnClose?.Invoke())">
