@@ -1,53 +1,3 @@
-/* /Components/Pages/ItemMoreInfoModal.razor.rz.scp.css */
-.secid-viridia[b-kbgh1jtcu9] {
-    background-color: green;
-    color: white;
-}
-
-.secid-greennill[b-kbgh1jtcu9] {
-    background-color: lime;
-    color: black;
-}
-
-.secid-skyly[b-kbgh1jtcu9] {
-    background-color: cyan;
-    color: black;
-}
-
-.secid-bluefull[b-kbgh1jtcu9] {
-    background-color: blue;
-    color: white;
-}
-
-.secid-purplenum[b-kbgh1jtcu9] {
-    background-color: purple;
-    color: white;
-}
-
-.secid-pinkal[b-kbgh1jtcu9] {
-    background-color: pink;
-    color: black;
-}
-
-.secid-redria[b-kbgh1jtcu9] {
-    background-color: red;
-    color: white;
-}
-
-.secid-oran[b-kbgh1jtcu9] {
-    background-color: orange;
-    color: black;
-}
-
-.secid-yellowboze[b-kbgh1jtcu9] {
-    background-color: yellow;
-    color: black;
-}
-
-.secid-whitill[b-kbgh1jtcu9] {
-    background-color: #e6e6e6;
-    color: black;
-}
 /* /Components/Pages/ItemName.razor.rz.scp.css */
 .icon[b-8iu89sxthw] {
     width: 16px;
@@ -67,6 +17,56 @@
     .probability[b-1nryjvmqa7]::after {
         content: ')';
     }
+/* /Components/Pages/SectionId.razor.rz.scp.css */
+.secid-viridia[b-fllc82sa2a] {
+    background-color: green;
+    color: white;
+}
+
+.secid-greenill[b-fllc82sa2a] {
+    background-color: lime;
+    color: black;
+}
+
+.secid-skyly[b-fllc82sa2a] {
+    background-color: cyan;
+    color: black;
+}
+
+.secid-bluefull[b-fllc82sa2a] {
+    background-color: blue;
+    color: white;
+}
+
+.secid-purplenum[b-fllc82sa2a] {
+    background-color: purple;
+    color: white;
+}
+
+.secid-pinkal[b-fllc82sa2a] {
+    background-color: pink;
+    color: black;
+}
+
+.secid-redria[b-fllc82sa2a] {
+    background-color: red;
+    color: white;
+}
+
+.secid-oran[b-fllc82sa2a] {
+    background-color: orange;
+    color: black;
+}
+
+.secid-yellowboze[b-fllc82sa2a] {
+    background-color: yellow;
+    color: black;
+}
+
+.secid-whitill[b-fllc82sa2a] {
+    background-color: #e6e6e6;
+    color: black;
+}
 /* /Layout/MainLayout.razor.rz.scp.css */
 .page[b-x8btpx0o3k] {
     position: relative;
@@ -232,104 +232,9 @@ main[b-x8btpx0o3k] {
     }
 }
 /* /Pages/Changelog.razor.rz.scp.css */
-.secid-viridia[b-ntzvf8vonx] {
-    background-color: green;
-    color: white;
-}
-
-.secid-greennill[b-ntzvf8vonx] {
-    background-color: lime;
-}
-
-.secid-skyly[b-ntzvf8vonx] {
-    background-color: cyan;
-}
-
-.secid-bluefull[b-ntzvf8vonx] {
-    background-color: blue;
-    color: white;
-}
-
-.secid-purplenum[b-ntzvf8vonx] {
-    background-color: purple;
-    color: white;
-}
-
-.secid-pinkal[b-ntzvf8vonx] {
-    background-color: pink;
-}
-
-.secid-redria[b-ntzvf8vonx] {
-    background-color: red;
-    color: white;
-}
-
-.secid-oran[b-ntzvf8vonx] {
-    background-color: orange;
-}
-
-.secid-yellowboze[b-ntzvf8vonx] {
-    background-color: yellow;
-}
-
-.secid-whitill[b-ntzvf8vonx] {
-    background-color: #e6e6e6;
-}
-
 .diff-group-divider[b-ntzvf8vonx] {
     --bs-border-width: 1px;
     border-left: calc(var(--bs-border-width) * 2) solid currentcolor;
-    /*border-left-width: 3px !important;*/
-}
-/* /Pages/CharacterBuilder.razor.rz.scp.css */
-.secid-viridia[b-16829gpfme] {
-    background-color: green;
-    color: white;
-}
-
-.secid-greennill[b-16829gpfme] {
-    background-color: lime;
-    color: black;
-}
-
-.secid-skyly[b-16829gpfme] {
-    background-color: cyan;
-    color: black;
-}
-
-.secid-bluefull[b-16829gpfme] {
-    background-color: blue;
-    color: white;
-}
-
-.secid-purplenum[b-16829gpfme] {
-    background-color: purple;
-    color: white;
-}
-
-.secid-pinkal[b-16829gpfme] {
-    background-color: pink;
-    color: black;
-}
-
-.secid-redria[b-16829gpfme] {
-    background-color: red;
-    color: white;
-}
-
-.secid-oran[b-16829gpfme] {
-    background-color: orange;
-    color: black;
-}
-
-.secid-yellowboze[b-16829gpfme] {
-    background-color: yellow;
-    color: black;
-}
-
-.secid-whitill[b-16829gpfme] {
-    background-color: #e6e6e6;
-    color: black;
 }
 /* /Pages/Quests.razor.rz.scp.css */
 .quests-items[b-7y5dhq6oes] {
@@ -353,69 +258,40 @@ main[b-x8btpx0o3k] {
         content: ')';
     }
 /* /Pages/RareDrops.razor.rz.scp.css */
-.secid-viridia[b-ifimzlxf9d] {
-    background-color: green;
-    color: white;
-    border-bottom-color: black !important;
-}
-.secid-greennill[b-ifimzlxf9d] {
-    background-color: lime;
-}
-.secid-skyly[b-ifimzlxf9d] {
-    background-color: cyan;
-}
-.secid-bluefull[b-ifimzlxf9d] {
-    background-color: blue;
-    color: white;
-    border-bottom-color: black !important;
-}
-.secid-purplenum[b-ifimzlxf9d] {
-    background-color: purple;
-    color: white;
-    border-bottom-color: black !important;
-}
-.secid-pinkal[b-ifimzlxf9d] {
-    background-color: pink;
-}
-.secid-redria[b-ifimzlxf9d] {
-    background-color: red;
-    color: white;
-    border-bottom-color: black !important;
-}
-.secid-oran[b-ifimzlxf9d] {
-    background-color: orange;
-}
-.secid-yellowboze[b-ifimzlxf9d] {
-    background-color: yellow;
-}
-.secid-whitill[b-ifimzlxf9d] {
-    background-color: #e6e6e6;
-}
-
 h3[b-ifimzlxf9d], h4[b-ifimzlxf9d] {
     position: sticky;
     background-color: white;
 }
+
 h3[b-ifimzlxf9d] {
     top: 3.5rem;
 }
+
 h4[b-ifimzlxf9d] {
     top: 5.5rem;
 }
+
 .rare-drops[b-ifimzlxf9d] {
     font-size: x-small;
 }
-.rare-drops thead[b-ifimzlxf9d] {
-    position: sticky;
-    top: 5.9rem;
-}
+
+    .rare-drops thead[b-ifimzlxf9d] {
+        position: sticky;
+        top: 5.9rem;
+    }
+
+    .rare-drops > :not(:last-child) > :last-child[b-ifimzlxf9d] >  * {
+        border-bottom-color: black !important;
+    }
 
 .probability[b-ifimzlxf9d] {
     color: darkgray;
 }
+
     .probability[b-ifimzlxf9d]::before {
         content: '(';
     }
+
     .probability[b-ifimzlxf9d]::after {
         content: ')';
     }
