@@ -38,29 +38,35 @@ else
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach (var where in difficulty.Value!.Where().OrderBy(l => OrderByLocations(l, episode.Name)))
-                    {
-                        <tr>
-                            <th scope="row">@GetLocationName(where, episode.Name, difficulty.Name)</th>
-                            @foreach (var sectionId in difficulty.Value.SectionsId())
-                            {
-                                <td>
-                                    @if (sectionId.Value.ContainsKey(where))
-                                        @foreach (var item in sectionId.Value[where])
+                    <Virtualize Context="where" Items="difficulty.Value!.Where().OrderBy(l => OrderByLocations(l, episode.Name)).ToArray()" SpacerElement="tr" ItemSize="40">
+                        <Placeholder>
+                            <tr>
+                                <th scope="row" colspan="11" class="text-center"><em>Loading...</em></th>
+                            </tr>
+                        </Placeholder>
+                        <ItemContent>
+                            <tr>
+                                <th scope="row">@GetLocationName(where, episode.Name, difficulty.Name)</th>
+                                @foreach (var sectionId in difficulty.Value.SectionsId())
+                                {
+                                    <td>
+                                        @if (sectionId.Value.ContainsKey(where))
+                                            @foreach (var item in sectionId.Value[where])
+                                            {
+                                                <div>
+                                                    <ItemName ItemIdentifier="@item.ItemDescription" ModalMoreInfo="@modalMoreInfo" /><br />
+                                                    <Probability ProbabilityRatio="@config.ApplyDropRateMultiplier(item.Probability)" class="probability ms-3" />
+                                                </div>
+                                            }
+                                        else
                                         {
-                                            <div>
-                                                <ItemName ItemIdentifier="@item.ItemDescription" ModalMoreInfo="@modalMoreInfo" /><br />
-                                                <Probability ProbabilityRatio="@config.ApplyDropRateMultiplier(item.Probability)" class="probability ms-3" />
-                                            </div>
+                                            <span>None</span>
                                         }
-                                    else
-                                    {
-                                        <span>None</span>
-                                    }
-                                </td>
-                            }
-                        </tr>
-                    }
+                                    </td>
+                                }
+                            </tr>
+                        </ItemContent>
+                    </Virtualize>
                 </tbody>
             </table>
         }

@@ -15,4 +15,6 @@
 
     [Parameter(CaptureUnmatchedValues = true)]
     public Dictionary<string, object>? CapturedAttributes { get; set; }
+
+    protected override bool ShouldRender() => false;
 }

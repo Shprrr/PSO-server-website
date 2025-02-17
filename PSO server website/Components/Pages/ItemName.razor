@@ -66,6 +66,8 @@ else
         itemPMT ??= await itemPMTRepository.GetItemsAsync();
     }
 
+    protected override bool ShouldRender() => false;
+
     [MemberNotNullWhen(true, nameof(ModalMoreInfo), nameof(itemModel))]
     public bool HasMoreInfo()
     {
@@ -87,9 +89,6 @@ else
     {
         if (itemModel != null)
             return itemModel.Name;
-
-        if (ItemIdentifier.StartsWith("0x0302") || ItemIdentifier.StartsWith("0302"))
-            return ""; //TODO: Technique name
 
         return ItemIdentifier;
     }
