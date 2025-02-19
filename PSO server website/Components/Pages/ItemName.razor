@@ -66,8 +66,6 @@ else
         itemPMT ??= await itemPMTRepository.GetItemsAsync();
     }
 
-    protected override bool ShouldRender() => false;
-
     [MemberNotNullWhen(true, nameof(ModalMoreInfo), nameof(itemModel))]
     public bool HasMoreInfo()
     {

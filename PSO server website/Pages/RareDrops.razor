@@ -1,8 +1,6 @@
 ﻿@page "/rareDrops"
-@using PSOServerWebsite.Repositories
-@inject RareDropsRepository rareDropsRepository
-@inject LocationsRepository locationsRepository
-@inject ConfigurationRepository configurationRepository
+@using PSOServerWebsite.Services
+@inject DropsLocationsService dropsLocationsService
 
 <PageTitle>Rare Drops</PageTitle>
 
@@ -15,12 +13,12 @@
 else
 {
     <h2>Normal Mode</h2>
-    @foreach (var episode in rareDrops.Normal.Episodes())
+    @foreach (var episode in dropsLocations.GroupBy(dl => dl.EpisodeName))
     {
-        <h3>@episode.Name</h3>
-        @foreach (var difficulty in episode.Value!.Difficulties())
+        <h3>@episode.Key</h3>
+        @foreach (var difficulty in episode.GroupBy(e => e.DifficultyName))
         {
-            <h4>@difficulty.Name</h4>
+            <h4>@difficulty.Key</h4>
             <table class="rare-drops table table-striped table-hover table-sm">
                 <thead>
                     <tr>
@@ -38,7 +36,7 @@ else
                     </tr>
                 </thead>
                 <tbody>
-                    <Virtualize Context="where" Items="difficulty.Value!.Where().OrderBy(l => OrderByLocations(l, episode.Name)).ToArray()" SpacerElement="tr" ItemSize="40">
+                    <Virtualize Context="location" Items="GetLocations(difficulty)" SpacerElement="tr" ItemSize="40">
                         <Placeholder>
                             <tr>
                                 <th scope="row" colspan="11" class="text-center"><em>Loading...</em></th>
@@ -46,16 +44,16 @@ else
                         </Placeholder>
                         <ItemContent>
                             <tr>
-                                <th scope="row">@GetLocationName(where, episode.Name, difficulty.Name)</th>
-                                @foreach (var sectionId in difficulty.Value.SectionsId())
+                                <th scope="row">@location.Key</th>
+                                @foreach (var sectionId in GroupBySectionId(location.Value))
                                 {
                                     <td>
-                                        @if (sectionId.Value.ContainsKey(where))
-                                            @foreach (var item in sectionId.Value[where])
+                                        @if (sectionId.Value.Any())
+                                            @foreach (var item in sectionId.Value)
                                             {
                                                 <div>
-                                                    <ItemName ItemIdentifier="@item.ItemDescription" ModalMoreInfo="@modalMoreInfo" /><br />
-                                                    <Probability ProbabilityRatio="@config.ApplyDropRateMultiplier(item.Probability)" class="probability ms-3" />
+                                                    <ItemName ItemIdentifier="@item.ItemIdentifier" ModalMoreInfo="@modalMoreInfo" /><br />
+                                                    <Probability ProbabilityRatio="@item.Probability" class="probability ms-3" />
                                                 </div>
                                             }
                                         else
@@ -76,19 +74,15 @@ else
 <ItemMoreInfoModal @ref="modalMoreInfo" OnLoaded="ModalMoreInfoOnLoaded" />
 
 @code {
-    [DisallowNull] private RareDropModel rareDrops = default!;
-    [DisallowNull] private LocationModel[] locations = default!;
-    [DisallowNull] private ConfigModel config = default!;
+    [DisallowNull] private IEnumerable<DropLocationModel> dropsLocations = default!;
     [DisallowNull] private ItemMoreInfoModal modalMoreInfo = default!;
 
-    [MemberNotNullWhen(false, nameof(rareDrops), nameof(locations), nameof(config), nameof(modalMoreInfo))]
-    private bool IsLoading => rareDrops == null || locations == null || config == null || modalMoreInfo == null || modalMoreInfoIsLoading;
+    [MemberNotNullWhen(false, nameof(dropsLocations), nameof(modalMoreInfo))]
+    private bool IsLoading => dropsLocations == null || modalMoreInfo == null || modalMoreInfoIsLoading;
 
     protected override async Task OnInitializedAsync()
     {
-        rareDrops = await rareDropsRepository.GetRareDropsAsync();
-        locations = (await locationsRepository.GetLocationsAsync()).ToArray();
-        config = await configurationRepository.GetConfigAsync();
+        dropsLocations = await dropsLocationsService.GetDropsLocationsAsync();
     }
 
     private bool modalMoreInfoIsLoading = true;
@@ -98,19 +92,29 @@ else
         StateHasChanged();
     }
 
-    private int OrderByLocations(string locationId, string episode)
+    private Dictionary<string, DropLocationModel[]> GetLocations(IGrouping<string, DropLocationModel> difficulty)
     {
-        int episodeNumber = (int)char.GetNumericValue(episode[^1]);
-        return Array.FindIndex(locations.First(l => l.Episode == episodeNumber).Locations, l => l.Id == locationId);
+        return difficulty.GroupBy(d => (d.LocationName, d.Order)).OrderBy(l => l.Key.Order).ToDictionary(dl => dl.Key.LocationName, dl => dl.ToArray());
     }
 
-    private string GetLocationName(string locationId, string episode, string difficulty)
+    private Dictionary<string, IEnumerable<DropLocationModel>> GroupBySectionId(DropLocationModel[] dropsLocations)
     {
-        int episodeNumber = (int)char.GetNumericValue(episode[^1]);
-        var location = locations.First(l => l.Episode == episodeNumber).Locations.FirstOrDefault(l => l.Id == locationId);
-        if (location == null) return locationId;
-        if (difficulty == "Ultimate" && !string.IsNullOrEmpty(location.UltimateName))
-            return location.UltimateName;
-        return location.Name;
+        return dropsLocations.GroupBy(d => d.SectionId, (s, dl) => (sectionId: s, dropsLocations: dl))
+            .UnionBy(EmptySectionsId(), s => s.sectionId).OrderBy(dl => dl.sectionId, new SectionIdComparer())
+            .ToDictionary(dl => dl.sectionId, dl => dl.dropsLocations);
+    }
+
+    private IEnumerable<(string sectionId, IEnumerable<DropLocationModel> dropsLocations)> EmptySectionsId()
+    {
+        yield return ("Viridia", Enumerable.Empty<DropLocationModel>());
+        yield return ("Greenill", Enumerable.Empty<DropLocationModel>());
+        yield return ("Skyly", Enumerable.Empty<DropLocationModel>());
+        yield return ("Bluefull", Enumerable.Empty<DropLocationModel>());
+        yield return ("Purplenum", Enumerable.Empty<DropLocationModel>());
+        yield return ("Pinkal", Enumerable.Empty<DropLocationModel>());
+        yield return ("Redria", Enumerable.Empty<DropLocationModel>());
+        yield return ("Oran", Enumerable.Empty<DropLocationModel>());
+        yield return ("Yellowboze", Enumerable.Empty<DropLocationModel>());
+        yield return ("Whitill", Enumerable.Empty<DropLocationModel>());
     }
 }

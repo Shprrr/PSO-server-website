@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using PSOServerWebsite;
 using PSOServerWebsite.Repositories;
+using PSOServerWebsite.Services;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
@@ -17,6 +18,8 @@ builder.Services.AddScoped<ItemPMTRepository>();
 builder.Services.AddScoped<LocationsRepository>();
 builder.Services.AddScoped<LevelTableRepository>();
 builder.Services.AddScoped<ConfigurationRepository>();
+
+builder.Services.AddScoped<DropsLocationsService>();
 
 WebAssemblyHost build = builder.Build();
 // Preload the data
