@@ -7,34 +7,34 @@ public class DropsLocationsService(RareDropsRepository rareDropsRepository, Loca
     public async Task<IEnumerable<DropLocationModel>> GetDropsLocationsAsync()
     {
         RareDropModel rareDrops = await rareDropsRepository.GetRareDropsAsync();
-        var locations = (await locationsRepository.GetLocationsAsync()).ToDictionary(l => l.Episode, l => l.Locations);
+        var locations = (await locationsRepository.GetLocationsAsync())
+            .ToDictionary(l => l.Episode, l => l.Locations.Index()
+                .ToDictionary(l => l.Item.Id, l => (l.Index, l.Item.Name, UltimateName: string.IsNullOrEmpty(l.Item.UltimateName) ? l.Item.Name : l.Item.UltimateName)));
         ConfigModel config = await configurationRepository.GetConfigAsync();
 
         return rareDrops.Normal.Episodes()
             .SelectMany(episode => episode.Value.Difficulties()
             .SelectMany(difficulty => difficulty.Value.SectionsId()
             .SelectMany(sectionId => sectionId.Value.SelectMany(dl => dl.Value,
-                (dropLocation, itemProbability) => new DropLocationModel(episode.Name, difficulty.Name, sectionId.Name,
-                    GetLocationName(locations, dropLocation.Key, episode.Name, difficulty.Name),
-                    OrderByLocations(locations, dropLocation.Key, episode.Name),
-                    itemProbability.ItemDescription, config.ApplyDropRateMultiplier(itemProbability.Probability))))));
+                (dropLocation, itemProbability) => CreateDropLocationModel(episode, difficulty, sectionId, dropLocation, itemProbability, locations, config)))));
     }
 
-    private static string GetLocationName(Dictionary<int, LocationWhereModel[]> locations, string locationId, string episode, string difficulty)
+    private static DropLocationModel CreateDropLocationModel(NamedObject<EpisodeModel> episode, NamedObject<DifficultyModel> difficulty, NamedObject<SectionIdModel> sectionId, KeyValuePair<string, RareSpecificationModel[]> dropLocation, RareSpecificationModel itemProbability, Dictionary<int, Dictionary<string, (int Index, string Name, string UltimateName)>> locations, ConfigModel config)
     {
-        int episodeNumber = (int)char.GetNumericValue(episode[^1]);
-        LocationWhereModel? location = locations[episodeNumber].FirstOrDefault(l => l.Id == locationId);
-        if (location == null) return locationId;
-        if (difficulty == "Ultimate" && !string.IsNullOrEmpty(location.UltimateName))
-            return location.UltimateName;
-        return location.Name;
+        int episodeNumber = (int)char.GetNumericValue(episode.Name[^1]);
+        return new DropLocationModel(episode.Name, difficulty.Name, sectionId.Name,
+            GetLocationName(locations[episodeNumber], dropLocation.Key, difficulty.Name),
+            OrderByLocations(locations[episodeNumber], dropLocation.Key),
+            itemProbability.ItemDescription, config.ApplyDropRateMultiplier(itemProbability.Probability));
     }
 
-    private static int OrderByLocations(Dictionary<int, LocationWhereModel[]> locations, string locationId, string episode)
+    private static string GetLocationName(Dictionary<string, (int Index, string Name, string UltimateName)> locations, string locationId, string difficulty)
+        => difficulty == "Ultimate" ? locations[locationId].UltimateName : locations[locationId].Name;
+
+    private static int OrderByLocations(Dictionary<string, (int Index, string Name, string UltimateName)> locations, string locationId)
     {
-        int episodeNumber = (int)char.GetNumericValue(episode[^1]);
         // Locations can have duplicate names, so we take the order of the first one we find.
-        return locations[episodeNumber].Index().First(l2 => l2.Item.Name == locations[episodeNumber].First(l1 => l1.Id == locationId).Name).Index;
+        return locations.First(l2 => l2.Value.Name == locations[locationId].Name).Value.Index;
     }
 }
 

@@ -8,7 +8,7 @@
 }
 else if (HasMoreInfo())
 {
-    <a @attributes="@AttributesForLink" @onclick="@OnMoreInfoClicked">
+    <a @attributes="@AttributesForLink" @onclick="@(() => ModalMoreInfo.ShowItemModal(itemModel))">
         @if (!string.IsNullOrEmpty(GetIconName()))
         {
             <img src="img/32px-@GetIconName()_icon.png" alt="@GetIconName()" class="icon" />
@@ -141,10 +141,5 @@ else
             return iconName;
 
         return null;
-    }
-
-    private void OnMoreInfoClicked()
-    {
-        ModalMoreInfo!.ShowItemModal(itemModel!); // Null verified by HasMoreInfo.
     }
 }

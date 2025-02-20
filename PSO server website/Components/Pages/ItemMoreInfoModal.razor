@@ -1,10 +1,10 @@
 ﻿@using PSOServerWebsite.Repositories
+@using PSOServerWebsite.Services
+@inject DropsLocationsService dropsLocationsService
 @inject ItemPMTRepository itemPMTRepository
-@inject RareDropsRepository rareDropsRepository
-@inject LocationsRepository locationsRepository
 @inject ConfigurationRepository configurationRepository
 
-<div id="modalInfo" class="modal">
+<div id="modalInfo" class="modal fade">
     <div class="modal-dialog modal-dialog-scrollable modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header">
@@ -253,7 +253,7 @@
                                 <tr>
                                     <td>@location.DifficultyName</td>
                                     <td class="text-nowrap">@location.EpisodeName</td>
-                                    <td>@GetLocationName(location.Location, location.EpisodeName, location.DifficultyName)</td>
+                                    <td>@location.Location</td>
                                     <td><SectionId Value="@location.SectionId" /></td>
                                     <td><Probability ProbabilityRatio="@location.Probability" /></td>
                                 </tr>
@@ -273,8 +273,7 @@
 
     private ItemInfoModel? itemInfo;
     [DisallowNull] private ItemPMTModel itemPMT = default!;
-    [DisallowNull] private Dictionary<string, ItemRareDropLocation[]> rareDropsByItem = default!;
-    [DisallowNull] private LocationModel[] locations = default!;
+    [DisallowNull] private IEnumerable<DropLocationModel> dropsLocations = default!;
     [DisallowNull] private ConfigModel config = default!;
     [DisallowNull] private Dictionary<string, ItemRareDropLocation[]> questF95EByItem = default!;
 
@@ -286,14 +285,8 @@
 
         config = await configurationRepository.GetConfigAsync();
 
-        var rareDrops = await rareDropsRepository.GetRareDropsAsync();
-        rareDropsByItem = rareDrops.Normal.Episodes().SelectMany(e => e.Value.Difficulties(), (episode, difficulty) => (episode, difficulty))
-            .SelectMany(d => d.difficulty.Value.SectionsId(), (ed, sectionId) => (ed.episode, ed.difficulty, sectionId))
-            .SelectMany(d => d.sectionId.Value, (eds, rare) => (eds.episode, eds.difficulty, eds.sectionId, location: rare.Key, rareSpecification: rare.Value))
-            .SelectMany(d => d.rareSpecification, (edsr, spec) => (spec.ItemDescription, new ItemRareDropLocation(edsr.episode, edsr.difficulty, edsr.sectionId, edsr.location, config.ApplyDropRateMultiplier(spec.Probability))))
-            .GroupBy(d => d.ItemDescription).ToDictionary(d => d.Key, d => d.Select(d => d.Item2).ToArray());
+        dropsLocations = await dropsLocationsService.GetDropsLocationsAsync();
 
-        locations = (await locationsRepository.GetLocationsAsync()).ToArray();
         questF95EByItem = config.ConvertQuestF95EResultItems().Types()
             .SelectMany(t => t.Value.Difficulties(), (type, difficulties) => (type, difficulties))
             .SelectMany(q => q.difficulties.Value, (q, item) =>
@@ -317,6 +310,14 @@
         OnLoaded?.Invoke();
     }
 
+    private string? oldItemIdentifier;
+    protected override bool ShouldRender()
+    {
+        bool shouldRender = oldItemIdentifier != itemInfo?.ItemModel.Identifier;
+        oldItemIdentifier = itemInfo?.ItemModel.Identifier;
+        return shouldRender;
+    }
+
     public void ShowItemModal(ItemModel item)
     {
         if (HasMoreInfo(item))
@@ -329,7 +330,7 @@
         }
         else
             itemInfo = null;
-        StateHasChanged();
+        if (oldItemIdentifier != itemInfo?.ItemModel.Identifier) StateHasChanged();
     }
 
     public bool HasMoreInfo([NotNullWhen(true)] ItemModel? item)
@@ -384,401 +385,260 @@
 
     private IEnumerable<ItemRareDropLocation> GetItemLocations()
     {
-        IEnumerable<ItemRareDropLocation> enumerable = Enumerable.Empty<ItemRareDropLocation>();
+        List<ItemRareDropLocation> enumerable = [];
         if (itemInfo?.ItemModel.Identifier == null) return enumerable;
 
-        if (rareDropsByItem.TryGetValue("0x" + itemInfo?.ItemModel.Identifier, out var dropLocations))
-            enumerable = enumerable.Concat(dropLocations);
+        var dropLocations = dropsLocations.Where(dl => dl.ItemIdentifier == "0x" + itemInfo?.ItemModel.Identifier);
+        enumerable.AddRange(dropLocations.Select(dl => new ItemRareDropLocation(dl.EpisodeName, dl.DifficultyName, dl.SectionId, dl.LocationName, dl.Probability, dl.Order)));
 
         if (questF95EByItem.TryGetValue(itemInfo?.ItemModel.Identifier!, out var questF95ELocations))
-            enumerable = enumerable.Concat(questF95ELocations);
+            enumerable.AddRange(questF95ELocations);
 
-        enumerable = enumerable.Concat(config.QuestF95FResultItems.Where(q => q.ItemDescription == itemInfo?.ItemModel.Identifier).Select(q => new ItemRareDropLocation("Episode 1", "", "", $"Gallon's Plan exchange {q.NumPhotonTickets} Photon Ticket", "1/1")));
+        enumerable.AddRange(config.QuestF95FResultItems.Where(q => q.ItemDescription == itemInfo?.ItemModel.Identifier).Select(q => new ItemRareDropLocation("Episode 1", "", "", $"Gallon's Plan exchange {q.NumPhotonTickets} Photon Ticket", "1/1")));
 
-        enumerable = enumerable.Concat(config.SecretLotteryResultItems.Where(i => i == itemInfo?.ItemModel.Identifier).Select(i => new ItemRareDropLocation("Episode 1", "", "", $"Good Luck! exchange Secret Ticket", $"1/{config.SecretLotteryResultItems.Length}")));
+        enumerable.AddRange(config.SecretLotteryResultItems.Where(i => i == itemInfo?.ItemModel.Identifier).Select(i => new ItemRareDropLocation("Episode 1", "", "", $"Good Luck! exchange Secret Ticket", $"1/{config.SecretLotteryResultItems.Length}")));
 
-        enumerable = enumerable.Concat(config.QuestF960SuccessResultItems.SelectMany(q => q.ItemsByDay.SelectMany(i => i.Value, (q, i) => (q.Key, i)).Where(i => i.i.Equals(itemInfo?.ItemModel.Name, StringComparison.InvariantCultureIgnoreCase)).Select(i => new ItemRareDropLocation("", "", "", $"Coren {q.MesetaCost.ToString("N0")} Meseta {i.Key}", $"1/{q.ItemsByDay[i.Key].Length}"))));
+        enumerable.AddRange(config.QuestF960SuccessResultItems.SelectMany(q => q.ItemsByDay.SelectMany(i => i.Value, (q, i) => (q.Key, i)).Where(i => i.i.Equals(itemInfo?.ItemModel.Name, StringComparison.InvariantCultureIgnoreCase)).Select(i => new ItemRareDropLocation("", "", "", $"Coren {q.MesetaCost.ToString("N0")} Meseta {i.Key}", $"1/{q.ItemsByDay[i.Key].Length}"))));
 
-        enumerable = enumerable.Concat(config.QuestF960FailureResultItems.SelectMany(q => q.Value.Where(i => i.Replace(" x1", "") == itemInfo?.ItemModel.Name).Select(i => new ItemRareDropLocation("", "", "", $"Coren Failure {q.Key}", $"1/{q.Value.Length}"))));
+        enumerable.AddRange(config.QuestF960FailureResultItems.SelectMany(q => q.Value.Where(i => i.Replace(" x1", "") == itemInfo?.ItemModel.Name).Select(i => new ItemRareDropLocation("", "", "", $"Coren Failure {q.Key}", $"1/{q.Value.Length}"))));
 
         switch (itemInfo?.ItemModel.Identifier)
         {
             case "000103":
-                enumerable = enumerable.Concat(
-                    [
+                enumerable.AddRange([
                         new ItemRareDropLocation("Episode 1", "Normal", "", "Governement Quests Hunter 5‑5:Test/VR Temple 5", "1/1"),
                         new ItemRareDropLocation("Episode 1", "Normal", "", "Governement Quests Ranger 5‑5:Test/VR Temple 5", "1/1"),
                     ]);
                 break;
 
             case "000104":
-                enumerable = enumerable.Concat(
-                    [
+                enumerable.AddRange([
                         new ItemRareDropLocation("Episode 1", "Hard", "", "Governement Quests Hunter 5‑5:Test/VR Temple 5", "1/1"),
                         new ItemRareDropLocation("Episode 1", "Hard", "", "Governement Quests Ranger 5‑5:Test/VR Temple 5", "1/1"),
                     ]);
                 break;
 
             case "000107":
-                enumerable = enumerable.Concat(
-                    [
+                enumerable.AddRange([
                         new ItemRareDropLocation("Episode 1", "Very Hard", "", "Governement Quests Hunter 5‑5:Test/VR Temple 5", "1/1"),
                         new ItemRareDropLocation("Episode 1", "Very Hard", "", "Governement Quests Ranger 5‑5:Test/VR Temple 5", "1/1"),
                     ]);
                 break;
 
             case "000200":
-                enumerable = enumerable.Concat(
-                    [
-                        new ItemRareDropLocation("Episode 1", "Normal", "", "Governement Quests Hunter 1‑3:Subterranean Den", "1/1"),
-                    ]);
+                enumerable.Add(new ItemRareDropLocation("Episode 1", "Normal", "", "Governement Quests Hunter 1‑3:Subterranean Den", "1/1"));
                 break;
 
             case "000202":
-                enumerable = enumerable.Concat(
-                    [
-                        new ItemRareDropLocation("Episode 1", "Hard", "", "Governement Quests Hunter 1‑3:Subterranean Den", "1/1"),
-                    ]);
+                enumerable.Add(new ItemRareDropLocation("Episode 1", "Hard", "", "Governement Quests Hunter 1‑3:Subterranean Den", "1/1"));
                 break;
 
             case "000204":
-                enumerable = enumerable.Concat(
-                    [
-                        new ItemRareDropLocation("Episode 1", "Very Hard", "", "Governement Quests Hunter 1‑3:Subterranean Den", "1/1"),
-                    ]);
+                enumerable.Add(new ItemRareDropLocation("Episode 1", "Very Hard", "", "Governement Quests Hunter 1‑3:Subterranean Den", "1/1"));
                 break;
 
             case "000207":
-                enumerable = enumerable.Concat(
-                    [
-                        new ItemRareDropLocation("Episode 1", "Ultimate", "", "Governement Quests Hunter 1‑3:Subterranean Den", "1/1"),
-                    ]);
+                enumerable.Add(new ItemRareDropLocation("Episode 1", "Ultimate", "", "Governement Quests Hunter 1‑3:Subterranean Den", "1/1"));
                 break;
 
             case "000302":
-                enumerable = enumerable.Concat(
-                    [
-                        new ItemRareDropLocation("Episode 1", "Normal", "", "Governement Quests Hunter 2‑4:Waterway Shadow", "1/1"),
-                    ]);
+                enumerable.Add(new ItemRareDropLocation("Episode 1", "Normal", "", "Governement Quests Hunter 2‑4:Waterway Shadow", "1/1"));
                 break;
 
             case "000303":
-                enumerable = enumerable.Concat(
-                    [
-                        new ItemRareDropLocation("Episode 1", "Hard", "", "Governement Quests Hunter 2‑4:Waterway Shadow", "1/1"),
-                    ]);
+                enumerable.Add(new ItemRareDropLocation("Episode 1", "Hard", "", "Governement Quests Hunter 2‑4:Waterway Shadow", "1/1"));
                 break;
 
             case "000304":
-                enumerable = enumerable.Concat(
-                    [
-                        new ItemRareDropLocation("Episode 1", "Very Hard", "", "Governement Quests Hunter 2‑4:Waterway Shadow", "1/1"),
-                    ]);
+                enumerable.Add(new ItemRareDropLocation("Episode 1", "Very Hard", "", "Governement Quests Hunter 2‑4:Waterway Shadow", "1/1"));
                 break;
 
             case "000307":
-                enumerable = enumerable.Concat(
-                    [
-                        new ItemRareDropLocation("Episode 1", "Ultimate", "", "Governement Quests Hunter 2‑4:Waterway Shadow", "1/1"),
-                    ]);
+                enumerable.Add(new ItemRareDropLocation("Episode 1", "Ultimate", "", "Governement Quests Hunter 2‑4:Waterway Shadow", "1/1"));
                 break;
 
             case "000403":
-                enumerable = enumerable.Concat(
-                    [
+                enumerable.AddRange([
                         new ItemRareDropLocation("Episode 1", "Normal", "", "Governement Quests Hunter 7‑5:Isle of Mutants", "1/1"),
                         new ItemRareDropLocation("Episode 1", "Normal", "", "Governement Quests Ranger 7‑5:Isle of Mutants", "1/1"),
                     ]);
                 break;
 
             case "000404":
-                enumerable = enumerable.Concat(
-                    [
+                enumerable.AddRange([
                         new ItemRareDropLocation("Episode 1", "Hard", "", "Governement Quests Hunter 7‑5:Isle of Mutants", "1/1"),
                         new ItemRareDropLocation("Episode 1", "Hard", "", "Governement Quests Ranger 7‑5:Isle of Mutants", "1/1"),
                     ]);
                 break;
 
             case "000406":
-                enumerable = enumerable.Concat(
-                    [
-                        new ItemRareDropLocation("Episode 1", "Ultimate", "", "Governement Quests Hunter 6‑5:Test/Spaceship 5", "1/1"),
-                    ]);
+                enumerable.Add(new ItemRareDropLocation("Episode 1", "Ultimate", "", "Governement Quests Hunter 6‑5:Test/Spaceship 5", "1/1"));
                 break;
 
             case "000500":
-                enumerable = enumerable.Concat(
-                    [
-                        new ItemRareDropLocation("Episode 1", "Normal", "", "Governement Quests Hunter 3‑3:Central Control", "1/1"),
-                    ]);
+                enumerable.Add(new ItemRareDropLocation("Episode 1", "Normal", "", "Governement Quests Hunter 3‑3:Central Control", "1/1"));
                 break;
 
             case "000502":
-                enumerable = enumerable.Concat(
-                    [
-                        new ItemRareDropLocation("Episode 1", "Hard", "", "Governement Quests Hunter 3‑3:Central Control", "1/1"),
-                    ]);
+                enumerable.Add(new ItemRareDropLocation("Episode 1", "Hard", "", "Governement Quests Hunter 3‑3:Central Control", "1/1"));
                 break;
 
             case "000504":
-                enumerable = enumerable.Concat(
-                    [
-                        new ItemRareDropLocation("Episode 1", "Very Hard", "", "Governement Quests Hunter 3‑3:Central Control", "1/1"),
-                    ]);
+                enumerable.Add(new ItemRareDropLocation("Episode 1", "Very Hard", "", "Governement Quests Hunter 3‑3:Central Control", "1/1"));
                 break;
 
             case "000507":
-                enumerable = enumerable.Concat(
-                    [
-                        new ItemRareDropLocation("Episode 1", "Ultimate", "", "Governement Quests Hunter 3‑3:Central Control", "1/1"),
-                    ]);
+                enumerable.Add(new ItemRareDropLocation("Episode 1", "Ultimate", "", "Governement Quests Hunter 3‑3:Central Control", "1/1"));
                 break;
 
             case "000603":
-                enumerable = enumerable.Concat(
-                    [
+                enumerable.AddRange([
                         new ItemRareDropLocation("Episode 1", "Normal", "", "Governement Quests Hunter 6‑5:Test/Spaceship 5", "1/1"),
                         new ItemRareDropLocation("Episode 1", "Normal", "", "Governement Quests Ranger 6‑5:Test/Spaceship 5", "1/1"),
                     ]);
                 break;
 
             case "000604":
-                enumerable = enumerable.Concat(
-                    [
+                enumerable.AddRange([
                         new ItemRareDropLocation("Episode 1", "Hard", "", "Governement Quests Hunter 6‑5:Test/Spaceship 5", "1/1"),
                         new ItemRareDropLocation("Episode 1", "Hard", "", "Governement Quests Ranger 6‑5:Test/Spaceship 5", "1/1"),
                     ]);
                 break;
 
             case "000607":
-                enumerable = enumerable.Concat(
-                    [
+                enumerable.AddRange([
                         new ItemRareDropLocation("Episode 1", "Very Hard", "", "Governement Quests Hunter 6‑5:Test/Spaceship 5", "1/1"),
                         new ItemRareDropLocation("Episode 1", "Very Hard", "", "Governement Quests Ranger 6‑5:Test/Spaceship 5", "1/1"),
                     ]);
                 break;
 
             case "000700":
-                enumerable = enumerable.Concat(
-                    [
-                        new ItemRareDropLocation("Episode 1", "Normal", "", "Governement Quests Ranger 1‑3:Subterranean Den", "1/1"),
-                    ]);
+                enumerable.Add(new ItemRareDropLocation("Episode 1", "Normal", "", "Governement Quests Ranger 1‑3:Subterranean Den", "1/1"));
                 break;
 
             case "000702":
-                enumerable = enumerable.Concat(
-                    [
-                        new ItemRareDropLocation("Episode 1", "Hard", "", "Governement Quests Ranger 1‑3:Subterranean Den", "1/1"),
-                    ]);
+                enumerable.Add(new ItemRareDropLocation("Episode 1", "Hard", "", "Governement Quests Ranger 1‑3:Subterranean Den", "1/1"));
                 break;
 
             case "000704":
-                enumerable = enumerable.Concat(
-                    [
-                        new ItemRareDropLocation("Episode 1", "Very Hard", "", "Governement Quests Ranger 1‑3:Subterranean Den", "1/1"),
-                    ]);
+                enumerable.Add(new ItemRareDropLocation("Episode 1", "Very Hard", "", "Governement Quests Ranger 1‑3:Subterranean Den", "1/1"));
                 break;
 
             case "000706":
-                enumerable = enumerable.Concat(
-                    [
-                        new ItemRareDropLocation("Episode 1", "Ultimate", "", "Governement Quests Ranger 5‑5:Test/VR Temple 5", "1/1"),
-                    ]);
+                enumerable.Add(new ItemRareDropLocation("Episode 1", "Ultimate", "", "Governement Quests Ranger 5‑5:Test/VR Temple 5", "1/1"));
                 break;
 
             case "000707":
-                enumerable = enumerable.Concat(
-                    [
-                        new ItemRareDropLocation("Episode 1", "Ultimate", "", "Governement Quests Ranger 1‑3:Subterranean Den", "1/1"),
-                    ]);
+                enumerable.Add(new ItemRareDropLocation("Episode 1", "Ultimate", "", "Governement Quests Ranger 1‑3:Subterranean Den", "1/1"));
                 break;
 
             case "000800":
-                enumerable = enumerable.Concat(
-                    [
-                        new ItemRareDropLocation("Episode 1", "Normal", "", "Governement Quests Ranger 2‑4:Waterway Shadow", "1/1"),
-                    ]);
+                enumerable.Add(new ItemRareDropLocation("Episode 1", "Normal", "", "Governement Quests Ranger 2‑4:Waterway Shadow", "1/1"));
                 break;
 
             case "000802":
-                enumerable = enumerable.Concat(
-                    [
-                        new ItemRareDropLocation("Episode 1", "Hard", "", "Governement Quests Ranger 2‑4:Waterway Shadow", "1/1"),
-                    ]);
+                enumerable.Add(new ItemRareDropLocation("Episode 1", "Hard", "", "Governement Quests Ranger 2‑4:Waterway Shadow", "1/1"));
                 break;
 
             case "000804":
-                enumerable = enumerable.Concat(
-                    [
-                        new ItemRareDropLocation("Episode 1", "Very Hard", "", "Governement Quests Ranger 2‑4:Waterway Shadow", "1/1"),
-                    ]);
+                enumerable.Add(new ItemRareDropLocation("Episode 1", "Very Hard", "", "Governement Quests Ranger 2‑4:Waterway Shadow", "1/1"));
                 break;
 
             case "000807":
-                enumerable = enumerable.Concat(
-                    [
-                        new ItemRareDropLocation("Episode 1", "Ultimate", "", "Governement Quests Ranger 2‑4:Waterway Shadow", "1/1"),
-                    ]);
+                enumerable.Add(new ItemRareDropLocation("Episode 1", "Ultimate", "", "Governement Quests Ranger 2‑4:Waterway Shadow", "1/1"));
                 break;
 
             case "000900":
-                enumerable = enumerable.Concat(
-                    [
-                        new ItemRareDropLocation("Episode 1", "Normal", "", "Governement Quests Ranger 3‑3:Central Control", "1/1"),
-                    ]);
+                enumerable.Add(new ItemRareDropLocation("Episode 1", "Normal", "", "Governement Quests Ranger 3‑3:Central Control", "1/1"));
                 break;
 
             case "000902":
-                enumerable = enumerable.Concat(
-                    [
-                        new ItemRareDropLocation("Episode 1", "Hard", "", "Governement Quests Ranger 3‑3:Central Control", "1/1"),
-                    ]);
+                enumerable.Add(new ItemRareDropLocation("Episode 1", "Hard", "", "Governement Quests Ranger 3‑3:Central Control", "1/1"));
                 break;
 
             case "000904":
-                enumerable = enumerable.Concat(
-                    [
-                        new ItemRareDropLocation("Episode 1", "Very Hard", "", "Governement Quests Ranger 3‑3:Central Control", "1/1"),
-                    ]);
+                enumerable.Add(new ItemRareDropLocation("Episode 1", "Very Hard", "", "Governement Quests Ranger 3‑3:Central Control", "1/1"));
                 break;
 
             case "000906":
-                enumerable = enumerable.Concat(
-                    [
-                        new ItemRareDropLocation("Episode 1", "Ultimate", "", "Governement Quests Ranger 6‑5:Test/Spaceship 5", "1/1"),
-                    ]);
+                enumerable.Add(new ItemRareDropLocation("Episode 1", "Ultimate", "", "Governement Quests Ranger 6‑5:Test/Spaceship 5", "1/1"));
                 break;
 
             case "000907":
-                enumerable = enumerable.Concat(
-                    [
-                        new ItemRareDropLocation("Episode 1", "Ultimate", "", "Governement Quests Ranger 3‑3:Central Control", "1/1"),
-                    ]);
+                enumerable.Add(new ItemRareDropLocation("Episode 1", "Ultimate", "", "Governement Quests Ranger 3‑3:Central Control", "1/1"));
                 break;
 
             case "000B05":
-                enumerable = enumerable.Concat(
-                    [
-                        new ItemRareDropLocation("Episode 1", "Ultimate", "", "Governement Quests Force 6‑5:Test/Spaceship 5", "1/1"),
-                    ]);
+                enumerable.Add(new ItemRareDropLocation("Episode 1", "Ultimate", "", "Governement Quests Force 6‑5:Test/Spaceship 5", "1/1"));
                 break;
 
             case "000D00":
-                enumerable = enumerable.Concat(
-                    [
-                        new ItemRareDropLocation("Episode 1", "Ultimate", "", "Governement Quests Hunter 5‑5:Test/VR Temple 5", "1/1"),
-                    ]);
+                enumerable.Add(new ItemRareDropLocation("Episode 1", "Ultimate", "", "Governement Quests Hunter 5‑5:Test/VR Temple 5", "1/1"));
                 break;
 
             case "000E00":
-                enumerable = enumerable.Concat(
-                    [
-                        new ItemRareDropLocation("Episode 1", "Ultimate", "", "Governement Quests Force 5‑5:Test/VR Temple 5", "1/1"),
-                    ]);
+                enumerable.Add(new ItemRareDropLocation("Episode 1", "Ultimate", "", "Governement Quests Force 5‑5:Test/VR Temple 5", "1/1"));
                 break;
 
             case "008900":
-                enumerable = enumerable.Concat(
-                    [
-                        new ItemRareDropLocation("Episode 1", "Very Hard", "", "Governement Quests Hunter 7‑5:Isle of Mutants", "1/1"),
-                    ]);
+                enumerable.Add(new ItemRareDropLocation("Episode 1", "Very Hard", "", "Governement Quests Hunter 7‑5:Isle of Mutants", "1/1"));
                 break;
 
             case "008901":
-                enumerable = enumerable.Concat(
-                    [
-                        new ItemRareDropLocation("Episode 1", "Ultimate", "", "Governement Quests Hunter 7‑5:Isle of Mutants", "1/1"),
-                    ]);
+                enumerable.Add(new ItemRareDropLocation("Episode 1", "Ultimate", "", "Governement Quests Hunter 7‑5:Isle of Mutants", "1/1"));
                 break;
 
             case "008B00":
-                enumerable = enumerable.Concat(
-                    [
-                        new ItemRareDropLocation("Episode 1", "Very Hard", "", "Governement Quests Ranger 7‑5:Isle of Mutants", "1/1"),
-                    ]);
+                enumerable.Add(new ItemRareDropLocation("Episode 1", "Very Hard", "", "Governement Quests Ranger 7‑5:Isle of Mutants", "1/1"));
                 break;
 
             case "008B01":
-                enumerable = enumerable.Concat(
-                    [
-                        new ItemRareDropLocation("Episode 1", "Ultimate", "", "Governement Quests Ranger 7‑5:Isle of Mutants", "1/1"),
-                    ]);
+                enumerable.Add(new ItemRareDropLocation("Episode 1", "Ultimate", "", "Governement Quests Ranger 7‑5:Isle of Mutants", "1/1"));
                 break;
 
             case "008C01":
-                enumerable = enumerable.Concat(
-                    [
-                        new ItemRareDropLocation("Episode 1", "Ultimate", "", "Governement Quests Force 7‑5:Isle of Mutants", "1/1"),
-                    ]);
+                enumerable.Add(new ItemRareDropLocation("Episode 1", "Ultimate", "", "Governement Quests Force 7‑5:Isle of Mutants", "1/1"));
                 break;
 
             case "030200":
-                enumerable = enumerable.Concat(
-                    [
-                        new ItemRareDropLocation("Episode 1", "Normal", "", "Governement Quests Force 5‑5:Test/VR Temple 5", "1/1"),
-                    ]);
+                enumerable.Add(new ItemRareDropLocation("Episode 1", "Normal", "", "Governement Quests Force 5‑5:Test/VR Temple 5", "1/1"));
                 break;
 
             case "030201":
-                enumerable = enumerable.Concat(
-                    [
-                        new ItemRareDropLocation("Episode 1", "Hard", "", "Governement Quests Force 5‑5:Test/VR Temple 5", "1/1"),
-                    ]);
+                enumerable.Add(new ItemRareDropLocation("Episode 1", "Hard", "", "Governement Quests Force 5‑5:Test/VR Temple 5", "1/1"));
                 break;
 
             case "030202":
-                enumerable = enumerable.Concat(
-                    [
-                        new ItemRareDropLocation("Episode 1", "Very Hard", "", "Governement Quests Force 5‑5:Test/VR Temple 5", "1/1"),
-                    ]);
+                enumerable.Add(new ItemRareDropLocation("Episode 1", "Very Hard", "", "Governement Quests Force 5‑5:Test/VR Temple 5", "1/1"));
                 break;
 
             case "030203":
-                enumerable = enumerable.Concat(
-                    [
-                        new ItemRareDropLocation("Episode 1", "Normal", "", "Governement Quests Force 6‑5:Test/Spaceship 5", "1/1"),
-                    ]);
+                enumerable.Add(new ItemRareDropLocation("Episode 1", "Normal", "", "Governement Quests Force 6‑5:Test/Spaceship 5", "1/1"));
                 break;
 
             case "030204":
-                enumerable = enumerable.Concat(
-                    [
-                        new ItemRareDropLocation("Episode 1", "Hard", "", "Governement Quests Force 6‑5:Test/Spaceship 5", "1/1"),
-                    ]);
+                enumerable.Add(new ItemRareDropLocation("Episode 1", "Hard", "", "Governement Quests Force 6‑5:Test/Spaceship 5", "1/1"));
                 break;
 
             case "030205":
-                enumerable = enumerable.Concat(
-                    [
-                        new ItemRareDropLocation("Episode 1", "Very Hard", "", "Governement Quests Force 6‑5:Test/Spaceship 5", "1/1"),
-                    ]);
+                enumerable.Add(new ItemRareDropLocation("Episode 1", "Very Hard", "", "Governement Quests Force 6‑5:Test/Spaceship 5", "1/1"));
                 break;
 
             case "030206":
-                enumerable = enumerable.Concat(
-                    [
-                        new ItemRareDropLocation("Episode 1", "Normal", "", "Governement Quests Force 7‑5:Isle of Mutants", "1/1"),
-                    ]);
+                enumerable.Add(new ItemRareDropLocation("Episode 1", "Normal", "", "Governement Quests Force 7‑5:Isle of Mutants", "1/1"));
                 break;
 
             case "030207":
-                enumerable = enumerable.Concat(
-                    [
-                        new ItemRareDropLocation("Episode 1", "Hard", "", "Governement Quests Force 7‑5:Isle of Mutants", "1/1"),
-                    ]);
+                enumerable.Add(new ItemRareDropLocation("Episode 1", "Hard", "", "Governement Quests Force 7‑5:Isle of Mutants", "1/1"));
                 break;
 
             case "030208":
-                enumerable = enumerable.Concat(
-                    [
-                        new ItemRareDropLocation("Episode 1", "Very Hard", "", "Governement Quests Force 7‑5:Isle of Mutants", "1/1"),
-                    ]);
+                enumerable.Add(new ItemRareDropLocation("Episode 1", "Very Hard", "", "Governement Quests Force 7‑5:Isle of Mutants", "1/1"));
                 break;
 
             case "03020A":
             case "03020C":
-                enumerable = enumerable.Concat(
-                    [
+                enumerable.AddRange([
                         new ItemRareDropLocation("Episode 1", "Normal", "", "Governement Quests Force 3‑3:Central Control", "1/1"),
                         new ItemRareDropLocation("Episode 1", "Hard", "", "Governement Quests Force 3‑3:Central Control", "1/1"),
                         new ItemRareDropLocation("Episode 1", "Very Hard", "", "Governement Quests Force 3‑3:Central Control", "1/1"),
@@ -788,8 +648,7 @@
 
             case "03020B":
             case "03020D":
-                enumerable = enumerable.Concat(
-                    [
+                enumerable.AddRange([
                         new ItemRareDropLocation("Episode 1", "Normal", "", "Governement Quests Force 2‑4:Waterway Shadow", "1/1"),
                         new ItemRareDropLocation("Episode 1", "Hard", "", "Governement Quests Force 2‑4:Waterway Shadow", "1/1"),
                         new ItemRareDropLocation("Episode 1", "Very Hard", "", "Governement Quests Force 2‑4:Waterway Shadow", "1/1"),
@@ -798,8 +657,7 @@
                 break;
 
             case "03020F":
-                enumerable = enumerable.Concat(
-                    [
+                enumerable.AddRange([
                         new ItemRareDropLocation("Episode 1", "Normal", "", "Governement Quests Force 1‑3:Subterranean Den", "1/1"),
                         new ItemRareDropLocation("Episode 1", "Hard", "", "Governement Quests Force 1‑3:Subterranean Den", "1/1"),
                         new ItemRareDropLocation("Episode 1", "Very Hard", "", "Governement Quests Force 1‑3:Subterranean Den", "1/1"),
@@ -808,8 +666,7 @@
                 break;
 
             case "031004":
-                enumerable = enumerable.Concat(
-                    [
+                enumerable.AddRange([
                         new ItemRareDropLocation("Episode 1", "Normal", "", "Say yes to Alicia on Gallon's Plan", "1/1"),
                         new ItemRareDropLocation("Episode 1", "Hard", "", "Say yes to Alicia on Gallon's Plan", "1/1"),
                         new ItemRareDropLocation("Episode 1", "Very Hard", "", "Say yes to Alicia on Gallon's Plan", "2/1"),
@@ -823,8 +680,7 @@
 
     private int OrderByLocations(ItemRareDropLocation dropLocation)
     {
-        int episodeNumber = string.IsNullOrEmpty(dropLocation.EpisodeName) ? 1 : (int)char.GetNumericValue(dropLocation.EpisodeName[^1]);
-        int locationIndex = Array.FindIndex(locations.First(l => l.Episode == episodeNumber).Locations, l => l.Id == dropLocation.Location);
+        int episodeNumber = string.IsNullOrEmpty(dropLocation.EpisodeName) ? 0 : (int)char.GetNumericValue(dropLocation.EpisodeName[^1]);
         int DifficultyNameToOrder(string name) => name switch
         {
             "Normal" or "" => 0,
@@ -847,17 +703,7 @@
             "Whitill" => 9,
             _ => throw new NotSupportedException()
         };
-        return DifficultyNameToOrder(dropLocation.DifficultyName) * 100_000 + episodeNumber * 10000 + locationIndex * 10 + SectionIdNameToId(dropLocation.SectionId);
-    }
-
-    private string GetLocationName(string locationId, string episode, string difficulty)
-    {
-        int episodeNumber = string.IsNullOrEmpty(episode) ? 1 : (int)char.GetNumericValue(episode[^1]);
-        var location = locations.First(l => l.Episode == episodeNumber).Locations.FirstOrDefault(l => l.Id == locationId);
-        if (location == null) return locationId;
-        if (difficulty == "Ultimate" && !string.IsNullOrEmpty(location.UltimateName))
-            return location.UltimateName;
-        return location.Name;
+        return DifficultyNameToOrder(dropLocation.DifficultyName) * 100_000 + episodeNumber * 10000 + dropLocation.Order * 10 + SectionIdNameToId(dropLocation.SectionId);
     }
 
     private class ItemInfoModel(ItemModel itemModel, WeaponModel? weaponModel, ArmorModel? armorModel, UnitModel? unitModel, ToolModel? toolModel)
@@ -869,7 +715,7 @@
         public ToolModel? ToolModel { get; set; } = toolModel;
     }
 
-    private class ItemRareDropLocation(string episodeName, string difficultyName, string sectionId, string location, string probability)
+    private class ItemRareDropLocation(string episodeName, string difficultyName, string sectionId, string location, string probability, int order = 0)
     {
         public ItemRareDropLocation(NamedObject<EpisodeModel> episode, NamedObject<DifficultyModel> difficulty, NamedObject<SectionIdModel> sectionId, string location, string probability) : this(episode.Name, difficulty.Name, sectionId.Name, location, probability)
         {
@@ -879,6 +725,7 @@
         public string DifficultyName { get; set; } = difficultyName;
         public string SectionId { get; set; } = sectionId;
         public string Location { get; set; } = location;
+        public int Order { get; set; } = order;
         public string Probability { get; set; } = probability;
     }
 }
