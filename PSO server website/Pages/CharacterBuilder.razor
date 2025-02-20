@@ -6,14 +6,14 @@
 @using UnitModel = PSOServerWebsite.Pages.CharacterBuilderModels.UnitModel
 @using MagModel = PSOServerWebsite.Pages.CharacterBuilderModels.MagModel
 @using PSOServerWebsite.Repositories
+@using PSOServerWebsite.Services
 @using System.Text.RegularExpressions
 @inject IJSRuntime JsRuntime
 @inject Blazored.LocalStorage.ILocalStorageService localStorage
 @inject LevelTableRepository levelTableRepository
 @inject ItemsRepository itemsRepository
 @inject ItemPMTRepository itemPMTRepository
-@inject RareDropsRepository rareDropsRepository
-@inject LocationsRepository locationsRepository
+@inject DropsLocationsService dropsLocationsService
 @inject ConfigurationRepository configurationRepository
 
 <PageTitle>Character Builder</PageTitle>
@@ -442,7 +442,7 @@ else
                                 <th><ItemName ItemIdentifier="@location.ItemId" /></th>
                                 <td>@location.DifficultyName</td>
                                 <td class="text-nowrap">@location.EpisodeName</td>
-                                <td>@GetLocationName(location.Location, location.EpisodeName, location.DifficultyName)</td>
+                                <td>@location.Location</td>
                                 <td><SectionId Value="@location.SectionId" /></td>
                                 <td><Probability ProbabilityRatio="@location.Probability" /></td>
                             </tr>
@@ -476,7 +476,6 @@ else
     [DisallowNull] private ItemModel[] shields = default!;
     [DisallowNull] private ItemModel[] mags = default!;
     [DisallowNull] private Dictionary<string, ItemRareDropLocation[]> rareDropsByItem = default!;
-    [DisallowNull] private LocationModel[] locations = default!;
     [DisallowNull] private ConfigModel config = default!;
     [DisallowNull] private Dictionary<string, ItemRareDropLocation[]> questF95EByItem = default!;
 
@@ -484,8 +483,8 @@ else
     [DisallowNull] public CharacterModel Character { get; set; } = default!;
     private int EditUnit { get; set; }
 
-    [MemberNotNullWhen(false, nameof(levelTable), nameof(itemPMT), nameof(weapons), nameof(armors), nameof(units), nameof(shields), nameof(mags), nameof(config), nameof(rareDropsByItem), nameof(locations))]
-    private bool IsLoading => levelTable == null || itemPMT == null || weapons == null || armors == null || units == null || shields == null || mags == null || config == null || rareDropsByItem == null || locations == null;
+    [MemberNotNullWhen(false, nameof(levelTable), nameof(itemPMT), nameof(weapons), nameof(armors), nameof(units), nameof(shields), nameof(mags), nameof(config), nameof(rareDropsByItem))]
+    private bool IsLoading => levelTable == null || itemPMT == null || weapons == null || armors == null || units == null || shields == null || mags == null || config == null || rareDropsByItem == null;
 
     protected override async Task OnInitializedAsync()
     {
@@ -507,14 +506,10 @@ else
 
         config = await configurationRepository.GetConfigAsync();
 
-        var rareDrops = await rareDropsRepository.GetRareDropsAsync();
-        rareDropsByItem = rareDrops.Normal.Episodes().SelectMany(e => e.Value.Difficulties(), (episode, difficulty) => (episode, difficulty))
-            .SelectMany(d => d.difficulty.Value.SectionsId(), (ed, sectionId) => (ed.episode, ed.difficulty, sectionId))
-            .SelectMany(d => d.sectionId.Value, (eds, rare) => (eds.episode, eds.difficulty, eds.sectionId, location: rare.Key, rareSpecification: rare.Value))
-            .SelectMany(d => d.rareSpecification, (edsr, spec) => (spec.ItemDescription, new ItemRareDropLocation(spec.ItemDescription.Replace("0x", ""), edsr.episode, edsr.difficulty, edsr.sectionId, edsr.location, config.ApplyDropRateMultiplier(spec.Probability))))
-            .GroupBy(d => d.ItemDescription).ToDictionary(d => d.Key, d => d.Select(d => d.Item2).ToArray());
+        var dropsLocations = await dropsLocationsService.GetDropsLocationsAsync();
+        rareDropsByItem = dropsLocations.Select(dl => new ItemRareDropLocation(dl.ItemIdentifier.Replace("0x", ""), dl.EpisodeName, dl.DifficultyName, dl.SectionId, dl.LocationName, dl.Probability, dl.Order))
+            .GroupBy(d => d.ItemId).ToDictionary(d => d.Key, d => d.ToArray());
 
-        locations = (await locationsRepository.GetLocationsAsync()).ToArray();
         questF95EByItem = config.ConvertQuestF95EResultItems().Types()
             .SelectMany(t => t.Value.Difficulties(), (type, difficulties) => (type, difficulties))
             .SelectMany(q => q.difficulties.Value, (q, item) =>
@@ -1199,10 +1194,10 @@ else
         var items = weapons.Concat(armors.Concat(shields.Concat(units.Concat(mags))));
         foreach (var item in Character.Wishlist.Join(items, w => w, i => i.Name, (w, i) => i))
         {
-            if (rareDropsByItem.TryGetValue("0x" + item.Identifier, out var dropLocations))
+            if (rareDropsByItem.TryGetValue(item.Identifier, out var dropLocations))
                 enumerable = enumerable.Concat(dropLocations);
 
-            if (questF95EByItem.TryGetValue(item.Identifier!, out var questF95ELocations))
+            if (questF95EByItem.TryGetValue(item.Identifier, out var questF95ELocations))
                 enumerable = enumerable.Concat(questF95ELocations);
 
             enumerable = enumerable.Concat(config.QuestF95FResultItems.Where(q => q.ItemDescription == item.Identifier).Select(q => new ItemRareDropLocation(item.Identifier, "Episode 1", "", "", $"Gallon's Plan exchange {q.NumPhotonTickets} Photon Ticket", "1/1")));
@@ -1542,7 +1537,6 @@ else
     private int OrderByLocations(ItemRareDropLocation dropLocation)
     {
         int episodeNumber = string.IsNullOrEmpty(dropLocation.EpisodeName) ? 1 : (int)char.GetNumericValue(dropLocation.EpisodeName[^1]);
-        int locationIndex = Array.FindIndex(locations.First(l => l.Episode == episodeNumber).Locations, l => l.Id == dropLocation.Location);
         int DifficultyNameToOrder(string name) => name switch
         {
             "Normal" or "" => 0,
@@ -1565,16 +1559,6 @@ else
             "Whitill" => 9,
             _ => throw new NotSupportedException()
         };
-        return DifficultyNameToOrder(dropLocation.DifficultyName) * 100_000 + episodeNumber * 10000 + locationIndex * 10 + SectionIdNameToId(dropLocation.SectionId);
-    }
-
-    private string GetLocationName(string locationId, string episode, string difficulty)
-    {
-        int episodeNumber = string.IsNullOrEmpty(episode) ? 1 : (int)char.GetNumericValue(episode[^1]);
-        var location = locations.First(l => l.Episode == episodeNumber).Locations.FirstOrDefault(l => l.Id == locationId);
-        if (location == null) return locationId;
-        if (difficulty == "Ultimate" && !string.IsNullOrEmpty(location.UltimateName))
-            return location.UltimateName;
-        return location.Name;
+        return DifficultyNameToOrder(dropLocation.DifficultyName) * 100_000 + episodeNumber * 10000 + dropLocation.Order * 10 + SectionIdNameToId(dropLocation.SectionId);
     }
 }

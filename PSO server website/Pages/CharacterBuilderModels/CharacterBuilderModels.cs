@@ -479,7 +479,7 @@ public partial class MagModel
     private static partial Regex MagStringRegex();
 }
 
-public class ItemRareDropLocation(string itemId, string episodeName, string difficultyName, string sectionId, string location, string probability)
+public class ItemRareDropLocation(string itemId, string episodeName, string difficultyName, string sectionId, string location, string probability, int order = 0)
 {
     public ItemRareDropLocation(string itemId, NamedObject<EpisodeModel> episode, NamedObject<DifficultyModel> difficulty, NamedObject<SectionIdModel> sectionId, string location, string probability) : this(itemId, episode.Name, difficulty.Name, sectionId.Name, location, probability)
     {
@@ -490,5 +490,6 @@ public class ItemRareDropLocation(string itemId, string episodeName, string diff
     public string DifficultyName { get; set; } = difficultyName;
     public string SectionId { get; set; } = sectionId;
     public string Location { get; set; } = location;
+    public int Order { get; set; } = order;
     public string Probability { get; set; } = probability;
 }
