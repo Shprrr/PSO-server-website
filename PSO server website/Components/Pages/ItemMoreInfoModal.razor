@@ -1,8 +1,7 @@
 ﻿@using PSOServerWebsite.Repositories
 @using PSOServerWebsite.Services
-@inject DropsLocationsService dropsLocationsService
 @inject ItemPMTRepository itemPMTRepository
-@inject ConfigurationRepository configurationRepository
+@inject DropsLocationsService dropsLocationsService
 
 <div id="modalInfo" class="modal fade">
     <div class="modal-dialog modal-dialog-scrollable modal-dialog-centered">
@@ -274,8 +273,6 @@
     private ItemInfoModel? itemInfo;
     [DisallowNull] private ItemPMTModel itemPMT = default!;
     [DisallowNull] private IEnumerable<DropLocationModel> dropsLocations = default!;
-    [DisallowNull] private ConfigModel config = default!;
-    [DisallowNull] private Dictionary<string, ItemRareDropLocation[]> questF95EByItem = default!;
 
     public Dictionary<string, object> MoreInfoAttributes => new Dictionary<string, object> { { "data-bs-toggle", "modal" }, { "data-bs-target", "#modalInfo" }, { "href", "#modalInfo" } };
 
@@ -283,29 +280,7 @@
     {
         itemPMT = await itemPMTRepository.GetItemsAsync();
 
-        config = await configurationRepository.GetConfigAsync();
-
         dropsLocations = await dropsLocationsService.GetDropsLocationsAsync();
-
-        questF95EByItem = config.ConvertQuestF95EResultItems().Types()
-            .SelectMany(t => t.Value.Difficulties(), (type, difficulties) => (type, difficulties))
-            .SelectMany(q => q.difficulties.Value, (q, item) =>
-            {
-                var chances = 1;
-                if (q.type.Name.StartsWith("Black Paper's Dangerous Deal 1"))
-                    chances = q.difficulties.Name switch
-                    {
-                        "Hard" => 2,
-                        "Very Hard" => 3,
-                        "Ultimate" => 4,
-                        _ => 1
-                    };
-                if (q.type.Name == "Black Paper's Dangerous Deal 2" && (q.difficulties.Name == "Very Hard" || q.difficulties.Name == "Ultimate"))
-                    chances = 2;
-                ItemRareDropLocation itemRareDropLocation = new ItemRareDropLocation("Episode 4", q.difficulties.Name, "", q.type.Name, $"{chances}/{q.difficulties.Value.Length}");
-                return (ItemDescription: item, itemRareDropLocation);
-            })
-            .GroupBy(q => q.ItemDescription).ToDictionary(q => q.Key, d => d.Select(d => d.Item2).ToArray());
 
         OnLoaded?.Invoke();
     }
@@ -388,19 +363,8 @@
         List<ItemRareDropLocation> enumerable = [];
         if (itemInfo?.ItemModel.Identifier == null) return enumerable;
 
-        var dropLocations = dropsLocations.Where(dl => dl.ItemIdentifier == "0x" + itemInfo?.ItemModel.Identifier);
+        var dropLocations = dropsLocations.Where(dl => dl.ItemIdentifier == itemInfo?.ItemModel.Identifier);
         enumerable.AddRange(dropLocations.Select(dl => new ItemRareDropLocation(dl.EpisodeName, dl.DifficultyName, dl.SectionId, dl.LocationName, dl.Probability, dl.Order)));
-
-        if (questF95EByItem.TryGetValue(itemInfo?.ItemModel.Identifier!, out var questF95ELocations))
-            enumerable.AddRange(questF95ELocations);
-
-        enumerable.AddRange(config.QuestF95FResultItems.Where(q => q.ItemDescription == itemInfo?.ItemModel.Identifier).Select(q => new ItemRareDropLocation("Episode 1", "", "", $"Gallon's Plan exchange {q.NumPhotonTickets} Photon Ticket", "1/1")));
-
-        enumerable.AddRange(config.SecretLotteryResultItems.Where(i => i == itemInfo?.ItemModel.Identifier).Select(i => new ItemRareDropLocation("Episode 1", "", "", $"Good Luck! exchange Secret Ticket", $"1/{config.SecretLotteryResultItems.Length}")));
-
-        enumerable.AddRange(config.QuestF960SuccessResultItems.SelectMany(q => q.ItemsByDay.SelectMany(i => i.Value, (q, i) => (q.Key, i)).Where(i => i.i.Equals(itemInfo?.ItemModel.Name, StringComparison.InvariantCultureIgnoreCase)).Select(i => new ItemRareDropLocation("", "", "", $"Coren {q.MesetaCost.ToString("N0")} Meseta {i.Key}", $"1/{q.ItemsByDay[i.Key].Length}"))));
-
-        enumerable.AddRange(config.QuestF960FailureResultItems.SelectMany(q => q.Value.Where(i => i.Replace(" x1", "") == itemInfo?.ItemModel.Name).Select(i => new ItemRareDropLocation("", "", "", $"Coren Failure {q.Key}", $"1/{q.Value.Length}"))));
 
         switch (itemInfo?.ItemModel.Identifier)
         {

@@ -82,7 +82,7 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-        dropsLocations = await dropsLocationsService.GetDropsLocationsAsync();
+        dropsLocations = (await dropsLocationsService.GetDropsLocationsAsync()).Where(dl => dl.IsRareDrop);
     }
 
     private bool modalMoreInfoIsLoading = true;
