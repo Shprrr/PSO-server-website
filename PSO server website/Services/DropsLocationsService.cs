@@ -55,7 +55,93 @@ public class DropsLocationsService(RareDropsRepository rareDropsRepository, Loca
 
         dropsLocations.AddRange(config.QuestF960FailureResultItems.SelectMany(q => q.Value.Select(i => new DropLocationModel("", "", "", $"Coren Failure {q.Key}", 0, itemsByName[i.Replace(" x1", "")], $"1/{q.Value.Length}"))));
 
-        return dropsLocations;
+        dropsLocations.AddRange([
+            new DropLocationModel("Episode 1", "Normal", "", "Governement Quests Hunter 5‑5:Test/VR Temple 5", 10, "000103", "1/1"),
+            new DropLocationModel("Episode 1", "Normal", "", "Governement Quests Ranger 5‑5:Test/VR Temple 5", 11, "000103", "1/1"),
+            new DropLocationModel("Episode 1", "Hard", "", "Governement Quests Hunter 5‑5:Test/VR Temple 5", 10, "000104", "1/1"),
+            new DropLocationModel("Episode 1", "Hard", "", "Governement Quests Ranger 5‑5:Test/VR Temple 5", 11, "000104", "1/1"),
+            new DropLocationModel("Episode 1", "Very Hard", "", "Governement Quests Hunter 5‑5:Test/VR Temple 5", 10, "000107", "1/1"),
+            new DropLocationModel("Episode 1", "Very Hard", "", "Governement Quests Ranger 5‑5:Test/VR Temple 5", 11, "000107", "1/1"),
+            new DropLocationModel("Episode 1", "Normal", "", "Governement Quests Hunter 1‑3:Subterranean Den", 1, "000200", "1/1"),
+            new DropLocationModel("Episode 1", "Hard", "", "Governement Quests Hunter 1‑3:Subterranean Den", 1, "000202", "1/1"),
+            new DropLocationModel("Episode 1", "Very Hard", "", "Governement Quests Hunter 1‑3:Subterranean Den", 1, "000204", "1/1"),
+            new DropLocationModel("Episode 1", "Ultimate", "", "Governement Quests Hunter 1‑3:Subterranean Den", 1, "000207", "1/1"),
+            new DropLocationModel("Episode 1", "Normal", "", "Governement Quests Hunter 2‑4:Waterway Shadow", 4, "000302", "1/1"),
+            new DropLocationModel("Episode 1", "Hard", "", "Governement Quests Hunter 2‑4:Waterway Shadow", 4, "000303", "1/1"),
+            new DropLocationModel("Episode 1", "Very Hard", "", "Governement Quests Hunter 2‑4:Waterway Shadow", 4, "000304", "1/1"),
+            new DropLocationModel("Episode 1", "Ultimate", "", "Governement Quests Hunter 2‑4:Waterway Shadow", 4, "000307", "1/1"),
+            new DropLocationModel("Episode 1", "Normal", "", "Governement Quests Hunter 7‑5:Isle of Mutants", 16, "000403", "1/1"),
+            new DropLocationModel("Episode 1", "Normal", "", "Governement Quests Ranger 7‑5:Isle of Mutants", 17, "000403", "1/1"),
+            new DropLocationModel("Episode 1", "Hard", "", "Governement Quests Hunter 7‑5:Isle of Mutants", 16, "000404", "1/1"),
+            new DropLocationModel("Episode 1", "Hard", "", "Governement Quests Ranger 7‑5:Isle of Mutants", 17, "000404", "1/1"),
+            new DropLocationModel("Episode 1", "Ultimate", "", "Governement Quests Hunter 6‑5:Test/Spaceship 5", 13, "000406", "1/1"),
+            new DropLocationModel("Episode 1", "Normal", "", "Governement Quests Hunter 3‑3:Central Control", 7, "000500", "1/1"),
+            new DropLocationModel("Episode 1", "Hard", "", "Governement Quests Hunter 3‑3:Central Control", 7, "000502", "1/1"),
+            new DropLocationModel("Episode 1", "Very Hard", "", "Governement Quests Hunter 3‑3:Central Control", 7, "000504", "1/1"),
+            new DropLocationModel("Episode 1", "Ultimate", "", "Governement Quests Hunter 3‑3:Central Control", 7, "000507", "1/1"),
+            new DropLocationModel("Episode 1", "Normal", "", "Governement Quests Hunter 6‑5:Test/Spaceship 5", 13, "000603", "1/1"),
+            new DropLocationModel("Episode 1", "Normal", "", "Governement Quests Ranger 6‑5:Test/Spaceship 5", 14, "000603", "1/1"),
+            new DropLocationModel("Episode 1", "Hard", "", "Governement Quests Hunter 6‑5:Test/Spaceship 5", 13, "000604", "1/1"),
+            new DropLocationModel("Episode 1", "Hard", "", "Governement Quests Ranger 6‑5:Test/Spaceship 5", 14, "000604", "1/1"),
+            new DropLocationModel("Episode 1", "Very Hard", "", "Governement Quests Hunter 6‑5:Test/Spaceship 5", 13, "000607", "1/1"),
+            new DropLocationModel("Episode 1", "Very Hard", "", "Governement Quests Ranger 6‑5:Test/Spaceship 5", 14, "000607", "1/1"),
+            new DropLocationModel("Episode 1", "Normal", "", "Governement Quests Ranger 1‑3:Subterranean Den", 2, "000700", "1/1"),
+            new DropLocationModel("Episode 1", "Hard", "", "Governement Quests Ranger 1‑3:Subterranean Den", 2, "000702", "1/1"),
+            new DropLocationModel("Episode 1", "Very Hard", "", "Governement Quests Ranger 1‑3:Subterranean Den", 2, "000704", "1/1"),
+            new DropLocationModel("Episode 1", "Ultimate", "", "Governement Quests Ranger 5‑5:Test/VR Temple 5", 11, "000706", "1/1"),
+            new DropLocationModel("Episode 1", "Ultimate", "", "Governement Quests Ranger 1‑3:Subterranean Den", 2, "000707", "1/1"),
+            new DropLocationModel("Episode 1", "Normal", "", "Governement Quests Ranger 2‑4:Waterway Shadow", 5, "000800", "1/1"),
+            new DropLocationModel("Episode 1", "Hard", "", "Governement Quests Ranger 2‑4:Waterway Shadow", 5, "000802", "1/1"),
+            new DropLocationModel("Episode 1", "Very Hard", "", "Governement Quests Ranger 2‑4:Waterway Shadow", 5, "000804", "1/1"),
+            new DropLocationModel("Episode 1", "Ultimate", "", "Governement Quests Ranger 2‑4:Waterway Shadow", 5, "000807", "1/1"),
+            new DropLocationModel("Episode 1", "Normal", "", "Governement Quests Ranger 3‑3:Central Control", 8, "000900", "1/1"),
+            new DropLocationModel("Episode 1", "Hard", "", "Governement Quests Ranger 3‑3:Central Control", 8, "000902", "1/1"),
+            new DropLocationModel("Episode 1", "Very Hard", "", "Governement Quests Ranger 3‑3:Central Control", 8, "000904", "1/1"),
+            new DropLocationModel("Episode 1", "Ultimate", "", "Governement Quests Ranger 6‑5:Test/Spaceship 5", 14, "000906", "1/1"),
+            new DropLocationModel("Episode 1", "Ultimate", "", "Governement Quests Ranger 3‑3:Central Control", 8, "000907", "1/1"),
+            new DropLocationModel("Episode 1", "Ultimate", "", "Governement Quests Force 6‑5:Test/Spaceship 5", 15, "000B05", "1/1"),
+            new DropLocationModel("Episode 1", "Ultimate", "", "Governement Quests Hunter 5‑5:Test/VR Temple 5", 10, "000D00", "1/1"),
+            new DropLocationModel("Episode 1", "Ultimate", "", "Governement Quests Force 5‑5:Test/VR Temple 5", 12, "000E00", "1/1"),
+            new DropLocationModel("Episode 1", "Very Hard", "", "Governement Quests Hunter 7‑5:Isle of Mutants", 16, "008900", "1/1"),
+            new DropLocationModel("Episode 1", "Ultimate", "", "Governement Quests Hunter 7‑5:Isle of Mutants", 16, "008901", "1/1"),
+            new DropLocationModel("Episode 1", "Very Hard", "", "Governement Quests Ranger 7‑5:Isle of Mutants", 17, "008B00", "1/1"),
+            new DropLocationModel("Episode 1", "Ultimate", "", "Governement Quests Ranger 7‑5:Isle of Mutants", 17, "008B01", "1/1"),
+            new DropLocationModel("Episode 1", "Ultimate", "", "Governement Quests Force 7‑5:Isle of Mutants", 18, "008C01", "1/1"),
+            new DropLocationModel("Episode 1", "Normal", "", "Governement Quests Force 5‑5:Test/VR Temple 5", 12, "030200", "1/1"),
+            new DropLocationModel("Episode 1", "Hard", "", "Governement Quests Force 5‑5:Test/VR Temple 5", 12, "030201", "1/1"),
+            new DropLocationModel("Episode 1", "Very Hard", "", "Governement Quests Force 5‑5:Test/VR Temple 5", 12, "030202", "1/1"),
+            new DropLocationModel("Episode 1", "Normal", "", "Governement Quests Force 6‑5:Test/Spaceship 5", 15, "030203", "1/1"),
+            new DropLocationModel("Episode 1", "Hard", "", "Governement Quests Force 6‑5:Test/Spaceship 5", 15, "030204", "1/1"),
+            new DropLocationModel("Episode 1", "Very Hard", "", "Governement Quests Force 6‑5:Test/Spaceship 5", 15, "030205", "1/1"),
+            new DropLocationModel("Episode 1", "Normal", "", "Governement Quests Force 7‑5:Isle of Mutants", 18, "030206", "1/1"),
+            new DropLocationModel("Episode 1", "Hard", "", "Governement Quests Force 7‑5:Isle of Mutants", 18, "030207", "1/1"),
+            new DropLocationModel("Episode 1", "Very Hard", "", "Governement Quests Force 7‑5:Isle of Mutants", 18, "030208", "1/1"),
+            new DropLocationModel("Episode 1", "Normal", "", "Governement Quests Force 3‑3:Central Control", 9, "03020A", "1/1"),
+            new DropLocationModel("Episode 1", "Hard", "", "Governement Quests Force 3‑3:Central Control", 9, "03020A", "1/1"),
+            new DropLocationModel("Episode 1", "Very Hard", "", "Governement Quests Force 3‑3:Central Control", 9, "03020A", "1/1"),
+            new DropLocationModel("Episode 1", "Ultimate", "", "Governement Quests Force 3‑3:Central Control", 9, "03020A", "1/1"),
+            new DropLocationModel("Episode 1", "Normal", "", "Governement Quests Force 3‑3:Central Control", 9, "03020C", "1/1"),
+            new DropLocationModel("Episode 1", "Hard", "", "Governement Quests Force 3‑3:Central Control", 9, "03020C", "1/1"),
+            new DropLocationModel("Episode 1", "Very Hard", "", "Governement Quests Force 3‑3:Central Control", 9, "03020C", "1/1"),
+            new DropLocationModel("Episode 1", "Ultimate", "", "Governement Quests Force 3‑3:Central Control", 9, "03020C", "1/1"),
+            new DropLocationModel("Episode 1", "Normal", "", "Governement Quests Force 2‑4:Waterway Shadow", 6, "03020B", "1/1"),
+            new DropLocationModel("Episode 1", "Hard", "", "Governement Quests Force 2‑4:Waterway Shadow", 6, "03020B", "1/1"),
+            new DropLocationModel("Episode 1", "Very Hard", "", "Governement Quests Force 2‑4:Waterway Shadow", 6, "03020B", "1/1"),
+            new DropLocationModel("Episode 1", "Ultimate", "", "Governement Quests Force 2‑4:Waterway Shadow", 6, "03020B", "1/1"),
+            new DropLocationModel("Episode 1", "Normal", "", "Governement Quests Force 2‑4:Waterway Shadow", 6, "03020D", "1/1"),
+            new DropLocationModel("Episode 1", "Hard", "", "Governement Quests Force 2‑4:Waterway Shadow", 6, "03020D", "1/1"),
+            new DropLocationModel("Episode 1", "Very Hard", "", "Governement Quests Force 2‑4:Waterway Shadow", 6, "03020D", "1/1"),
+            new DropLocationModel("Episode 1", "Ultimate", "", "Governement Quests Force 2‑4:Waterway Shadow", 6, "03020D", "1/1"),
+            new DropLocationModel("Episode 1", "Normal", "", "Governement Quests Force 1‑3:Subterranean Den", 3, "03020F", "1/1"),
+            new DropLocationModel("Episode 1", "Hard", "", "Governement Quests Force 1‑3:Subterranean Den", 3, "03020F", "1/1"),
+            new DropLocationModel("Episode 1", "Very Hard", "", "Governement Quests Force 1‑3:Subterranean Den", 3, "03020F", "1/1"),
+            new DropLocationModel("Episode 1", "Ultimate", "", "Governement Quests Force 1‑3:Subterranean Den", 3, "03020F", "1/1"),
+            new DropLocationModel("Episode 1", "Normal", "", "Say yes to Alicia on Gallon's Plan", 0, "031004", "1/1"),
+            new DropLocationModel("Episode 1", "Hard", "", "Say yes to Alicia on Gallon's Plan", 0, "031004", "1/1"),
+            new DropLocationModel("Episode 1", "Very Hard", "", "Say yes to Alicia on Gallon's Plan", 0, "031004", "2/1"),
+            new DropLocationModel("Episode 1", "Ultimate", "", "Say yes to Alicia on Gallon's Plan", 0, "031004", "2/1")]);
+
+        return dropsLocations.OrderBy(OrderByLocations);
     }
 
     private static DropLocationModel CreateDropLocationModel(NamedObject<EpisodeModel> episode, NamedObject<DifficultyModel> difficulty, NamedObject<SectionIdModel> sectionId, KeyValuePair<string, RareSpecificationModel[]> dropLocation, RareSpecificationModel itemProbability, Dictionary<int, Dictionary<string, (int Index, string Name, string UltimateName)>> locations, ConfigModel config)
@@ -74,6 +160,34 @@ public class DropsLocationsService(RareDropsRepository rareDropsRepository, Loca
     {
         // Locations can have duplicate names, so we take the order of the first one we find.
         return locations.First(l2 => l2.Value.Name == locations[locationId].Name).Value.Index;
+    }
+
+    private static int OrderByLocations(DropLocationModel dropLocation)
+    {
+        int episodeNumber = string.IsNullOrEmpty(dropLocation.EpisodeName) ? 0 : (int)char.GetNumericValue(dropLocation.EpisodeName[^1]);
+        int DifficultyNameToOrder(string name) => name switch
+        {
+            "Normal" or "" => 0,
+            "Hard" => 1,
+            "Very Hard" => 2,
+            "Ultimate" => 3,
+            _ => throw new NotSupportedException()
+        };
+        int SectionIdNameToId(string name) => name switch
+        {
+            "Viridia" or "" => 0,
+            "Greenill" => 1,
+            "Skyly" => 2,
+            "Bluefull" => 3,
+            "Purplenum" => 4,
+            "Pinkal" => 5,
+            "Redria" => 6,
+            "Oran" => 7,
+            "Yellowboze" => 8,
+            "Whitill" => 9,
+            _ => throw new NotSupportedException()
+        };
+        return DifficultyNameToOrder(dropLocation.DifficultyName) * 100_000 + episodeNumber * 10000 + dropLocation.Order * 10 + SectionIdNameToId(dropLocation.SectionId);
     }
 }
 
