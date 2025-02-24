@@ -412,6 +412,15 @@ else
                 </label>
             </div>
         </div>
+        <script type="text/javascript">
+            const textAreaNotes = document.getElementById('textAreaNotes');
+            textAreaNotes.addEventListener('input', adjustNotesSize);
+            function adjustNotesSize() {
+            textAreaNotes.style.height = 'auto';
+            textAreaNotes.style.height = `${textAreaNotes.scrollHeight}px`;
+            }
+        </script>
+
         <div class="row">
             <div class="col">
                 <label class="form-label w-100">Wishlist</label>
@@ -438,10 +447,10 @@ else
                         @foreach (var location in GetItemLocations())
                         {
                             <tr>
-                                <th><ItemName ItemIdentifier="@location.ItemId" /></th>
+                                <th><ItemName ItemIdentifier="@location.ItemIdentifier" /></th>
                                 <td>@location.DifficultyName</td>
                                 <td class="text-nowrap">@location.EpisodeName</td>
-                                <td>@location.Location</td>
+                                <td>@location.LocationName</td>
                                 <td><SectionId Value="@location.SectionId" /></td>
                                 <td><Probability ProbabilityRatio="@location.Probability" /></td>
                             </tr>
@@ -451,15 +460,6 @@ else
             </div>
         </div>
     </div>
-
-    <script type="text/javascript">
-        const textAreaNotes = document.getElementById('textAreaNotes');
-        textAreaNotes.addEventListener('input', adjustNotesSize);
-        function adjustNotesSize() {
-        textAreaNotes.style.height = 'auto';
-        textAreaNotes.style.height = `${textAreaNotes.scrollHeight}px`;
-        }
-    </script>
 
     <CharacterBuilder_Modals @ref="modals" Parent="this" EditUnitIndex="EditUnit" ItemPMT="itemPMT" Weapons="weapons" Armors="armors" Shields="shields" Units="units" Mags="mags" OnClose="() => { RefreshStats(); StateHasChanged(); }" />
 }
@@ -474,14 +474,14 @@ else
     [DisallowNull] private ItemModel[] units = default!;
     [DisallowNull] private ItemModel[] shields = default!;
     [DisallowNull] private ItemModel[] mags = default!;
-    [DisallowNull] private Dictionary<string, ItemRareDropLocation[]> rareDropsByItem = default!;
+    [DisallowNull] private IEnumerable<DropLocationModel> dropsLocations = default!;
 
     [DisallowNull] public List<CharacterModel> Characters { get; set; } = new();
     [DisallowNull] public CharacterModel Character { get; set; } = default!;
     private int EditUnit { get; set; }
 
-    [MemberNotNullWhen(false, nameof(levelTable), nameof(itemPMT), nameof(weapons), nameof(armors), nameof(units), nameof(shields), nameof(mags), nameof(rareDropsByItem))]
-    private bool IsLoading => levelTable == null || itemPMT == null || weapons == null || armors == null || units == null || shields == null || mags == null || rareDropsByItem == null;
+    [MemberNotNullWhen(false, nameof(levelTable), nameof(itemPMT), nameof(weapons), nameof(armors), nameof(units), nameof(shields), nameof(mags), nameof(dropsLocations))]
+    private bool IsLoading => levelTable == null || itemPMT == null || weapons == null || armors == null || units == null || shields == null || mags == null || dropsLocations == null;
 
     protected override async Task OnInitializedAsync()
     {
@@ -501,9 +501,7 @@ else
         unit4 = new(itemPMT);
         shield = new(itemPMT);
 
-        var dropsLocations = await dropsLocationsService.GetDropsLocationsAsync();
-        rareDropsByItem = dropsLocations.Select(dl => new ItemRareDropLocation(dl.ItemIdentifier, dl.EpisodeName, dl.DifficultyName, dl.SectionId, dl.LocationName, dl.Probability, dl.Order))
-            .GroupBy(d => d.ItemId).ToDictionary(d => d.Key, d => d.ToArray());
+        dropsLocations = await dropsLocationsService.GetDropsLocationsAsync();
 
         var characterSelectedIndex = await localStorage.GetItemAsync<int>("characterSelectedIndex");
         Characters = await localStorage.GetItemAsync<List<CharacterModel>>("characters") ?? new();
@@ -1163,44 +1161,11 @@ else
         return weapons.Concat(armors.Concat(shields.Concat(units.Concat(mags)))).FirstOrDefault(i => i.Name == name);
     }
 
-    private IEnumerable<ItemRareDropLocation> GetItemLocations()
+    private IEnumerable<DropLocationModel> GetItemLocations()
     {
-        IEnumerable<ItemRareDropLocation> enumerable = Enumerable.Empty<ItemRareDropLocation>();
         var items = weapons.Concat(armors.Concat(shields.Concat(units.Concat(mags))));
-        foreach (var item in Character.Wishlist.Join(items, w => w, i => i.Name, (w, i) => i))
-        {
-            if (rareDropsByItem.TryGetValue(item.Identifier, out var dropLocations))
-                enumerable = enumerable.Concat(dropLocations);
-        }
+        var wishlistItems = Character.Wishlist.Join(items, w => w, i => i.Name, (w, i) => i.Identifier);
 
-        return enumerable.OrderBy(OrderByLocations);
-    }
-
-    private int OrderByLocations(ItemRareDropLocation dropLocation)
-    {
-        int episodeNumber = string.IsNullOrEmpty(dropLocation.EpisodeName) ? 0 : (int)char.GetNumericValue(dropLocation.EpisodeName[^1]);
-        int DifficultyNameToOrder(string name) => name switch
-        {
-            "Normal" or "" => 0,
-            "Hard" => 1,
-            "Very Hard" => 2,
-            "Ultimate" => 3,
-            _ => throw new NotSupportedException()
-        };
-        int SectionIdNameToId(string name) => name switch
-        {
-            "Viridia" or "" => 0,
-            "Greenill" => 1,
-            "Skyly" => 2,
-            "Bluefull" => 3,
-            "Purplenum" => 4,
-            "Pinkal" => 5,
-            "Redria" => 6,
-            "Oran" => 7,
-            "Yellowboze" => 8,
-            "Whitill" => 9,
-            _ => throw new NotSupportedException()
-        };
-        return DifficultyNameToOrder(dropLocation.DifficultyName) * 100_000 + episodeNumber * 10000 + dropLocation.Order * 10 + SectionIdNameToId(dropLocation.SectionId);
+        return dropsLocations.Join(wishlistItems, dl => dl.ItemIdentifier, w => w, (dl, w) => dl);
     }
 }
