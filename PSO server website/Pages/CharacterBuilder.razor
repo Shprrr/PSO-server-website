@@ -447,7 +447,13 @@ else
                         @foreach (var location in GetItemLocations())
                         {
                             <tr>
-                                <th><ItemName ItemIdentifier="@location.ItemIdentifier" /></th>
+                                <th>
+                                    <ItemName ItemIdentifier="@location.ItemIdentifier" />
+                                    @if (location.Modifier != null)
+                                    {
+                                        <text>&nbsp;</text>@location.Modifier
+                                    }
+                                </th>
                                 <td>@location.DifficultyName</td>
                                 <td class="text-nowrap">@location.EpisodeName</td>
                                 <td>@location.LocationName</td>

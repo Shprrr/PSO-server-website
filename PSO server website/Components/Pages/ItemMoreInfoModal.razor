@@ -252,7 +252,13 @@
                                 <tr>
                                     <td>@location.DifficultyName</td>
                                     <td class="text-nowrap">@location.EpisodeName</td>
-                                    <td>@location.LocationName</td>
+                                    <td>
+                                        @location.LocationName
+                                        @if (location.Modifier != null)
+                                        {
+                                            <div class="ms-2 text-secondary">(@location.Modifier)</div>
+                                        }
+                                    </td>
                                     <td><SectionId Value="@location.SectionId" /></td>
                                     <td><Probability ProbabilityRatio="@location.Probability" /></td>
                                 </tr>
