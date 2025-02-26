@@ -14,15 +14,17 @@ builder.Services.AddBlazoredLocalStorage();
 
 builder.Services.AddSingleton<ItemsRepository>();
 builder.Services.AddScoped<RareDropsRepository>();
-builder.Services.AddScoped<ItemPMTRepository>();
+builder.Services.AddSingleton<ItemPMTRepository>();
 builder.Services.AddScoped<LocationsRepository>();
 builder.Services.AddScoped<LevelTableRepository>();
 builder.Services.AddScoped<ConfigurationRepository>();
 
+builder.Services.AddSingleton<ItemsService>();
 builder.Services.AddScoped<DropsLocationsService>();
 
 WebAssemblyHost build = builder.Build();
 // Preload the data
 build.Services.GetRequiredService<ItemsRepository>().LoadData();
 build.Services.GetRequiredService<ItemPMTRepository>().LoadData();
+await build.Services.GetRequiredService<ItemsService>().LoadDataAsync();
 await build.RunAsync();

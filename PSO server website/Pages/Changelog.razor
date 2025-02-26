@@ -140,7 +140,7 @@ else
 @code {
     [DisallowNull] private RareDropModel rareDrops = default!;
     [DisallowNull] private RareDropModel rareDrops20240422 = default!;
-    [DisallowNull] private Dictionary<string, ItemModel> items = default!;
+    [DisallowNull] private Dictionary<string, ItemNameModel> items = default!;
     [DisallowNull] private LocationModel[] locations = default!;
     [DisallowNull] private DiffRareDrops[] diffRareDrops20241111 = default!;
 
@@ -195,19 +195,19 @@ else
     {
     }
 
-    private ItemModel? GetItemModel(string? itemDescription)
+    private ItemNameModel? GetItemNameModel(string? itemDescription)
     {
-        if (!string.IsNullOrEmpty(itemDescription) && itemDescription.StartsWith("0x") && items.TryGetValue(itemDescription.Substring(2), out var itemModel))
-            return itemModel;
+        if (!string.IsNullOrEmpty(itemDescription) && itemDescription.StartsWith("0x") && items.TryGetValue(itemDescription.Substring(2), out var ItemNameModel))
+            return ItemNameModel;
 
         return null;
     }
 
     private string GetItemName(string? itemDescription)
     {
-        var itemModel = GetItemModel(itemDescription);
-        if (itemModel != null)
-            return itemModel.Name;
+        var ItemNameModel = GetItemNameModel(itemDescription);
+        if (ItemNameModel != null)
+            return ItemNameModel.Name;
 
         return itemDescription ?? "None";
     }

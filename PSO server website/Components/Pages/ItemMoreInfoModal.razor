@@ -12,7 +12,7 @@
             <div class="modal-body">
                 @if (itemInfo != null)
                 {
-                    <ItemName ItemIdentifier="@itemInfo.ItemModel.Identifier" class="modal-title h2" />
+                    <ItemName ItemIdentifier="@itemInfo.ItemNameModel.Identifier" class="modal-title h2" />
                     @if (itemInfo.WeaponModel != null)
                     {
                         <div class="container">
@@ -267,7 +267,7 @@
                     </table>
                 }
             </div>
-            <div class="modal-footer">@itemInfo?.ItemModel.Identifier</div>
+            <div class="modal-footer">@itemInfo?.ItemNameModel.Identifier</div>
         </div>
     </div>
 </div>
@@ -294,12 +294,12 @@
     private string? oldItemIdentifier;
     protected override bool ShouldRender()
     {
-        bool shouldRender = oldItemIdentifier != itemInfo?.ItemModel.Identifier;
-        oldItemIdentifier = itemInfo?.ItemModel.Identifier;
+        bool shouldRender = oldItemIdentifier != itemInfo?.ItemNameModel.Identifier;
+        oldItemIdentifier = itemInfo?.ItemNameModel.Identifier;
         return shouldRender;
     }
 
-    public void ShowItemModal(ItemModel item)
+    public void ShowItemModal(ItemNameModel item)
     {
         if (HasMoreInfo(item))
         {
@@ -311,13 +311,34 @@
         }
         else
             itemInfo = null;
-        if (oldItemIdentifier != itemInfo?.ItemModel.Identifier) StateHasChanged();
+        if (oldItemIdentifier != itemInfo?.ItemNameModel.Identifier) StateHasChanged();
+    }
+
+    public void ShowItemModal(ItemModel item)
+    {
+        if (HasMoreInfo(item))
+        {
+            itemPMT.Weapons.TryGetValue(item.ItemIdentifier, out var weaponModel);
+            itemPMT.Armors.TryGetValue(item.ItemIdentifier, out var armorModel);
+            itemPMT.Units.TryGetValue(item.ItemIdentifier, out var unitModel);
+            itemPMT.Tools.TryGetValue(item.ItemIdentifier, out var toolModel);
+            itemInfo = new ItemInfoModel(new(item.ItemIdentifier, item.ItemName), weaponModel, armorModel, unitModel, toolModel);
+        }
+        else
+            itemInfo = null;
+        if (oldItemIdentifier != itemInfo?.ItemNameModel.Identifier) StateHasChanged();
+    }
+
+    public bool HasMoreInfo([NotNullWhen(true)] ItemNameModel? item)
+    {
+        if (item == null) return false;
+        return itemPMT.Weapons.ContainsKey(item.Identifier) || itemPMT.Armors.ContainsKey(item.Identifier) || itemPMT.Units.ContainsKey(item.Identifier) || itemPMT.Tools.ContainsKey(item.Identifier);
     }
 
     public bool HasMoreInfo([NotNullWhen(true)] ItemModel? item)
     {
         if (item == null) return false;
-        return itemPMT.Weapons.ContainsKey(item.Identifier) || itemPMT.Armors.ContainsKey(item.Identifier) || itemPMT.Units.ContainsKey(item.Identifier) || itemPMT.Tools.ContainsKey(item.Identifier);
+        return itemPMT.Weapons.ContainsKey(item.ItemIdentifier) || itemPMT.Armors.ContainsKey(item.ItemIdentifier) || itemPMT.Units.ContainsKey(item.ItemIdentifier) || itemPMT.Tools.ContainsKey(item.ItemIdentifier);
     }
 
     public string GetItemType()
@@ -366,14 +387,14 @@
 
     private IEnumerable<DropLocationModel> GetItemLocations()
     {
-        if (itemInfo?.ItemModel.Identifier == null) return [];
+        if (itemInfo?.ItemNameModel.Identifier == null) return [];
 
-        return dropsLocations.Where(dl => dl.ItemIdentifier == itemInfo?.ItemModel.Identifier);
+        return dropsLocations.Where(dl => dl.ItemIdentifier == itemInfo?.ItemNameModel.Identifier);
     }
 
-    private class ItemInfoModel(ItemModel itemModel, WeaponModel? weaponModel, ArmorModel? armorModel, UnitModel? unitModel, ToolModel? toolModel)
+    private class ItemInfoModel(ItemNameModel itemNameModel, WeaponModel? weaponModel, ArmorModel? armorModel, UnitModel? unitModel, ToolModel? toolModel)
     {
-        public ItemModel ItemModel { get; set; } = itemModel;
+        public ItemNameModel ItemNameModel { get; set; } = itemNameModel;
         public WeaponModel? WeaponModel { get; set; } = weaponModel;
         public ArmorModel? ArmorModel { get; set; } = armorModel;
         public UnitModel? UnitModel { get; set; } = unitModel;

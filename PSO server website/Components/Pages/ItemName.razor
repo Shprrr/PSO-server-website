@@ -1,6 +1,5 @@
-﻿@using PSOServerWebsite.Repositories
-@inject ItemsRepository itemsRepository
-@inject ItemPMTRepository itemPMTRepository
+﻿@using PSOServerWebsite.Services
+@inject ItemsService itemsService
 
 @if (IsLoading)
 {
@@ -47,23 +46,14 @@ else
         }
     }
 
-    [DisallowNull] private static Dictionary<string, ItemModel> items = default!;
-    [DisallowNull] private static ItemPMTModel itemPMT = default!;
-
-    [MemberNotNullWhen(false, nameof(items))]
-    private bool IsLoading => items == null;
+    [MemberNotNullWhen(false, nameof(itemModel))]
+    private bool IsLoading => itemModel == null;
 
     private ItemModel? itemModel;
     protected override void OnParametersSet()
     {
         base.OnParametersSet();
-        itemModel = GetItemModel(ItemIdentifier);
-    }
-
-    protected override async Task OnInitializedAsync()
-    {
-        items ??= (await itemsRepository.GetItemsAsync()).ToDictionary(i => i.Identifier);
-        itemPMT ??= await itemPMTRepository.GetItemsAsync();
+        itemModel = itemsService.GetItem(ItemIdentifier.Replace("0x", ""));
     }
 
     [MemberNotNullWhen(true, nameof(ModalMoreInfo), nameof(itemModel))]
@@ -72,74 +62,21 @@ else
         return ModalMoreInfo?.HasMoreInfo(itemModel) ?? false;
     }
 
-    private ItemModel? GetItemModel(string itemIdentifier)
+    public string GetItemName() => itemModel != null ? itemModel.ItemName : ItemIdentifier;
+
+    private string? GetIconName() => itemModel?.Icon switch
     {
-        if (itemIdentifier.StartsWith("0x") && items.TryGetValue(itemIdentifier.Substring(2), out var itemModel))
-            return itemModel;
-
-        if (items.TryGetValue(itemIdentifier, out itemModel))
-            return itemModel;
-
-        return null;
-    }
-
-    public string GetItemName()
-    {
-        if (itemModel != null)
-            return itemModel.Name;
-
-        return ItemIdentifier;
-    }
-
-    private static Dictionary<string, string> iconNames = new()
-    {
-        { "0101", "Frame" },
-        { "0102", "Shield" },
-        { "0103", "Unit" },
-        { "02", "Mag" },
-        { "0300", "Mate" },
-        { "0301", "Fluid" },
-        { "0302", "Disk" },
-        { "03", "Tool" }
+        ItemIcon.Sword => "Sword",
+        ItemIcon.Gun => "Gun",
+        ItemIcon.Cane => "Cane",
+        ItemIcon.Armor => "Frame",
+        ItemIcon.Shield => "Shield",
+        ItemIcon.Unit => "Unit",
+        ItemIcon.Mag => "Mag",
+        ItemIcon.Mate => "Mate",
+        ItemIcon.Fluid => "Fluid",
+        ItemIcon.Disk => "Disk",
+        ItemIcon.Tool => "Tool",
+        _ => null
     };
-    private string? GetIconName()
-    {
-        // For weapons, check the attack animation to determine the weapon type.
-        if (ItemIdentifier.StartsWith("0x00") || ItemIdentifier.StartsWith("00"))
-        {
-            var attackOffset = int.Parse(ItemIdentifier.Replace("0x", "").Substring(0, 4), System.Globalization.NumberStyles.HexNumber);
-            switch (itemPMT.AttackAnimations[attackOffset])
-            {
-                case 0:
-                case 1:
-                case 2:
-                case 3:
-                case 4:
-                case 5:
-                case 13:
-                case 14:
-                case 15:
-                case 16:
-                    return "Sword";
-                case 6:
-                case 7:
-                case 8:
-                case 9:
-                case 17:
-                    return "Gun";
-                case 10:
-                case 11:
-                case 12:
-                case 18:
-                    return "Cane";
-                default:
-                    return null;
-            }
-        }
-
-        if (iconNames.Where(i => ItemIdentifier.StartsWith("0x" + i.Key) || ItemIdentifier.StartsWith(i.Key)).FirstOrDefault().Value is string iconName)
-            return iconName;
-
-        return null;
-    }
 }

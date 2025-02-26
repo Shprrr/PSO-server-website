@@ -16,22 +16,22 @@ public class ItemsRepository(HttpClient http)
         s_namesJson ??= http.GetFromJsonAsync<Dictionary<string, string>>("data/names-v4.json")!;
     }
 
-    public async Task<IEnumerable<ItemModel>> GetItemsAsync()
+    public async Task<IEnumerable<ItemNameModel>> GetItemsAsync()
     {
         LoadData();
-        return (await s_namesJson).Select(n => new ItemModel(n.Key, n.Value));
+        return (await s_namesJson).Select(n => new ItemNameModel(n.Key, n.Value));
     }
 }
 
-[TypeConverter(typeof(ItemModelConverter))]
-public partial class ItemModel(string identifier, string name)
+[TypeConverter(typeof(ItemNameModelConverter))]
+public partial class ItemNameModel(string identifier, string name)
 {
     public string Identifier { get; set; } = identifier;
     public string Name { get; set; } = name;
 
     public override string ToString() => $"{Name} ({Identifier})";
 
-    public static ItemModel Parse(string s)
+    public static ItemNameModel Parse(string s)
     {
         Match m = ParseRegex().Match(s);
         if (!m.Success) throw new FormatException();
@@ -42,7 +42,7 @@ public partial class ItemModel(string identifier, string name)
     private static partial Regex ParseRegex();
 }
 
-internal class ItemModelConverter : TypeConverter
+internal class ItemNameModelConverter : TypeConverter
 {
     public override bool CanConvertFrom(ITypeDescriptorContext? context, Type sourceType)
     {
@@ -52,7 +52,7 @@ internal class ItemModelConverter : TypeConverter
 
     public override object? ConvertFrom(ITypeDescriptorContext? context, CultureInfo? culture, object value)
     {
-        if (value is string s) return string.IsNullOrEmpty(s) ? null : ItemModel.Parse(s);
+        if (value is string s) return string.IsNullOrEmpty(s) ? null : ItemNameModel.Parse(s);
         return base.ConvertFrom(context, culture, value);
     }
 

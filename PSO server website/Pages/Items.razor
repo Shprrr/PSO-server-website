@@ -42,9 +42,9 @@ else
 <ItemMoreInfoModal @ref="modalMoreInfo" OnLoaded="ModalMoreInfoOnLoaded" />
 
 @code {
-    [DisallowNull] private ItemModel[] items = default!;
+    [DisallowNull] private ItemNameModel[] items = default!;
     private string filter = "";
-    private ItemModel[]? itemsFiltered;
+    private ItemNameModel[]? itemsFiltered;
 
     [DisallowNull] private ItemMoreInfoModal modalMoreInfo = default!;
 

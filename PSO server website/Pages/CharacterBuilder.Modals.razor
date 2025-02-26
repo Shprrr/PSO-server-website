@@ -726,11 +726,11 @@
     [Parameter]
     public int EditUnitIndex { get; set; }
     [Parameter, EditorRequired] public required ItemPMTModel ItemPMT { get; set; }
-    [Parameter, EditorRequired] public required ItemModel[] Weapons { get; set; }
-    [Parameter, EditorRequired] public required ItemModel[] Armors { get; set; }
-    [Parameter, EditorRequired] public required ItemModel[] Shields { get; set; }
-    [Parameter, EditorRequired] public required ItemModel[] Units { get; set; }
-    [Parameter, EditorRequired] public required ItemModel[] Mags { get; set; }
+    [Parameter, EditorRequired] public required ItemNameModel[] Weapons { get; set; }
+    [Parameter, EditorRequired] public required ItemNameModel[] Armors { get; set; }
+    [Parameter, EditorRequired] public required ItemNameModel[] Shields { get; set; }
+    [Parameter, EditorRequired] public required ItemNameModel[] Units { get; set; }
+    [Parameter, EditorRequired] public required ItemNameModel[] Mags { get; set; }
 
     [Parameter]
     public Action? OnClose { get; set; }
@@ -844,7 +844,7 @@
         JsRuntime.InvokeVoidAsync("deleteLoadout", oldLoadoutName);
     }
 
-    private ItemModel? WishlistItem { get; set; } = null;
+    private ItemNameModel? WishlistItem { get; set; } = null;
     private void OnClickWishlistNew()
     {
         if (WishlistItem == null)

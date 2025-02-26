@@ -475,11 +475,11 @@ else
 
     [DisallowNull] private LevelTableModel levelTable = default!;
     [DisallowNull] private ItemPMTModel itemPMT = default!;
-    [DisallowNull] private ItemModel[] weapons = default!;
-    [DisallowNull] private ItemModel[] armors = default!;
-    [DisallowNull] private ItemModel[] units = default!;
-    [DisallowNull] private ItemModel[] shields = default!;
-    [DisallowNull] private ItemModel[] mags = default!;
+    [DisallowNull] private ItemNameModel[] weapons = default!;
+    [DisallowNull] private ItemNameModel[] armors = default!;
+    [DisallowNull] private ItemNameModel[] units = default!;
+    [DisallowNull] private ItemNameModel[] shields = default!;
+    [DisallowNull] private ItemNameModel[] mags = default!;
     [DisallowNull] private IEnumerable<DropLocationModel> dropsLocations = default!;
 
     [DisallowNull] public List<CharacterModel> Characters { get; set; } = new();
@@ -1040,7 +1040,7 @@ else
         _ => 0
     };
 
-    public IEnumerable<ItemModel> GetItemWithRequirements(params ItemModel[] items)
+    public IEnumerable<ItemNameModel> GetItemWithRequirements(params ItemNameModel[] items)
     {
         if (!ClassRaceSelection.HasValue) yield break;
 
@@ -1162,7 +1162,7 @@ else
     private IEnumerable<Stat> GetEverySpecialStats() => GetClassStatBoost().Concat(GetEveryStatBoost())
         .Where(s => !new string[] { "ATP", "MST", "ATA", "EVP", "HP", "TP", "DFP", "LCK", "EFR", "EIC", "ETH", "ELT", "EDK", "+ATP", "+ATA", "+EVP", "+DFP", "+MST", "+HP", "+LCK", "+All", "-ATP", "-ATA", "-EVP", "-DFP", "-MST", "-HP", "-LCK", "-All" }.Contains(s.Code));
 
-    public ItemModel? GetItemByName(string name)
+    public ItemNameModel? GetItemByName(string name)
     {
         return weapons.Concat(armors.Concat(shields.Concat(units.Concat(mags)))).FirstOrDefault(i => i.Name == name);
     }

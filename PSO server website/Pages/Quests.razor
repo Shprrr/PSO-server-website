@@ -408,7 +408,7 @@ else
 <ItemMoreInfoModal @ref="modalMoreInfo" OnLoaded="ModalMoreInfoOnLoaded" />
 
 @code {
-    [DisallowNull] private ILookup<string, ItemModel> items = default!;
+    [DisallowNull] private ILookup<string, ItemNameModel> items = default!;
     [DisallowNull] private ConfigModel config = default!;
     [DisallowNull] private IEnumerable<QuestF960Success> questF960Success = default!;
     [DisallowNull] private ItemMoreInfoModal modalMoreInfo = default!;

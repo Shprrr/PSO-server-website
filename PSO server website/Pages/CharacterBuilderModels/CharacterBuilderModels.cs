@@ -107,9 +107,9 @@ public partial class WeaponModel(ItemPMTModel itemPMT)
     private int _grind;
     private int _hit;
 
-    private ItemModel? _model;
+    private ItemNameModel? _model;
 
-    public ItemModel? Model
+    public ItemNameModel? Model
     {
         get { return _model; }
         set
@@ -178,7 +178,7 @@ public partial class WeaponModel(ItemPMTModel itemPMT)
         return s;
     }
 
-    public static WeaponModel Parse(ItemPMTModel itemPMT, ItemModel[] weapons, string weapon)
+    public static WeaponModel Parse(ItemPMTModel itemPMT, ItemNameModel[] weapons, string weapon)
     {
         WeaponModel weaponModel = new(itemPMT);
         Match m = WeaponStringRegex().Match(weapon);
@@ -198,9 +198,9 @@ public class BaseArmorModel(ItemPMTModel itemPMT)
     private int _dfpBonus;
     private int _evpBonus;
 
-    private ItemModel? _model;
+    private ItemNameModel? _model;
 
-    public ItemModel? Model
+    public ItemNameModel? Model
     {
         get { return _model; }
         set
@@ -302,7 +302,7 @@ public partial class ArmorModel(ItemPMTModel itemPMT) : BaseArmorModel(itemPMT)
         return s;
     }
 
-    public static ArmorModel Parse(ItemPMTModel itemPMT, ItemModel[] armors, string armor)
+    public static ArmorModel Parse(ItemPMTModel itemPMT, ItemNameModel[] armors, string armor)
     {
         ArmorModel armorModel = new(itemPMT);
         Match m = ArmorStringRegex().Match(armor);
@@ -320,7 +320,7 @@ public partial class ArmorModel(ItemPMTModel itemPMT) : BaseArmorModel(itemPMT)
 
 public partial class ShieldModel(ItemPMTModel itemPMT) : BaseArmorModel(itemPMT)
 {
-    public static ShieldModel Parse(ItemPMTModel itemPMT, ItemModel[] shields, string shield)
+    public static ShieldModel Parse(ItemPMTModel itemPMT, ItemNameModel[] shields, string shield)
     {
         ShieldModel shieldModel = new(itemPMT);
         Match m = ShieldStringRegex().Match(shield);
@@ -338,9 +338,9 @@ public partial class ShieldModel(ItemPMTModel itemPMT) : BaseArmorModel(itemPMT)
 public partial class UnitModel(ItemPMTModel itemPMT)
 {
     private int _modifier;
-    private ItemModel? _model;
+    private ItemNameModel? _model;
 
-    public ItemModel? Model
+    public ItemNameModel? Model
     {
         get { return _model; }
         set
@@ -382,7 +382,7 @@ public partial class UnitModel(ItemPMTModel itemPMT)
         return s;
     }
 
-    public static UnitModel Parse(ItemPMTModel itemPMT, ItemModel[] units, string unit)
+    public static UnitModel Parse(ItemPMTModel itemPMT, ItemNameModel[] units, string unit)
     {
         UnitModel unitModel = new(itemPMT);
         Match m = UnitStringRegex().Match(unit);
@@ -403,7 +403,7 @@ public partial class MagModel
     private int _dex;
     private int _mind;
 
-    public ItemModel? Model { get; set; }
+    public ItemNameModel? Model { get; set; }
 
     public string Name => Model?.Name ?? "";
     public int Level => Def + Pow + Dex + Mind;
@@ -462,7 +462,7 @@ public partial class MagModel
 
     public override string ToString() => string.IsNullOrEmpty(Name) ? "" : $"{Name} {Def}/{Pow}/{Dex}/{Mind}";
 
-    public static MagModel Parse(ItemModel[] mags, string mag)
+    public static MagModel Parse(ItemNameModel[] mags, string mag)
     {
         MagModel magModel = new();
         Match m = MagStringRegex().Match(mag);
