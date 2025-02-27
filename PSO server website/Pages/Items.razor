@@ -1,7 +1,7 @@
 ﻿@page "/items"
-@using PSOServerWebsite.Repositories
+@using PSOServerWebsite.Services
 @using System.Text.RegularExpressions
-@inject ItemsRepository itemsRepository
+@inject ItemsService itemsService
 
 <PageTitle>Items</PageTitle>
 
@@ -27,8 +27,8 @@ else
             @foreach (var item in itemsFiltered)
             {
                 <tr>
-                    <td scope="row">@item.Identifier</td>
-                    <td><ItemName ItemIdentifier="@item.Identifier" /></td>
+                    <td scope="row">@item.ItemIdentifier</td>
+                    <td><ItemName ItemIdentifier="@item.ItemIdentifier" /></td>
                     @if (modalMoreInfo.HasMoreInfo(item))
                     {
                         <td><button type="button" class="btn btn-link" @attributes="@modalMoreInfo.MoreInfoAttributes" @onclick="@(e => modalMoreInfo.ShowItemModal(item))">More info</button></td>
@@ -42,18 +42,18 @@ else
 <ItemMoreInfoModal @ref="modalMoreInfo" OnLoaded="ModalMoreInfoOnLoaded" />
 
 @code {
-    [DisallowNull] private ItemNameModel[] items = default!;
+    [DisallowNull] private ItemModel[] items = default!;
     private string filter = "";
-    private ItemNameModel[]? itemsFiltered;
+    private ItemModel[]? itemsFiltered;
 
     [DisallowNull] private ItemMoreInfoModal modalMoreInfo = default!;
 
     [MemberNotNullWhen(false, nameof(itemsFiltered), nameof(modalMoreInfo))]
     private bool IsLoading => itemsFiltered == null || modalMoreInfo == null || modalMoreInfoIsLoading;
 
-    protected override async Task OnInitializedAsync()
+    protected override void OnInitialized()
     {
-        items = (await itemsRepository.GetItemsAsync()).ToArray();
+        items = itemsService.GetItems().ToArray();
         OnFilterValueChanged();
     }
 
@@ -69,6 +69,6 @@ else
         if (string.IsNullOrEmpty(filter))
             itemsFiltered = items;
         else
-            itemsFiltered = items.Where(i => Regex.IsMatch(i.Name, filter, RegexOptions.IgnoreCase)).ToArray();
+            itemsFiltered = items.Where(i => Regex.IsMatch(i.ItemName, filter, RegexOptions.IgnoreCase)).ToArray();
     }
 }

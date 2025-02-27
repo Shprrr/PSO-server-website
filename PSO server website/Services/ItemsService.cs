@@ -13,6 +13,8 @@ public class ItemsService(ItemsRepository itemsRepository, ItemPMTRepository ite
         _itemPMT = await itemPMTRepository.GetItemsAsync();
     }
 
+    public IEnumerable<ItemModel> GetItems() => _items.Select(i => new ItemModel(i.Key, i.Value.Name, GetItemType(i.Key), GetIcon(i.Key)));
+
     public ItemModel? GetItem(string itemIdentifier)
     {
         if (!_items.TryGetValue(itemIdentifier, out ItemNameModel? item)) return null;

@@ -12,7 +12,7 @@
             <div class="modal-body">
                 @if (itemInfo != null)
                 {
-                    <ItemName ItemIdentifier="@itemInfo.ItemNameModel.Identifier" class="modal-title h2" />
+                    <ItemName ItemIdentifier="@itemInfo.ItemModel.ItemIdentifier" class="modal-title h2" />
                     @if (itemInfo.WeaponModel != null)
                     {
                         <div class="container">
@@ -267,7 +267,7 @@
                     </table>
                 }
             </div>
-            <div class="modal-footer">@itemInfo?.ItemNameModel.Identifier</div>
+            <div class="modal-footer">@itemInfo?.ItemModel.ItemIdentifier</div>
         </div>
     </div>
 </div>
@@ -294,24 +294,9 @@
     private string? oldItemIdentifier;
     protected override bool ShouldRender()
     {
-        bool shouldRender = oldItemIdentifier != itemInfo?.ItemNameModel.Identifier;
-        oldItemIdentifier = itemInfo?.ItemNameModel.Identifier;
+        bool shouldRender = oldItemIdentifier != itemInfo?.ItemModel.ItemIdentifier;
+        oldItemIdentifier = itemInfo?.ItemModel.ItemIdentifier;
         return shouldRender;
-    }
-
-    public void ShowItemModal(ItemNameModel item)
-    {
-        if (HasMoreInfo(item))
-        {
-            itemPMT.Weapons.TryGetValue(item.Identifier, out var weaponModel);
-            itemPMT.Armors.TryGetValue(item.Identifier, out var armorModel);
-            itemPMT.Units.TryGetValue(item.Identifier, out var unitModel);
-            itemPMT.Tools.TryGetValue(item.Identifier, out var toolModel);
-            itemInfo = new ItemInfoModel(item, weaponModel, armorModel, unitModel, toolModel);
-        }
-        else
-            itemInfo = null;
-        if (oldItemIdentifier != itemInfo?.ItemNameModel.Identifier) StateHasChanged();
     }
 
     public void ShowItemModal(ItemModel item)
@@ -322,17 +307,11 @@
             itemPMT.Armors.TryGetValue(item.ItemIdentifier, out var armorModel);
             itemPMT.Units.TryGetValue(item.ItemIdentifier, out var unitModel);
             itemPMT.Tools.TryGetValue(item.ItemIdentifier, out var toolModel);
-            itemInfo = new ItemInfoModel(new(item.ItemIdentifier, item.ItemName), weaponModel, armorModel, unitModel, toolModel);
+            itemInfo = new ItemInfoModel(item, weaponModel, armorModel, unitModel, toolModel);
         }
         else
             itemInfo = null;
-        if (oldItemIdentifier != itemInfo?.ItemNameModel.Identifier) StateHasChanged();
-    }
-
-    public bool HasMoreInfo([NotNullWhen(true)] ItemNameModel? item)
-    {
-        if (item == null) return false;
-        return itemPMT.Weapons.ContainsKey(item.Identifier) || itemPMT.Armors.ContainsKey(item.Identifier) || itemPMT.Units.ContainsKey(item.Identifier) || itemPMT.Tools.ContainsKey(item.Identifier);
+        if (oldItemIdentifier != itemInfo?.ItemModel.ItemIdentifier) StateHasChanged();
     }
 
     public bool HasMoreInfo([NotNullWhen(true)] ItemModel? item)
@@ -341,15 +320,16 @@
         return itemPMT.Weapons.ContainsKey(item.ItemIdentifier) || itemPMT.Armors.ContainsKey(item.ItemIdentifier) || itemPMT.Units.ContainsKey(item.ItemIdentifier) || itemPMT.Tools.ContainsKey(item.ItemIdentifier);
     }
 
-    public string GetItemType()
+    public string GetItemType() => itemInfo?.ItemModel.ItemType switch
     {
-        if (itemInfo == null) return "";
-        if (itemInfo.WeaponModel != null) return "Weapon";
-        if (itemInfo.ArmorModel != null) return "Armor";
-        if (itemInfo.UnitModel != null) return "Unit";
-        if (itemInfo.ToolModel != null) return "Item";
-        return "";
-    }
+        ItemType.Weapon => "Weapon",
+        ItemType.Armor => "Armor",
+        ItemType.Shield => "Shield",
+        ItemType.Unit => "Unit",
+        ItemType.Mag => "Mag",
+        ItemType.Tool => "Item",
+        _ => ""
+    };
 
     public string GetSpecialName()
     {
@@ -387,17 +367,10 @@
 
     private IEnumerable<DropLocationModel> GetItemLocations()
     {
-        if (itemInfo?.ItemNameModel.Identifier == null) return [];
+        if (itemInfo?.ItemModel.ItemIdentifier == null) return [];
 
-        return dropsLocations.Where(dl => dl.ItemIdentifier == itemInfo?.ItemNameModel.Identifier);
+        return dropsLocations.Where(dl => dl.ItemIdentifier == itemInfo?.ItemModel.ItemIdentifier);
     }
 
-    private class ItemInfoModel(ItemNameModel itemNameModel, WeaponModel? weaponModel, ArmorModel? armorModel, UnitModel? unitModel, ToolModel? toolModel)
-    {
-        public ItemNameModel ItemNameModel { get; set; } = itemNameModel;
-        public WeaponModel? WeaponModel { get; set; } = weaponModel;
-        public ArmorModel? ArmorModel { get; set; } = armorModel;
-        public UnitModel? UnitModel { get; set; } = unitModel;
-        public ToolModel? ToolModel { get; set; } = toolModel;
-    }
+    private record ItemInfoModel(ItemModel ItemModel, WeaponModel? WeaponModel, ArmorModel? ArmorModel, UnitModel? UnitModel, ToolModel? ToolModel);
 }
