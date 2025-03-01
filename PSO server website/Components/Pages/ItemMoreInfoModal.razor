@@ -13,24 +13,24 @@
                 @if (itemInfo != null)
                 {
                     <ItemName ItemIdentifier="@itemInfo.ItemModel.ItemIdentifier" class="modal-title h2" />
-                    @if (itemInfo.WeaponModel != null)
+                    @if (itemInfo.ItemModel.ItemType == ItemType.Weapon)
                     {
                         <div class="container">
                             <div class="row">
                                 <div class="col">Id</div>
-                                <div class="col">@itemInfo.WeaponModel.Id.ToString("X6") (@(itemInfo.WeaponModel.Id))</div>
+                                <div class="col">@itemInfo.ItemModel.AsWeapon.ItemId.ToString("X6") (@(itemInfo.ItemModel.AsWeapon.ItemId))</div>
                             </div>
                             <div class="row">
                                 <div class="col">Type</div>
-                                <div class="col">@itemInfo.WeaponModel.Type</div>
+                                <div class="col">@itemInfo.ItemModel.AsWeapon.Type</div>
                             </div>
                             <div class="row">
                                 <div class="col">Skin Id</div>
-                                <div class="col">@itemInfo.WeaponModel.Skin</div>
+                                <div class="col">@itemInfo.ItemModel.AsWeapon.Skin</div>
                             </div>
                             <div class="row">
                                 <div class="col">Team Points</div>
-                                <div class="col">@itemInfo.WeaponModel.TeamPoints</div>
+                                <div class="col">@itemInfo.ItemModel.AsWeapon.TeamPoints</div>
                             </div>
                             <div class="row">
                                 <div class="col">Class Can Use</div>
@@ -84,7 +84,7 @@
                             </div>
                             <div class="row">
                                 <div class="col">Special</div>
-                                <div class="col">@GetSpecialName()</div>
+                                <div class="col">@itemInfo.ItemModel.AsWeapon.SpecialName</div>
                             </div>
                             <div class="row">
                                 <div class="col">Projectile Id</div>
@@ -330,15 +330,6 @@
         ItemType.Tool => "Item",
         _ => ""
     };
-
-    public string GetSpecialName()
-    {
-        if (itemInfo?.WeaponModel == null)
-            return "";
-
-        string[] names = ["None", "[1]Draw", "[2]Drain", "[3]Fill", "[4]Gush", "[1]Heart", "[2]Mind", "[3]Soul", "[4]Geist", "[1]Master's", "[2]Lord's", "[3]King's", "Charge", "Spirit", "Berserk", "[1]Ice", "[2]Frost", "[3]Freeze", "[4]Blizzard", "[1]Bind", "[2]Hold", "[3]Seize", "[4]Arrest", "[1]Heat", "[2]Fire", "[3]Flame", "[4]Burning", "[1]Shock", "[2]Thunder", "[3]Storm", "[4]Tempest", "[1]Dim", "[2]Shadow", "[3]Dark", "[4]Hell", "[1]Panic", "[2]Riot", "[3]Havoc", "[4]Chaos", "[1]Devil's", "[2]Demon's"];
-        return names[itemInfo.WeaponModel.Special];
-    }
 
     public IEnumerable<Stat> GetStatBoosts()
     {

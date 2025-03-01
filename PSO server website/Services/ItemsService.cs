@@ -13,12 +13,19 @@ public class ItemsService(ItemsRepository itemsRepository, ItemPMTRepository ite
         _itemPMT = await itemPMTRepository.GetItemsAsync();
     }
 
-    public IEnumerable<ItemModel> GetItems() => _items.Select(i => new ItemModel(i.Key, i.Value.Name, GetItemType(i.Key), GetIcon(i.Key)));
+    public IEnumerable<ItemModel> GetItems() => _items.Select(i => GetItem(i.Key)!);
 
     public ItemModel? GetItem(string itemIdentifier)
     {
         if (!_items.TryGetValue(itemIdentifier, out ItemNameModel? item)) return null;
-        return new ItemModel(item.Identifier, item.Name, GetItemType(itemIdentifier), GetIcon(itemIdentifier));
+        return GetItemType(itemIdentifier) switch
+        {
+            ItemType.Weapon => new WeaponItemModel(item.Identifier, item.Name, GetIcon(itemIdentifier),
+                _itemPMT.Weapons[itemIdentifier].Id, _itemPMT.Weapons[itemIdentifier].Type,
+                _itemPMT.Weapons[itemIdentifier].Skin, _itemPMT.Weapons[itemIdentifier].TeamPoints,
+                (Special)_itemPMT.Weapons[itemIdentifier].Special, GetSpecialName(_itemPMT.Weapons[itemIdentifier].Special)),
+            _ => new ItemModel(item.Identifier, item.Name, GetItemType(itemIdentifier), GetIcon(itemIdentifier)),
+        };
     }
 
     public static ItemType GetItemType(string itemIdentifier) => itemIdentifier switch
@@ -60,9 +67,21 @@ public class ItemsService(ItemsRepository itemsRepository, ItemPMTRepository ite
 
         return s_iconNames.Where(i => itemIdentifier.StartsWith(i.Key)).First().Value;
     }
+
+    private static readonly string[] s_specialNames = ["None", "[1]Draw", "[2]Drain", "[3]Fill", "[4]Gush", "[1]Heart", "[2]Mind", "[3]Soul", "[4]Geist", "[1]Master's", "[2]Lord's", "[3]King's", "Charge", "Spirit", "Berserk", "[1]Ice", "[2]Frost", "[3]Freeze", "[4]Blizzard", "[1]Bind", "[2]Hold", "[3]Seize", "[4]Arrest", "[1]Heat", "[2]Fire", "[3]Flame", "[4]Burning", "[1]Shock", "[2]Thunder", "[3]Storm", "[4]Tempest", "[1]Dim", "[2]Shadow", "[3]Dark", "[4]Hell", "[1]Panic", "[2]Riot", "[3]Havoc", "[4]Chaos", "[1]Devil's", "[2]Demon's"];
+    public static string GetSpecialName(int special)
+    {
+        return s_specialNames[special];
+    }
 }
 
-public record ItemModel(string ItemIdentifier, string ItemName, ItemType ItemType, ItemIcon Icon);
+public record ItemModel(string ItemIdentifier, string ItemName, ItemType ItemType, ItemIcon Icon)
+{
+    public WeaponItemModel AsWeapon => ItemType == ItemType.Weapon ? (WeaponItemModel)this : throw new InvalidCastException();
+}
+
+public record WeaponItemModel(string ItemIdentifier, string ItemName, ItemIcon Icon, uint ItemId, ushort Type, ushort Skin, uint TeamPoints, Special Special, string SpecialName)
+    : ItemModel(ItemIdentifier, ItemName, ItemType.Weapon, Icon);
 
 public enum ItemType
 {
@@ -87,4 +106,49 @@ public enum ItemIcon
     Mate,
     Fluid,
     Disk
+}
+
+public enum Special
+{
+    None,
+    Draw,
+    Drain,
+    Fill,
+    Gush,
+    Heart,
+    Mind,
+    Soul,
+    Geist,
+    Master,
+    Lord,
+    King,
+    Charge,
+    Spirit,
+    Berserk,
+    Ice,
+    Frost,
+    Freeze,
+    Blizzard,
+    Bind,
+    Hold,
+    Seize,
+    Arrest,
+    Heat,
+    Fire,
+    Flame,
+    Burning,
+    Shock,
+    Thunder,
+    Storm,
+    Tempest,
+    Dim,
+    Shadow,
+    Dark,
+    Hell,
+    Panic,
+    Riot,
+    Havoc,
+    Chaos,
+    Devil,
+    Demon
 }
