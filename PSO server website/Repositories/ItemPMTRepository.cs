@@ -5,20 +5,20 @@ namespace PSOServerWebsite.Repositories;
 
 public class ItemPMTRepository(HttpClient http)
 {
-    public static readonly ClassFlag[] ClassFlagsByClass =
+    public static readonly ClassFeatureFlag[] ClassFeatureFlagsByClass =
     [
-        ClassFlag.HUNTER | ClassFlag.HUMAN | ClassFlag.MALE, // HUmar
-        ClassFlag.HUNTER | ClassFlag.NEWMAN | ClassFlag.FEMALE, // HUnewearl
-        ClassFlag.HUNTER | ClassFlag.ANDROID | ClassFlag.MALE, // HUcast
-        ClassFlag.HUNTER | ClassFlag.ANDROID | ClassFlag.FEMALE, // HUcaseal
-        ClassFlag.RANGER | ClassFlag.HUMAN | ClassFlag.MALE, // RAmar
-        ClassFlag.RANGER | ClassFlag.HUMAN | ClassFlag.FEMALE, // RAmarl
-        ClassFlag.RANGER | ClassFlag.ANDROID | ClassFlag.MALE, // RAcast
-        ClassFlag.RANGER | ClassFlag.ANDROID | ClassFlag.FEMALE, // RAcaseal
-        ClassFlag.FORCE | ClassFlag.HUMAN | ClassFlag.MALE, // FOmar
-        ClassFlag.FORCE | ClassFlag.HUMAN | ClassFlag.FEMALE, // FOmarl
-        ClassFlag.FORCE | ClassFlag.NEWMAN | ClassFlag.MALE, // FOnewm
-        ClassFlag.FORCE | ClassFlag.NEWMAN | ClassFlag.FEMALE, // FOnewearl
+        ClassFeatureFlag.HUNTER | ClassFeatureFlag.HUMAN | ClassFeatureFlag.MALE, // HUmar
+        ClassFeatureFlag.HUNTER | ClassFeatureFlag.NEWMAN | ClassFeatureFlag.FEMALE, // HUnewearl
+        ClassFeatureFlag.HUNTER | ClassFeatureFlag.ANDROID | ClassFeatureFlag.MALE, // HUcast
+        ClassFeatureFlag.HUNTER | ClassFeatureFlag.ANDROID | ClassFeatureFlag.FEMALE, // HUcaseal
+        ClassFeatureFlag.RANGER | ClassFeatureFlag.HUMAN | ClassFeatureFlag.MALE, // RAmar
+        ClassFeatureFlag.RANGER | ClassFeatureFlag.HUMAN | ClassFeatureFlag.FEMALE, // RAmarl
+        ClassFeatureFlag.RANGER | ClassFeatureFlag.ANDROID | ClassFeatureFlag.MALE, // RAcast
+        ClassFeatureFlag.RANGER | ClassFeatureFlag.ANDROID | ClassFeatureFlag.FEMALE, // RAcaseal
+        ClassFeatureFlag.FORCE | ClassFeatureFlag.HUMAN | ClassFeatureFlag.MALE, // FOmar
+        ClassFeatureFlag.FORCE | ClassFeatureFlag.HUMAN | ClassFeatureFlag.FEMALE, // FOmarl
+        ClassFeatureFlag.FORCE | ClassFeatureFlag.NEWMAN | ClassFeatureFlag.MALE, // FOnewm
+        ClassFeatureFlag.FORCE | ClassFeatureFlag.NEWMAN | ClassFeatureFlag.FEMALE, // FOnewearl
     ];
 
     // Offset from end of ItemPMT.bin file to main pointer table.
@@ -236,7 +236,7 @@ public class ItemBaseModel
 public class WeaponModel(ItemPMTModel itemPMT) : ItemBaseModel
 {
     public ushort ClassFlagsRaw { get; set; }
-    public ClassFlag ClassFlags => (ClassFlag)ClassFlagsRaw;
+    public ClassFeatureFlag ClassFlags => (ClassFeatureFlag)ClassFlagsRaw;
     public ushort ATPMin { get; set; }
     public ushort ATPMax { get; set; }
     public ushort ATPRequired { get; set; }
@@ -286,7 +286,7 @@ public class ArmorModel(ItemPMTModel itemPMT) : ItemBaseModel
     public byte BlockParticle { get; set; }
     public byte BlockEffect { get; set; }
     public ushort ClassFlagsRaw { get; set; }
-    public ClassFlag ClassFlags => (ClassFlag)ClassFlagsRaw;
+    public ClassFeatureFlag ClassFlags => (ClassFeatureFlag)ClassFlagsRaw;
     public byte RequiredLevel { get; set; }
     public byte EFR { get; set; }
     public byte ETH { get; set; }
@@ -321,7 +321,7 @@ public class UnitModel : ItemBaseModel
     public ushort Stat { get; set; }
     public ushort StatAmount { get; set; }
     public short ModifierAmount { get; set; }
-    public ClassFlag ClassFlags => Id switch
+    public ClassFeatureFlag ClassFlags => Id switch
     {
         897 or 898 or 899 or 900 or 978 // Mind
         or 913 or 914 or 915 or 916 or 987 // TP
@@ -329,15 +329,15 @@ public class UnitModel : ItemBaseModel
         or 953 or 954 or 955 or 989 // Technique
         or 959 or 960 // Cure
         or 969 // V801
-        => ClassFlag.HUNTER | ClassFlag.RANGER | ClassFlag.FORCE | ClassFlag.HUMAN | ClassFlag.NEWMAN | ClassFlag.MALE | ClassFlag.FEMALE,
+        => ClassFeatureFlag.HUNTER | ClassFeatureFlag.RANGER | ClassFeatureFlag.FORCE | ClassFeatureFlag.HUMAN | ClassFeatureFlag.NEWMAN | ClassFeatureFlag.MALE | ClassFeatureFlag.FEMALE,
 
-        965 => ClassFlag.HUNTER | ClassFlag.RANGER | ClassFlag.HUMAN | ClassFlag.ANDROID | ClassFlag.NEWMAN | ClassFlag.MALE | ClassFlag.FEMALE,
+        965 => ClassFeatureFlag.HUNTER | ClassFeatureFlag.RANGER | ClassFeatureFlag.HUMAN | ClassFeatureFlag.ANDROID | ClassFeatureFlag.NEWMAN | ClassFeatureFlag.MALE | ClassFeatureFlag.FEMALE,
 
-        972 or 973 => ClassFlag.HUNTER | ClassFlag.HUMAN | ClassFlag.ANDROID | ClassFlag.NEWMAN | ClassFlag.MALE | ClassFlag.FEMALE,
+        972 or 973 => ClassFeatureFlag.HUNTER | ClassFeatureFlag.HUMAN | ClassFeatureFlag.ANDROID | ClassFeatureFlag.NEWMAN | ClassFeatureFlag.MALE | ClassFeatureFlag.FEMALE,
 
-        974 => ClassFlag.HUNTER | ClassFlag.FORCE | ClassFlag.HUMAN | ClassFlag.ANDROID | ClassFlag.NEWMAN | ClassFlag.MALE | ClassFlag.FEMALE,
+        974 => ClassFeatureFlag.HUNTER | ClassFeatureFlag.FORCE | ClassFeatureFlag.HUMAN | ClassFeatureFlag.ANDROID | ClassFeatureFlag.NEWMAN | ClassFeatureFlag.MALE | ClassFeatureFlag.FEMALE,
 
-        _ => ClassFlag.HUNTER | ClassFlag.RANGER | ClassFlag.FORCE | ClassFlag.HUMAN | ClassFlag.ANDROID | ClassFlag.NEWMAN | ClassFlag.MALE | ClassFlag.FEMALE
+        _ => ClassFeatureFlag.HUNTER | ClassFeatureFlag.RANGER | ClassFeatureFlag.FORCE | ClassFeatureFlag.HUMAN | ClassFeatureFlag.ANDROID | ClassFeatureFlag.NEWMAN | ClassFeatureFlag.MALE | ClassFeatureFlag.FEMALE
     };
     public bool CanHaveModifier => Id switch
     {
@@ -468,7 +468,7 @@ public class TechBoostModel
 }
 
 [Flags]
-public enum ClassFlag
+public enum ClassFeatureFlag
 {
     HUNTER = 0x01,
     RANGER = 0x02,

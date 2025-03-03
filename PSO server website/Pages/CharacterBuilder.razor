@@ -1046,7 +1046,7 @@ else
 
         foreach (var (item, weapon) in items.Join(itemPMT.Weapons, i => i.Identifier, w => w.Key, (i, w) => (item: i, weapon: w.Value)))
         {
-            bool meetRequirement = weapon.ClassFlags.HasFlag(ItemPMTRepository.ClassFlagsByClass[(int)ClassRaceSelection]);
+            bool meetRequirement = weapon.ClassFlags.HasFlag(ItemPMTRepository.ClassFeatureFlagsByClass[(int)ClassRaceSelection]);
             meetRequirement &= BaseATP >= weapon.ATPRequired;
             meetRequirement &= BaseATA >= weapon.ATARequired;
             meetRequirement &= BaseMST >= weapon.MSTRequired;
@@ -1055,14 +1055,14 @@ else
 
         foreach (var (item, armor) in items.Join(itemPMT.Armors, i => i.Identifier, a => a.Key, (i, a) => (item: i, armor: a.Value)))
         {
-            bool meetRequirement = armor.ClassFlags.HasFlag(ItemPMTRepository.ClassFlagsByClass[(int)ClassRaceSelection]);
+            bool meetRequirement = armor.ClassFlags.HasFlag(ItemPMTRepository.ClassFeatureFlagsByClass[(int)ClassRaceSelection]);
             meetRequirement &= Level > armor.RequiredLevel;
             if (meetRequirement) yield return item;
         }
 
         foreach (var (item, unit) in items.Join(itemPMT.Units, i => i.Identifier, u => u.Key, (i, u) => (item: i, unit: u.Value)))
         {
-            bool meetRequirement = unit.ClassFlags.HasFlag(ItemPMTRepository.ClassFlagsByClass[(int)ClassRaceSelection]);
+            bool meetRequirement = unit.ClassFlags.HasFlag(ItemPMTRepository.ClassFeatureFlagsByClass[(int)ClassRaceSelection]);
             if (meetRequirement) yield return item;
         }
     }

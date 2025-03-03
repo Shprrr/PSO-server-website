@@ -1,5 +1,5 @@
 ﻿@using PSOServerWebsite.Repositories
-@using ClassFlagsEnum = PSOServerWebsite.Repositories.ClassFlag
+@using PSOServerWebsite.Services
 
 <div class="class-flags container px-0">
     <div class="row row-cols-4">
@@ -24,18 +24,20 @@
 
 @code {
     [Parameter]
-    public ClassFlagsEnum Value { get; set; }
+    public ClassFeatureFlag ValueFlags { get; set; }
+    [Parameter]
+    public ClassFlag Value { get; set; }
 
-    public bool IsHumar => Value.HasFlag(ItemPMTRepository.ClassFlagsByClass[0]);
-    public bool IsHunewearl => Value.HasFlag(ItemPMTRepository.ClassFlagsByClass[1]);
-    public bool IsHucast => Value.HasFlag(ItemPMTRepository.ClassFlagsByClass[2]);
-    public bool IsHucaseal => Value.HasFlag(ItemPMTRepository.ClassFlagsByClass[3]);
-    public bool IsRamar => Value.HasFlag(ItemPMTRepository.ClassFlagsByClass[4]);
-    public bool IsRamarl => Value.HasFlag(ItemPMTRepository.ClassFlagsByClass[5]);
-    public bool IsRacast => Value.HasFlag(ItemPMTRepository.ClassFlagsByClass[6]);
-    public bool IsRacaseal => Value.HasFlag(ItemPMTRepository.ClassFlagsByClass[7]);
-    public bool IsFomar => Value.HasFlag(ItemPMTRepository.ClassFlagsByClass[8]);
-    public bool IsFomarl => Value.HasFlag(ItemPMTRepository.ClassFlagsByClass[9]);
-    public bool IsFonewm => Value.HasFlag(ItemPMTRepository.ClassFlagsByClass[10]);
-    public bool IsFonewearl => Value.HasFlag(ItemPMTRepository.ClassFlagsByClass[11]);
+    public bool IsHumar => Value.HasFlag(ClassFlag.HUmar) || ValueFlags.HasFlag(ItemPMTRepository.ClassFeatureFlagsByClass[0]);
+    public bool IsHunewearl => Value.HasFlag(ClassFlag.HUnewearl) || ValueFlags.HasFlag(ItemPMTRepository.ClassFeatureFlagsByClass[1]);
+    public bool IsHucast => Value.HasFlag(ClassFlag.HUcast) || ValueFlags.HasFlag(ItemPMTRepository.ClassFeatureFlagsByClass[2]);
+    public bool IsHucaseal => Value.HasFlag(ClassFlag.HUcaseal) || ValueFlags.HasFlag(ItemPMTRepository.ClassFeatureFlagsByClass[3]);
+    public bool IsRamar => Value.HasFlag(ClassFlag.RAmar) || ValueFlags.HasFlag(ItemPMTRepository.ClassFeatureFlagsByClass[4]);
+    public bool IsRamarl => Value.HasFlag(ClassFlag.RAmarl) || ValueFlags.HasFlag(ItemPMTRepository.ClassFeatureFlagsByClass[5]);
+    public bool IsRacast => Value.HasFlag(ClassFlag.RAcast) || ValueFlags.HasFlag(ItemPMTRepository.ClassFeatureFlagsByClass[6]);
+    public bool IsRacaseal => Value.HasFlag(ClassFlag.RAcaseal) || ValueFlags.HasFlag(ItemPMTRepository.ClassFeatureFlagsByClass[7]);
+    public bool IsFomar => Value.HasFlag(ClassFlag.FOmar) || ValueFlags.HasFlag(ItemPMTRepository.ClassFeatureFlagsByClass[8]);
+    public bool IsFomarl => Value.HasFlag(ClassFlag.FOmarl) || ValueFlags.HasFlag(ItemPMTRepository.ClassFeatureFlagsByClass[9]);
+    public bool IsFonewm => Value.HasFlag(ClassFlag.FOnewm) || ValueFlags.HasFlag(ItemPMTRepository.ClassFeatureFlagsByClass[10]);
+    public bool IsFonewearl => Value.HasFlag(ClassFlag.FOnewearl) || ValueFlags.HasFlag(ItemPMTRepository.ClassFeatureFlagsByClass[11]);
 }

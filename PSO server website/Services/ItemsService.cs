@@ -23,7 +23,13 @@ public class ItemsService(ItemsRepository itemsRepository, ItemPMTRepository ite
             ItemType.Weapon => new WeaponItemModel(item.Identifier, item.Name, GetIcon(itemIdentifier),
                 _itemPMT.Weapons[itemIdentifier].Id, _itemPMT.Weapons[itemIdentifier].Type,
                 _itemPMT.Weapons[itemIdentifier].Skin, _itemPMT.Weapons[itemIdentifier].TeamPoints,
-                (Special)_itemPMT.Weapons[itemIdentifier].Special, GetSpecialName(_itemPMT.Weapons[itemIdentifier].Special)),
+                GetClassFlag(_itemPMT.Weapons[itemIdentifier].ClassFlags), _itemPMT.Weapons[itemIdentifier].ATPRequired,
+                _itemPMT.Weapons[itemIdentifier].MSTRequired, _itemPMT.Weapons[itemIdentifier].ATARequired,
+                _itemPMT.Weapons[itemIdentifier].ATPMin, _itemPMT.Weapons[itemIdentifier].ATPMax,
+                _itemPMT.Weapons[itemIdentifier].MST, _itemPMT.Weapons[itemIdentifier].ATA,
+                _itemPMT.Weapons[itemIdentifier].MaxGrind, _itemPMT.Weapons[itemIdentifier].Photon,
+                (Special)_itemPMT.Weapons[itemIdentifier].Special, GetSpecialName(_itemPMT.Weapons[itemIdentifier].Special),
+                _itemPMT.Weapons[itemIdentifier].Projectile, _itemPMT.Weapons[itemIdentifier].ComboType),
             _ => new ItemModel(item.Identifier, item.Name, GetItemType(itemIdentifier), GetIcon(itemIdentifier)),
         };
     }
@@ -68,6 +74,24 @@ public class ItemsService(ItemsRepository itemsRepository, ItemPMTRepository ite
         return s_iconNames.Where(i => itemIdentifier.StartsWith(i.Key)).First().Value;
     }
 
+    public static ClassFlag GetClassFlag(ClassFeatureFlag classFeatureFlags)
+    {
+        ClassFlag result = 0;
+        if (classFeatureFlags.HasFlag(ItemPMTRepository.ClassFeatureFlagsByClass[0])) result |= ClassFlag.HUmar;
+        if (classFeatureFlags.HasFlag(ItemPMTRepository.ClassFeatureFlagsByClass[1])) result |= ClassFlag.HUnewearl;
+        if (classFeatureFlags.HasFlag(ItemPMTRepository.ClassFeatureFlagsByClass[2])) result |= ClassFlag.HUcast;
+        if (classFeatureFlags.HasFlag(ItemPMTRepository.ClassFeatureFlagsByClass[3])) result |= ClassFlag.HUcaseal;
+        if (classFeatureFlags.HasFlag(ItemPMTRepository.ClassFeatureFlagsByClass[4])) result |= ClassFlag.RAmar;
+        if (classFeatureFlags.HasFlag(ItemPMTRepository.ClassFeatureFlagsByClass[5])) result |= ClassFlag.RAmarl;
+        if (classFeatureFlags.HasFlag(ItemPMTRepository.ClassFeatureFlagsByClass[6])) result |= ClassFlag.RAcast;
+        if (classFeatureFlags.HasFlag(ItemPMTRepository.ClassFeatureFlagsByClass[7])) result |= ClassFlag.RAcaseal;
+        if (classFeatureFlags.HasFlag(ItemPMTRepository.ClassFeatureFlagsByClass[8])) result |= ClassFlag.FOmar;
+        if (classFeatureFlags.HasFlag(ItemPMTRepository.ClassFeatureFlagsByClass[9])) result |= ClassFlag.FOmarl;
+        if (classFeatureFlags.HasFlag(ItemPMTRepository.ClassFeatureFlagsByClass[10])) result |= ClassFlag.FOnewm;
+        if (classFeatureFlags.HasFlag(ItemPMTRepository.ClassFeatureFlagsByClass[11])) result |= ClassFlag.FOnewearl;
+        return result;
+    }
+
     private static readonly string[] s_specialNames = ["None", "[1]Draw", "[2]Drain", "[3]Fill", "[4]Gush", "[1]Heart", "[2]Mind", "[3]Soul", "[4]Geist", "[1]Master's", "[2]Lord's", "[3]King's", "Charge", "Spirit", "Berserk", "[1]Ice", "[2]Frost", "[3]Freeze", "[4]Blizzard", "[1]Bind", "[2]Hold", "[3]Seize", "[4]Arrest", "[1]Heat", "[2]Fire", "[3]Flame", "[4]Burning", "[1]Shock", "[2]Thunder", "[3]Storm", "[4]Tempest", "[1]Dim", "[2]Shadow", "[3]Dark", "[4]Hell", "[1]Panic", "[2]Riot", "[3]Havoc", "[4]Chaos", "[1]Devil's", "[2]Demon's"];
     public static string GetSpecialName(int special)
     {
@@ -80,7 +104,9 @@ public record ItemModel(string ItemIdentifier, string ItemName, ItemType ItemTyp
     public WeaponItemModel AsWeapon => ItemType == ItemType.Weapon ? (WeaponItemModel)this : throw new InvalidCastException();
 }
 
-public record WeaponItemModel(string ItemIdentifier, string ItemName, ItemIcon Icon, uint ItemId, ushort Type, ushort Skin, uint TeamPoints, Special Special, string SpecialName)
+public record WeaponItemModel(string ItemIdentifier, string ItemName, ItemIcon Icon, uint ItemId, ushort Type,
+    ushort Skin, uint TeamPoints, ClassFlag EquipableClass, ushort ATPRequired, ushort MSTRequired, ushort ATARequired,
+    ushort ATPMin, ushort ATPMax, ushort MST, ushort ATA, byte MaxGrind, byte PhotonId, Special Special, string SpecialName, byte ProjectileId, byte ComboTypeFlag)
     : ItemModel(ItemIdentifier, ItemName, ItemType.Weapon, Icon);
 
 public enum ItemType
@@ -106,6 +132,23 @@ public enum ItemIcon
     Mate,
     Fluid,
     Disk
+}
+
+[Flags]
+public enum ClassFlag
+{
+    HUmar = 0x01,
+    HUnewearl = 0x02,
+    HUcast = 0x04,
+    HUcaseal = 0x08,
+    RAmar = 0x10,
+    RAmarl = 0x20,
+    RAcast = 0x40,
+    RAcaseal = 0x80,
+    FOmar = 0x100,
+    FOmarl = 0x200,
+    FOnewm = 0x400,
+    FOnewearl = 0x800
 }
 
 public enum Special
