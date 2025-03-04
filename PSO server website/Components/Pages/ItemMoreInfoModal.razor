@@ -175,20 +175,20 @@
                             </div>
                         </div>
                     }
-                    else if (itemInfo.UnitModel != null)
+                    else if (itemInfo.ItemModel.ItemType == ItemType.Unit)
                     {
                         <div class="container">
                             <div class="row">
                                 <div class="col">Id</div>
-                                <div class="col">@itemInfo.UnitModel.Id.ToString("X6") (@(itemInfo.UnitModel.Id))</div>
+                                <div class="col">@itemInfo.ItemModel.AsUnit.ItemId.ToString("X6") (@(itemInfo.ItemModel.AsUnit.ItemId))</div>
                             </div>
                             <div class="row">
                                 <div class="col">Team Points</div>
-                                <div class="col">@itemInfo.UnitModel.TeamPoints</div>
+                                <div class="col">@itemInfo.ItemModel.AsUnit.TeamPoints</div>
                             </div>
                             <div class="row">
                                 <div class="col">Class Can Use</div>
-                                <div class="col"><ClassFlags ValueFlags="@itemInfo.UnitModel.ClassFlags" /></div>
+                                <div class="col"><ClassFlags Value="@itemInfo.ItemModel.AsUnit.EquipableClass" /></div>
                             </div>
                             @foreach (var statBoost in GetStatBoosts())
                             {
@@ -197,11 +197,11 @@
                                     <div class="col">@statBoost.ValueToString()</div>
                                 </div>
                             }
-                            @if (itemInfo.UnitModel.CanHaveModifier)
+                            @if (itemInfo.ItemModel.AsUnit.CanHaveModifier)
                             {
                                 <div class="row">
                                     <div class="col">Modifier Amount</div>
-                                    <div class="col">@itemInfo.UnitModel.ModifierAmount</div>
+                                    <div class="col">@itemInfo.ItemModel.AsUnit.ModifierAmount</div>
                                 </div>
                             }
                         </div>

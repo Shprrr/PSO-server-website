@@ -43,6 +43,11 @@ public class ItemsService(ItemsRepository itemsRepository, ItemPMTRepository ite
                 _itemPMT.Armors[itemIdentifier].EDK, _itemPMT.Armors[itemIdentifier].ELT,
                 _itemPMT.Armors[itemIdentifier].BlockParticle, _itemPMT.Armors[itemIdentifier].BlockEffect),
 
+            ItemType.Unit => new UnitItemModel(item.Identifier, item.Name, GetIcon(itemIdentifier),
+                _itemPMT.Units[itemIdentifier].Id, _itemPMT.Units[itemIdentifier].Type,
+                _itemPMT.Units[itemIdentifier].Skin, _itemPMT.Units[itemIdentifier].TeamPoints,
+                GetClassFlag(_itemPMT.Units[itemIdentifier].ClassFlags), _itemPMT.Units[itemIdentifier].ModifierAmount),
+
             _ => new ItemModel(item.Identifier, item.Name, itemType, GetIcon(itemIdentifier)),
         };
     }
@@ -116,6 +121,7 @@ public record ItemModel(string ItemIdentifier, string ItemName, ItemType ItemTyp
 {
     public WeaponItemModel AsWeapon => ItemType == ItemType.Weapon ? (WeaponItemModel)this : throw new InvalidCastException();
     public ArmorItemModel AsArmor => ItemType is ItemType.Armor or ItemType.Shield ? (ArmorItemModel)this : throw new InvalidCastException();
+    public UnitItemModel AsUnit => ItemType == ItemType.Unit ? (UnitItemModel)this : throw new InvalidCastException();
 }
 
 public record WeaponItemModel(string ItemIdentifier, string ItemName, ItemIcon Icon, uint ItemId, ushort Type,
@@ -130,6 +136,17 @@ public record ArmorItemModel(string ItemIdentifier, string ItemName, ItemType It
 {
     public int DFPMax => DFP + DFPRange;
     public int EVPMax => EVP + EVPRange;
+}
+
+public record UnitItemModel(string ItemIdentifier, string ItemName, ItemIcon Icon, uint ItemId, ushort Type,
+    ushort Skin, uint TeamPoints, ClassFlag EquipableClass, short ModifierAmount)
+    : ItemModel(ItemIdentifier, ItemName, ItemType.Unit, Icon)
+{
+    public bool CanHaveModifier => ItemId switch
+    {
+        < 908 and not (896 or 900 or 904) => true,
+        _ => false
+    };
 }
 
 public enum ItemType
