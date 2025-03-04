@@ -96,60 +96,60 @@
                             </div>
                         </div>
                     }
-                    else if (itemInfo.ArmorModel != null)
+                    else if (itemInfo.ItemModel.ItemType is ItemType.Armor or ItemType.Shield)
                     {
                         <div class="container">
                             <div class="row">
                                 <div class="col">Id</div>
-                                <div class="col">@itemInfo.ArmorModel.Id.ToString("X6") (@(itemInfo.ArmorModel.Id))</div>
+                                <div class="col">@itemInfo.ItemModel.AsArmor.ItemId.ToString("X6") (@(itemInfo.ItemModel.AsArmor.ItemId))</div>
                             </div>
                             <div class="row">
                                 <div class="col">Type</div>
-                                <div class="col">@itemInfo.ArmorModel.Type</div>
+                                <div class="col">@itemInfo.ItemModel.AsArmor.Type</div>
                             </div>
                             <div class="row">
                                 <div class="col">Skin Id</div>
-                                <div class="col">@itemInfo.ArmorModel.Skin</div>
+                                <div class="col">@itemInfo.ItemModel.AsArmor.Skin</div>
                             </div>
                             <div class="row">
                                 <div class="col">Team Points</div>
-                                <div class="col">@itemInfo.ArmorModel.TeamPoints</div>
+                                <div class="col">@itemInfo.ItemModel.AsArmor.TeamPoints</div>
                             </div>
                             <div class="row">
                                 <div class="col">Class Can Use</div>
-                                <div class="col"><ClassFlags ValueFlags="@itemInfo.ArmorModel.ClassFlags" /></div>
+                                <div class="col"><ClassFlags Value="@itemInfo.ItemModel.AsArmor.EquipableClass" /></div>
                             </div>
                             <div class="row">
                                 <div class="col">Level Required</div>
-                                <div class="col">@(itemInfo.ArmorModel.RequiredLevel + 1)</div>
+                                <div class="col">@itemInfo.ItemModel.AsArmor.RequiredLevel</div>
                             </div>
                             <div class="row">
                                 <div class="col">+DFP</div>
-                                <div class="col">@itemInfo.ArmorModel.DFP - @(itemInfo.ArmorModel.DFP + itemInfo.ArmorModel.DFPRange)</div>
+                                <div class="col">@itemInfo.ItemModel.AsArmor.DFP - @itemInfo.ItemModel.AsArmor.DFPMax</div>
                             </div>
                             <div class="row">
                                 <div class="col">+EVP</div>
-                                <div class="col">@itemInfo.ArmorModel.EVP - @(itemInfo.ArmorModel.EVP + itemInfo.ArmorModel.EVPRange)</div>
+                                <div class="col">@itemInfo.ItemModel.AsArmor.EVP - @itemInfo.ItemModel.AsArmor.EVPMax</div>
                             </div>
                             <div class="row">
                                 <div class="col">+EFR</div>
-                                <div class="col">@itemInfo.ArmorModel.EFR</div>
+                                <div class="col">@itemInfo.ItemModel.AsArmor.EFR</div>
                             </div>
                             <div class="row">
                                 <div class="col">+ETH</div>
-                                <div class="col">@itemInfo.ArmorModel.ETH</div>
+                                <div class="col">@itemInfo.ItemModel.AsArmor.ETH</div>
                             </div>
                             <div class="row">
                                 <div class="col">+EIC</div>
-                                <div class="col">@itemInfo.ArmorModel.EIC</div>
+                                <div class="col">@itemInfo.ItemModel.AsArmor.EIC</div>
                             </div>
                             <div class="row">
                                 <div class="col">+EDK</div>
-                                <div class="col">@itemInfo.ArmorModel.EDK</div>
+                                <div class="col">@itemInfo.ItemModel.AsArmor.EDK</div>
                             </div>
                             <div class="row">
                                 <div class="col">+ELT</div>
-                                <div class="col">@itemInfo.ArmorModel.ELT</div>
+                                <div class="col">@itemInfo.ItemModel.AsArmor.ELT</div>
                             </div>
                             @foreach (var statBoost in GetStatBoosts())
                             {
@@ -167,11 +167,11 @@
                             }
                             <div class="row">
                                 <div class="col">Block Particle</div>
-                                <div class="col">@itemInfo.ArmorModel.BlockParticle</div>
+                                <div class="col">@itemInfo.ItemModel.AsArmor.BlockParticle</div>
                             </div>
                             <div class="row">
                                 <div class="col">Block Effect</div>
-                                <div class="col">@itemInfo.ArmorModel.BlockEffect</div>
+                                <div class="col">@itemInfo.ItemModel.AsArmor.BlockEffect</div>
                             </div>
                         </div>
                     }

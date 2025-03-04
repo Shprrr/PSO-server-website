@@ -18,7 +18,8 @@ public class ItemsService(ItemsRepository itemsRepository, ItemPMTRepository ite
     public ItemModel? GetItem(string itemIdentifier)
     {
         if (!_items.TryGetValue(itemIdentifier, out ItemNameModel? item)) return null;
-        return GetItemType(itemIdentifier) switch
+        ItemType itemType = GetItemType(itemIdentifier);
+        return itemType switch
         {
             ItemType.Weapon => new WeaponItemModel(item.Identifier, item.Name, GetIcon(itemIdentifier),
                 _itemPMT.Weapons[itemIdentifier].Id, _itemPMT.Weapons[itemIdentifier].Type,
@@ -30,7 +31,19 @@ public class ItemsService(ItemsRepository itemsRepository, ItemPMTRepository ite
                 _itemPMT.Weapons[itemIdentifier].MaxGrind, _itemPMT.Weapons[itemIdentifier].Photon,
                 (Special)_itemPMT.Weapons[itemIdentifier].Special, GetSpecialName(_itemPMT.Weapons[itemIdentifier].Special),
                 _itemPMT.Weapons[itemIdentifier].Projectile, _itemPMT.Weapons[itemIdentifier].ComboType),
-            _ => new ItemModel(item.Identifier, item.Name, GetItemType(itemIdentifier), GetIcon(itemIdentifier)),
+
+            ItemType.Armor or ItemType.Shield => new ArmorItemModel(item.Identifier, item.Name,
+                itemType, GetIcon(itemIdentifier), _itemPMT.Armors[itemIdentifier].Id,
+                _itemPMT.Armors[itemIdentifier].Type, _itemPMT.Armors[itemIdentifier].Skin,
+                _itemPMT.Armors[itemIdentifier].TeamPoints, GetClassFlag(_itemPMT.Armors[itemIdentifier].ClassFlags),
+                _itemPMT.Armors[itemIdentifier].RequiredLevel + 1, _itemPMT.Armors[itemIdentifier].DFP,
+                _itemPMT.Armors[itemIdentifier].DFPRange, _itemPMT.Armors[itemIdentifier].EVP,
+                _itemPMT.Armors[itemIdentifier].EVPRange, _itemPMT.Armors[itemIdentifier].EFR,
+                _itemPMT.Armors[itemIdentifier].ETH, _itemPMT.Armors[itemIdentifier].EIC,
+                _itemPMT.Armors[itemIdentifier].EDK, _itemPMT.Armors[itemIdentifier].ELT,
+                _itemPMT.Armors[itemIdentifier].BlockParticle, _itemPMT.Armors[itemIdentifier].BlockEffect),
+
+            _ => new ItemModel(item.Identifier, item.Name, itemType, GetIcon(itemIdentifier)),
         };
     }
 
@@ -102,12 +115,22 @@ public class ItemsService(ItemsRepository itemsRepository, ItemPMTRepository ite
 public record ItemModel(string ItemIdentifier, string ItemName, ItemType ItemType, ItemIcon Icon)
 {
     public WeaponItemModel AsWeapon => ItemType == ItemType.Weapon ? (WeaponItemModel)this : throw new InvalidCastException();
+    public ArmorItemModel AsArmor => ItemType is ItemType.Armor or ItemType.Shield ? (ArmorItemModel)this : throw new InvalidCastException();
 }
 
 public record WeaponItemModel(string ItemIdentifier, string ItemName, ItemIcon Icon, uint ItemId, ushort Type,
     ushort Skin, uint TeamPoints, ClassFlag EquipableClass, ushort ATPRequired, ushort MSTRequired, ushort ATARequired,
     ushort ATPMin, ushort ATPMax, ushort MST, ushort ATA, byte MaxGrind, byte PhotonId, Special Special, string SpecialName, byte ProjectileId, byte ComboTypeFlag)
     : ItemModel(ItemIdentifier, ItemName, ItemType.Weapon, Icon);
+
+public record ArmorItemModel(string ItemIdentifier, string ItemName, ItemType ItemType, ItemIcon Icon, uint ItemId, ushort Type,
+    ushort Skin, uint TeamPoints, ClassFlag EquipableClass, int RequiredLevel, ushort DFP, byte DFPRange, ushort EVP,
+    byte EVPRange, byte EFR, byte ETH, byte EIC, byte EDK, byte ELT, byte BlockParticle, byte BlockEffect)
+    : ItemModel(ItemIdentifier, ItemName, ItemType, Icon)
+{
+    public int DFPMax => DFP + DFPRange;
+    public int EVPMax => EVP + EVPRange;
+}
 
 public enum ItemType
 {
