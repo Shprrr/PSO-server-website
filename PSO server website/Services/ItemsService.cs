@@ -48,6 +48,12 @@ public class ItemsService(ItemsRepository itemsRepository, ItemPMTRepository ite
                 _itemPMT.Units[itemIdentifier].Skin, _itemPMT.Units[itemIdentifier].TeamPoints,
                 GetClassFlag(_itemPMT.Units[itemIdentifier].ClassFlags), _itemPMT.Units[itemIdentifier].ModifierAmount),
 
+            ItemType.Tool => new ToolItemModel(item.Identifier, item.Name, GetIcon(itemIdentifier),
+                _itemPMT.Tools[itemIdentifier].Id, _itemPMT.Tools[itemIdentifier].Type,
+                _itemPMT.Tools[itemIdentifier].Skin, _itemPMT.Tools[itemIdentifier].TeamPoints,
+                _itemPMT.Tools[itemIdentifier].Amount, _itemPMT.Tools[itemIdentifier].Technique,
+                _itemPMT.Tools[itemIdentifier].Cost, _itemPMT.Tools[itemIdentifier].ItemFlag),
+
             _ => new ItemModel(item.Identifier, item.Name, itemType, GetIcon(itemIdentifier)),
         };
     }
@@ -122,6 +128,7 @@ public record ItemModel(string ItemIdentifier, string ItemName, ItemType ItemTyp
     public WeaponItemModel AsWeapon => ItemType == ItemType.Weapon ? (WeaponItemModel)this : throw new InvalidCastException();
     public ArmorItemModel AsArmor => ItemType is ItemType.Armor or ItemType.Shield ? (ArmorItemModel)this : throw new InvalidCastException();
     public UnitItemModel AsUnit => ItemType == ItemType.Unit ? (UnitItemModel)this : throw new InvalidCastException();
+    public ToolItemModel AsTool => ItemType == ItemType.Tool ? (ToolItemModel)this : throw new InvalidCastException();
 }
 
 public record WeaponItemModel(string ItemIdentifier, string ItemName, ItemIcon Icon, uint ItemId, ushort Type,
@@ -148,6 +155,10 @@ public record UnitItemModel(string ItemIdentifier, string ItemName, ItemIcon Ico
         _ => false
     };
 }
+
+public record ToolItemModel(string ItemIdentifier, string ItemName, ItemIcon Icon, uint ItemId, ushort Type,
+    ushort Skin, uint TeamPoints, ushort Amount, ushort Technique, int Cost, uint ItemFlag)
+    : ItemModel(ItemIdentifier, ItemName, ItemType.Tool, Icon);
 
 public enum ItemType
 {
