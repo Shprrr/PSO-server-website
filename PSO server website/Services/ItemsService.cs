@@ -30,7 +30,8 @@ public class ItemsService(ItemsRepository itemsRepository, ItemPMTRepository ite
                 _itemPMT.Weapons[itemIdentifier].MST, _itemPMT.Weapons[itemIdentifier].ATA,
                 _itemPMT.Weapons[itemIdentifier].MaxGrind, _itemPMT.Weapons[itemIdentifier].Photon,
                 (Special)_itemPMT.Weapons[itemIdentifier].Special, GetSpecialName(_itemPMT.Weapons[itemIdentifier].Special),
-                _itemPMT.Weapons[itemIdentifier].Projectile, _itemPMT.Weapons[itemIdentifier].ComboType),
+                _itemPMT.Weapons[itemIdentifier].Projectile, _itemPMT.Weapons[itemIdentifier].ComboType,
+                _itemPMT.Weapons[itemIdentifier].GetTechBoosts()),
 
             ItemType.Armor or ItemType.Shield => new ArmorItemModel(item.Identifier, item.Name,
                 itemType, GetIcon(itemIdentifier), _itemPMT.Armors[itemIdentifier].Id,
@@ -41,7 +42,8 @@ public class ItemsService(ItemsRepository itemsRepository, ItemPMTRepository ite
                 _itemPMT.Armors[itemIdentifier].EVPRange, _itemPMT.Armors[itemIdentifier].EFR,
                 _itemPMT.Armors[itemIdentifier].ETH, _itemPMT.Armors[itemIdentifier].EIC,
                 _itemPMT.Armors[itemIdentifier].EDK, _itemPMT.Armors[itemIdentifier].ELT,
-                _itemPMT.Armors[itemIdentifier].BlockParticle, _itemPMT.Armors[itemIdentifier].BlockEffect),
+                _itemPMT.Armors[itemIdentifier].BlockParticle, _itemPMT.Armors[itemIdentifier].BlockEffect,
+                _itemPMT.Armors[itemIdentifier].GetTechBoosts()),
 
             ItemType.Unit => new UnitItemModel(item.Identifier, item.Name, GetIcon(itemIdentifier),
                 _itemPMT.Units[itemIdentifier].Id, _itemPMT.Units[itemIdentifier].Type,
@@ -123,8 +125,9 @@ public class ItemsService(ItemsRepository itemsRepository, ItemPMTRepository ite
     }
 }
 
-public record ItemModel(string ItemIdentifier, string ItemName, ItemType ItemType, ItemIcon Icon)
+public record ItemModel(string ItemIdentifier, string ItemName, ItemType ItemType, ItemIcon Icon, IEnumerable<Tech>? TechBoosts = null)
 {
+    public IEnumerable<Tech> TechBoosts { get; init; } = TechBoosts ?? [];
     public WeaponItemModel AsWeapon => ItemType == ItemType.Weapon ? (WeaponItemModel)this : throw new InvalidCastException();
     public ArmorItemModel AsArmor => ItemType is ItemType.Armor or ItemType.Shield ? (ArmorItemModel)this : throw new InvalidCastException();
     public UnitItemModel AsUnit => ItemType == ItemType.Unit ? (UnitItemModel)this : throw new InvalidCastException();
@@ -133,13 +136,13 @@ public record ItemModel(string ItemIdentifier, string ItemName, ItemType ItemTyp
 
 public record WeaponItemModel(string ItemIdentifier, string ItemName, ItemIcon Icon, uint ItemId, ushort Type,
     ushort Skin, uint TeamPoints, ClassFlag EquipableClass, ushort ATPRequired, ushort MSTRequired, ushort ATARequired,
-    ushort ATPMin, ushort ATPMax, ushort MST, ushort ATA, byte MaxGrind, byte PhotonId, Special Special, string SpecialName, byte ProjectileId, byte ComboTypeFlag)
-    : ItemModel(ItemIdentifier, ItemName, ItemType.Weapon, Icon);
+    ushort ATPMin, ushort ATPMax, ushort MST, ushort ATA, byte MaxGrind, byte PhotonId, Special Special, string SpecialName, byte ProjectileId, byte ComboTypeFlag, IEnumerable<Tech> TechBoosts)
+    : ItemModel(ItemIdentifier, ItemName, ItemType.Weapon, Icon, TechBoosts);
 
 public record ArmorItemModel(string ItemIdentifier, string ItemName, ItemType ItemType, ItemIcon Icon, uint ItemId, ushort Type,
     ushort Skin, uint TeamPoints, ClassFlag EquipableClass, int RequiredLevel, ushort DFP, byte DFPRange, ushort EVP,
-    byte EVPRange, byte EFR, byte ETH, byte EIC, byte EDK, byte ELT, byte BlockParticle, byte BlockEffect)
-    : ItemModel(ItemIdentifier, ItemName, ItemType, Icon)
+    byte EVPRange, byte EFR, byte ETH, byte EIC, byte EDK, byte ELT, byte BlockParticle, byte BlockEffect, IEnumerable<Tech> TechBoosts)
+    : ItemModel(ItemIdentifier, ItemName, ItemType, Icon, TechBoosts)
 {
     public int DFPMax => DFP + DFPRange;
     public int EVPMax => EVP + EVPRange;
