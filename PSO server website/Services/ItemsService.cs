@@ -31,7 +31,7 @@ public class ItemsService(ItemsRepository itemsRepository, ItemPMTRepository ite
                 _itemPMT.Weapons[itemIdentifier].MaxGrind, _itemPMT.Weapons[itemIdentifier].Photon,
                 (Special)_itemPMT.Weapons[itemIdentifier].Special, GetSpecialName(_itemPMT.Weapons[itemIdentifier].Special),
                 _itemPMT.Weapons[itemIdentifier].Projectile, _itemPMT.Weapons[itemIdentifier].ComboType,
-                _itemPMT.Weapons[itemIdentifier].GetTechBoosts()),
+                _itemPMT.Weapons[itemIdentifier].GetStatBoosts(), _itemPMT.Weapons[itemIdentifier].GetTechBoosts()),
 
             ItemType.Armor or ItemType.Shield => new ArmorItemModel(item.Identifier, item.Name,
                 itemType, GetIcon(itemIdentifier), _itemPMT.Armors[itemIdentifier].Id,
@@ -43,12 +43,13 @@ public class ItemsService(ItemsRepository itemsRepository, ItemPMTRepository ite
                 _itemPMT.Armors[itemIdentifier].ETH, _itemPMT.Armors[itemIdentifier].EIC,
                 _itemPMT.Armors[itemIdentifier].EDK, _itemPMT.Armors[itemIdentifier].ELT,
                 _itemPMT.Armors[itemIdentifier].BlockParticle, _itemPMT.Armors[itemIdentifier].BlockEffect,
-                _itemPMT.Armors[itemIdentifier].GetTechBoosts()),
+                _itemPMT.Armors[itemIdentifier].GetStatBoosts(), _itemPMT.Armors[itemIdentifier].GetTechBoosts()),
 
             ItemType.Unit => new UnitItemModel(item.Identifier, item.Name, GetIcon(itemIdentifier),
                 _itemPMT.Units[itemIdentifier].Id, _itemPMT.Units[itemIdentifier].Type,
                 _itemPMT.Units[itemIdentifier].Skin, _itemPMT.Units[itemIdentifier].TeamPoints,
-                GetClassFlag(_itemPMT.Units[itemIdentifier].ClassFlags), _itemPMT.Units[itemIdentifier].ModifierAmount),
+                GetClassFlag(_itemPMT.Units[itemIdentifier].ClassFlags), _itemPMT.Units[itemIdentifier].ModifierAmount,
+                _itemPMT.Units[itemIdentifier].GetStatBoosts()),
 
             ItemType.Tool => new ToolItemModel(item.Identifier, item.Name, GetIcon(itemIdentifier),
                 _itemPMT.Tools[itemIdentifier].Id, _itemPMT.Tools[itemIdentifier].Type,
@@ -125,8 +126,9 @@ public class ItemsService(ItemsRepository itemsRepository, ItemPMTRepository ite
     }
 }
 
-public record ItemModel(string ItemIdentifier, string ItemName, ItemType ItemType, ItemIcon Icon, IEnumerable<Tech>? TechBoosts = null)
+public record ItemModel(string ItemIdentifier, string ItemName, ItemType ItemType, ItemIcon Icon, IEnumerable<Stat>? StatBoosts = null, IEnumerable<Tech>? TechBoosts = null)
 {
+    public IEnumerable<Stat> StatBoosts { get; init; } = StatBoosts ?? [];
     public IEnumerable<Tech> TechBoosts { get; init; } = TechBoosts ?? [];
     public WeaponItemModel AsWeapon => ItemType == ItemType.Weapon ? (WeaponItemModel)this : throw new InvalidCastException();
     public ArmorItemModel AsArmor => ItemType is ItemType.Armor or ItemType.Shield ? (ArmorItemModel)this : throw new InvalidCastException();
@@ -136,21 +138,24 @@ public record ItemModel(string ItemIdentifier, string ItemName, ItemType ItemTyp
 
 public record WeaponItemModel(string ItemIdentifier, string ItemName, ItemIcon Icon, uint ItemId, ushort Type,
     ushort Skin, uint TeamPoints, ClassFlag EquipableClass, ushort ATPRequired, ushort MSTRequired, ushort ATARequired,
-    ushort ATPMin, ushort ATPMax, ushort MST, ushort ATA, byte MaxGrind, byte PhotonId, Special Special, string SpecialName, byte ProjectileId, byte ComboTypeFlag, IEnumerable<Tech> TechBoosts)
-    : ItemModel(ItemIdentifier, ItemName, ItemType.Weapon, Icon, TechBoosts);
+    ushort ATPMin, ushort ATPMax, ushort MST, ushort ATA, byte MaxGrind, byte PhotonId, Special Special,
+    string SpecialName, byte ProjectileId, byte ComboTypeFlag, IEnumerable<Stat> StatBoosts,
+    IEnumerable<Tech> TechBoosts)
+    : ItemModel(ItemIdentifier, ItemName, ItemType.Weapon, Icon, StatBoosts, TechBoosts);
 
-public record ArmorItemModel(string ItemIdentifier, string ItemName, ItemType ItemType, ItemIcon Icon, uint ItemId, ushort Type,
-    ushort Skin, uint TeamPoints, ClassFlag EquipableClass, int RequiredLevel, ushort DFP, byte DFPRange, ushort EVP,
-    byte EVPRange, byte EFR, byte ETH, byte EIC, byte EDK, byte ELT, byte BlockParticle, byte BlockEffect, IEnumerable<Tech> TechBoosts)
-    : ItemModel(ItemIdentifier, ItemName, ItemType, Icon, TechBoosts)
+public record ArmorItemModel(string ItemIdentifier, string ItemName, ItemType ItemType, ItemIcon Icon, uint ItemId,
+    ushort Type, ushort Skin, uint TeamPoints, ClassFlag EquipableClass, int RequiredLevel, ushort DFP, byte DFPRange,
+    ushort EVP, byte EVPRange, byte EFR, byte ETH, byte EIC, byte EDK, byte ELT, byte BlockParticle, byte BlockEffect,
+    IEnumerable<Stat> StatBoosts, IEnumerable<Tech> TechBoosts)
+    : ItemModel(ItemIdentifier, ItemName, ItemType, Icon, StatBoosts, TechBoosts)
 {
     public int DFPMax => DFP + DFPRange;
     public int EVPMax => EVP + EVPRange;
 }
 
 public record UnitItemModel(string ItemIdentifier, string ItemName, ItemIcon Icon, uint ItemId, ushort Type,
-    ushort Skin, uint TeamPoints, ClassFlag EquipableClass, short ModifierAmount)
-    : ItemModel(ItemIdentifier, ItemName, ItemType.Unit, Icon)
+    ushort Skin, uint TeamPoints, ClassFlag EquipableClass, short ModifierAmount, IEnumerable<Stat> StatBoosts)
+    : ItemModel(ItemIdentifier, ItemName, ItemType.Unit, Icon, StatBoosts)
 {
     public bool CanHaveModifier => ItemId switch
     {

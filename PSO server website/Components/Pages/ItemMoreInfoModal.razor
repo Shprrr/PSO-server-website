@@ -1,6 +1,4 @@
-﻿@using PSOServerWebsite.Repositories
-@using PSOServerWebsite.Services
-@inject ItemPMTRepository itemPMTRepository
+﻿@using PSOServerWebsite.Services
 @inject DropsLocationsService dropsLocationsService
 
 <div id="modalInfo" class="modal fade">
@@ -12,63 +10,63 @@
             <div class="modal-body">
                 @if (itemInfo != null)
                 {
-                    <ItemName ItemIdentifier="@itemInfo.ItemModel.ItemIdentifier" class="modal-title h2" />
-                    @switch (itemInfo.ItemModel.ItemType)
+                    <ItemName ItemIdentifier="@itemInfo.ItemIdentifier" class="modal-title h2" />
+                    @switch (itemInfo.ItemType)
                     {
                         case ItemType.Weapon:
                             <div class="container">
                                 <div class="row">
                                     <div class="col">Id</div>
-                                    <div class="col">@itemInfo.ItemModel.AsWeapon.ItemId.ToString("X6") (@itemInfo.ItemModel.AsWeapon.ItemId)</div>
+                                    <div class="col">@itemInfo.AsWeapon.ItemId.ToString("X6") (@itemInfo.AsWeapon.ItemId)</div>
                                 </div>
                                 <div class="row">
                                     <div class="col">Type</div>
-                                    <div class="col">@itemInfo.ItemModel.AsWeapon.Type</div>
+                                    <div class="col">@itemInfo.AsWeapon.Type</div>
                                 </div>
                                 <div class="row">
                                     <div class="col">Skin Id</div>
-                                    <div class="col">@itemInfo.ItemModel.AsWeapon.Skin</div>
+                                    <div class="col">@itemInfo.AsWeapon.Skin</div>
                                 </div>
                                 <div class="row">
                                     <div class="col">Team Points</div>
-                                    <div class="col">@itemInfo.ItemModel.AsWeapon.TeamPoints</div>
+                                    <div class="col">@itemInfo.AsWeapon.TeamPoints</div>
                                 </div>
                                 <div class="row">
                                     <div class="col">Class Can Use</div>
-                                    <div class="col"><ClassFlags Value="@itemInfo.ItemModel.AsWeapon.EquipableClass" /></div>
+                                    <div class="col"><ClassFlags Value="@itemInfo.AsWeapon.EquipableClass" /></div>
                                 </div>
                                 <div class="row">
                                     <div class="col">ATP Required</div>
-                                    <div class="col">@itemInfo.ItemModel.AsWeapon.ATPRequired</div>
+                                    <div class="col">@itemInfo.AsWeapon.ATPRequired</div>
                                 </div>
                                 <div class="row">
                                     <div class="col">MST Required</div>
-                                    <div class="col">@itemInfo.ItemModel.AsWeapon.MSTRequired</div>
+                                    <div class="col">@itemInfo.AsWeapon.MSTRequired</div>
                                 </div>
                                 <div class="row">
                                     <div class="col">ATA Required</div>
-                                    <div class="col">@itemInfo.ItemModel.AsWeapon.ATARequired</div>
+                                    <div class="col">@itemInfo.AsWeapon.ATARequired</div>
                                 </div>
                                 <div class="row">
                                     <div class="col">+ATP</div>
-                                    <div class="col">@itemInfo.ItemModel.AsWeapon.ATPMin - @itemInfo.ItemModel.AsWeapon.ATPMax</div>
+                                    <div class="col">@itemInfo.AsWeapon.ATPMin - @itemInfo.AsWeapon.ATPMax</div>
                                 </div>
                                 <div class="row">
                                     <div class="col">+MST</div>
-                                    <div class="col">@itemInfo.ItemModel.AsWeapon.MST</div>
+                                    <div class="col">@itemInfo.AsWeapon.MST</div>
                                 </div>
                                 <div class="row">
                                     <div class="col">+ATA</div>
-                                    <div class="col">@itemInfo.ItemModel.AsWeapon.ATA</div>
+                                    <div class="col">@itemInfo.AsWeapon.ATA</div>
                                 </div>
-                                @foreach (var statBoost in GetStatBoosts())
+                                @foreach (var statBoost in itemInfo.StatBoosts)
                                 {
                                     <div class="row">
                                         <div class="col">@statBoost.Name</div>
                                         <div class="col">@statBoost.ValueToString()</div>
                                     </div>
                                 }
-                                @foreach (var techBoost in itemInfo.ItemModel.TechBoosts)
+                                @foreach (var techBoost in itemInfo.TechBoosts)
                                 {
                                     <div class="row">
                                         <div class="col">@techBoost.Name</div>
@@ -77,23 +75,23 @@
                                 }
                                 <div class="row">
                                     <div class="col">Max Grind</div>
-                                    <div class="col">@itemInfo.ItemModel.AsWeapon.MaxGrind</div>
+                                    <div class="col">@itemInfo.AsWeapon.MaxGrind</div>
                                 </div>
                                 <div class="row">
                                     <div class="col">Photon Id</div>
-                                    <div class="col">@itemInfo.ItemModel.AsWeapon.PhotonId</div>
+                                    <div class="col">@itemInfo.AsWeapon.PhotonId</div>
                                 </div>
                                 <div class="row">
                                     <div class="col">Special</div>
-                                    <div class="col">@itemInfo.ItemModel.AsWeapon.SpecialName</div>
+                                    <div class="col">@itemInfo.AsWeapon.SpecialName</div>
                                 </div>
                                 <div class="row">
                                     <div class="col">Projectile Id</div>
-                                    <div class="col">@itemInfo.ItemModel.AsWeapon.ProjectileId</div>
+                                    <div class="col">@itemInfo.AsWeapon.ProjectileId</div>
                                 </div>
                                 <div class="row">
                                     <div class="col">Combo Type</div>
-                                    <div class="col">@itemInfo.ItemModel.AsWeapon.ComboTypeFlag</div>
+                                    <div class="col">@itemInfo.AsWeapon.ComboTypeFlag</div>
                                 </div>
                             </div>
                             break;
@@ -101,64 +99,64 @@
                             <div class="container">
                                 <div class="row">
                                     <div class="col">Id</div>
-                                    <div class="col">@itemInfo.ItemModel.AsArmor.ItemId.ToString("X6") (@itemInfo.ItemModel.AsArmor.ItemId)</div>
+                                    <div class="col">@itemInfo.AsArmor.ItemId.ToString("X6") (@itemInfo.AsArmor.ItemId)</div>
                                 </div>
                                 <div class="row">
                                     <div class="col">Type</div>
-                                    <div class="col">@itemInfo.ItemModel.AsArmor.Type</div>
+                                    <div class="col">@itemInfo.AsArmor.Type</div>
                                 </div>
                                 <div class="row">
                                     <div class="col">Skin Id</div>
-                                    <div class="col">@itemInfo.ItemModel.AsArmor.Skin</div>
+                                    <div class="col">@itemInfo.AsArmor.Skin</div>
                                 </div>
                                 <div class="row">
                                     <div class="col">Team Points</div>
-                                    <div class="col">@itemInfo.ItemModel.AsArmor.TeamPoints</div>
+                                    <div class="col">@itemInfo.AsArmor.TeamPoints</div>
                                 </div>
                                 <div class="row">
                                     <div class="col">Class Can Use</div>
-                                    <div class="col"><ClassFlags Value="@itemInfo.ItemModel.AsArmor.EquipableClass" /></div>
+                                    <div class="col"><ClassFlags Value="@itemInfo.AsArmor.EquipableClass" /></div>
                                 </div>
                                 <div class="row">
                                     <div class="col">Level Required</div>
-                                    <div class="col">@itemInfo.ItemModel.AsArmor.RequiredLevel</div>
+                                    <div class="col">@itemInfo.AsArmor.RequiredLevel</div>
                                 </div>
                                 <div class="row">
                                     <div class="col">+DFP</div>
-                                    <div class="col">@itemInfo.ItemModel.AsArmor.DFP - @itemInfo.ItemModel.AsArmor.DFPMax</div>
+                                    <div class="col">@itemInfo.AsArmor.DFP - @itemInfo.AsArmor.DFPMax</div>
                                 </div>
                                 <div class="row">
                                     <div class="col">+EVP</div>
-                                    <div class="col">@itemInfo.ItemModel.AsArmor.EVP - @itemInfo.ItemModel.AsArmor.EVPMax</div>
+                                    <div class="col">@itemInfo.AsArmor.EVP - @itemInfo.AsArmor.EVPMax</div>
                                 </div>
                                 <div class="row">
                                     <div class="col">+EFR</div>
-                                    <div class="col">@itemInfo.ItemModel.AsArmor.EFR</div>
+                                    <div class="col">@itemInfo.AsArmor.EFR</div>
                                 </div>
                                 <div class="row">
                                     <div class="col">+ETH</div>
-                                    <div class="col">@itemInfo.ItemModel.AsArmor.ETH</div>
+                                    <div class="col">@itemInfo.AsArmor.ETH</div>
                                 </div>
                                 <div class="row">
                                     <div class="col">+EIC</div>
-                                    <div class="col">@itemInfo.ItemModel.AsArmor.EIC</div>
+                                    <div class="col">@itemInfo.AsArmor.EIC</div>
                                 </div>
                                 <div class="row">
                                     <div class="col">+EDK</div>
-                                    <div class="col">@itemInfo.ItemModel.AsArmor.EDK</div>
+                                    <div class="col">@itemInfo.AsArmor.EDK</div>
                                 </div>
                                 <div class="row">
                                     <div class="col">+ELT</div>
-                                    <div class="col">@itemInfo.ItemModel.AsArmor.ELT</div>
+                                    <div class="col">@itemInfo.AsArmor.ELT</div>
                                 </div>
-                                @foreach (var statBoost in GetStatBoosts())
+                                @foreach (var statBoost in itemInfo.StatBoosts)
                                 {
                                     <div class="row">
                                         <div class="col">@statBoost.Name</div>
                                         <div class="col">@statBoost.ValueToString()</div>
                                     </div>
                                 }
-                                @foreach (var techBoost in itemInfo.ItemModel.TechBoosts)
+                                @foreach (var techBoost in itemInfo.TechBoosts)
                                 {
                                     <div class="row">
                                         <div class="col">@techBoost.Name</div>
@@ -167,11 +165,11 @@
                                 }
                                 <div class="row">
                                     <div class="col">Block Particle</div>
-                                    <div class="col">@itemInfo.ItemModel.AsArmor.BlockParticle</div>
+                                    <div class="col">@itemInfo.AsArmor.BlockParticle</div>
                                 </div>
                                 <div class="row">
                                     <div class="col">Block Effect</div>
-                                    <div class="col">@itemInfo.ItemModel.AsArmor.BlockEffect</div>
+                                    <div class="col">@itemInfo.AsArmor.BlockEffect</div>
                                 </div>
                             </div>
                             break;
@@ -179,28 +177,28 @@
                             <div class="container">
                                 <div class="row">
                                     <div class="col">Id</div>
-                                    <div class="col">@itemInfo.ItemModel.AsUnit.ItemId.ToString("X6") (@itemInfo.ItemModel.AsUnit.ItemId)</div>
+                                    <div class="col">@itemInfo.AsUnit.ItemId.ToString("X6") (@itemInfo.AsUnit.ItemId)</div>
                                 </div>
                                 <div class="row">
                                     <div class="col">Team Points</div>
-                                    <div class="col">@itemInfo.ItemModel.AsUnit.TeamPoints</div>
+                                    <div class="col">@itemInfo.AsUnit.TeamPoints</div>
                                 </div>
                                 <div class="row">
                                     <div class="col">Class Can Use</div>
-                                    <div class="col"><ClassFlags Value="@itemInfo.ItemModel.AsUnit.EquipableClass" /></div>
+                                    <div class="col"><ClassFlags Value="@itemInfo.AsUnit.EquipableClass" /></div>
                                 </div>
-                                @foreach (var statBoost in GetStatBoosts())
+                                @foreach (var statBoost in itemInfo.StatBoosts)
                                 {
                                     <div class="row">
                                         <div class="col">@statBoost.Name</div>
                                         <div class="col">@statBoost.ValueToString()</div>
                                     </div>
                                 }
-                                @if (itemInfo.ItemModel.AsUnit.CanHaveModifier)
+                                @if (itemInfo.AsUnit.CanHaveModifier)
                                 {
                                     <div class="row">
                                         <div class="col">Modifier Amount</div>
-                                        <div class="col">@itemInfo.ItemModel.AsUnit.ModifierAmount</div>
+                                        <div class="col">@itemInfo.AsUnit.ModifierAmount</div>
                                     </div>
                                 }
                             </div>
@@ -209,35 +207,35 @@
                             <div class="container">
                                 <div class="row">
                                     <div class="col">Id</div>
-                                    <div class="col">@itemInfo.ItemModel.AsTool.ItemId.ToString("X6") (@itemInfo.ItemModel.AsTool.ItemId)</div>
+                                    <div class="col">@itemInfo.AsTool.ItemId.ToString("X6") (@itemInfo.AsTool.ItemId)</div>
                                 </div>
                                 <div class="row">
                                     <div class="col">Type</div>
-                                    <div class="col">@itemInfo.ItemModel.AsTool.Type</div>
+                                    <div class="col">@itemInfo.AsTool.Type</div>
                                 </div>
                                 <div class="row">
                                     <div class="col">Skin Id</div>
-                                    <div class="col">@itemInfo.ItemModel.AsTool.Skin</div>
+                                    <div class="col">@itemInfo.AsTool.Skin</div>
                                 </div>
                                 <div class="row">
                                     <div class="col">Team Points</div>
-                                    <div class="col">@itemInfo.ItemModel.AsTool.TeamPoints</div>
+                                    <div class="col">@itemInfo.AsTool.TeamPoints</div>
                                 </div>
                                 <div class="row">
                                     <div class="col">Amount</div>
-                                    <div class="col">@itemInfo.ItemModel.AsTool.Amount</div>
+                                    <div class="col">@itemInfo.AsTool.Amount</div>
                                 </div>
                                 <div class="row">
                                     <div class="col">Technique</div>
-                                    <div class="col">@itemInfo.ItemModel.AsTool.Technique</div>
+                                    <div class="col">@itemInfo.AsTool.Technique</div>
                                 </div>
                                 <div class="row">
                                     <div class="col">Cost</div>
-                                    <div class="col">@itemInfo.ItemModel.AsTool.Cost</div>
+                                    <div class="col">@itemInfo.AsTool.Cost</div>
                                 </div>
                                 <div class="row">
                                     <div class="col">Item Flag</div>
-                                    <div class="col">@itemInfo.ItemModel.AsTool.ItemFlag</div>
+                                    <div class="col">@itemInfo.AsTool.ItemFlag</div>
                                 </div>
                             </div>
                             break;
@@ -266,7 +264,7 @@
                     </table>
                 }
             </div>
-            <div class="modal-footer">@itemInfo?.ItemModel.ItemIdentifier</div>
+            <div class="modal-footer">@itemInfo?.ItemIdentifier</div>
         </div>
     </div>
 </div>
@@ -275,16 +273,13 @@
     [Parameter]
     public Action? OnLoaded { get; set; } = null;
 
-    private ItemInfoModel? itemInfo;
-    [DisallowNull] private ItemPMTModel itemPMT = default!;
+    private ItemModel? itemInfo;
     [DisallowNull] private IEnumerable<DropLocationModel> dropsLocations = default!;
 
     public Dictionary<string, object> MoreInfoAttributes => new Dictionary<string, object> { { "data-bs-toggle", "modal" }, { "data-bs-target", "#modalInfo" }, { "href", "#modalInfo" } };
 
     protected override async Task OnInitializedAsync()
     {
-        itemPMT = await itemPMTRepository.GetItemsAsync();
-
         dropsLocations = await dropsLocationsService.GetDropsLocationsAsync();
 
         OnLoaded?.Invoke();
@@ -293,8 +288,8 @@
     private string? oldItemIdentifier;
     protected override bool ShouldRender()
     {
-        bool shouldRender = oldItemIdentifier != itemInfo?.ItemModel.ItemIdentifier;
-        oldItemIdentifier = itemInfo?.ItemModel.ItemIdentifier;
+        bool shouldRender = oldItemIdentifier != itemInfo?.ItemIdentifier;
+        oldItemIdentifier = itemInfo?.ItemIdentifier;
         return shouldRender;
     }
 
@@ -302,23 +297,20 @@
     {
         if (HasMoreInfo(item))
         {
-            itemPMT.Weapons.TryGetValue(item.ItemIdentifier, out var weaponModel);
-            itemPMT.Armors.TryGetValue(item.ItemIdentifier, out var armorModel);
-            itemPMT.Units.TryGetValue(item.ItemIdentifier, out var unitModel);
-            itemInfo = new ItemInfoModel(item, weaponModel, armorModel, unitModel);
+            itemInfo = item;
         }
         else
             itemInfo = null;
-        if (oldItemIdentifier != itemInfo?.ItemModel.ItemIdentifier) StateHasChanged();
+        if (oldItemIdentifier != itemInfo?.ItemIdentifier) StateHasChanged();
     }
 
     public bool HasMoreInfo([NotNullWhen(true)] ItemModel? item)
     {
         if (item == null) return false;
-        return itemPMT.Weapons.ContainsKey(item.ItemIdentifier) || itemPMT.Armors.ContainsKey(item.ItemIdentifier) || itemPMT.Units.ContainsKey(item.ItemIdentifier) || itemPMT.Tools.ContainsKey(item.ItemIdentifier);
+        return item.ItemType != ItemType.Mag;
     }
 
-    public string GetItemType() => itemInfo?.ItemModel.ItemType switch
+    public string GetItemType() => itemInfo?.ItemType switch
     {
         ItemType.Weapon => "Weapon",
         ItemType.Armor => "Armor",
@@ -329,26 +321,10 @@
         _ => ""
     };
 
-    public IEnumerable<Stat> GetStatBoosts()
-    {
-        if (itemInfo?.WeaponModel != null)
-            return itemInfo.WeaponModel.GetStatBoosts();
-
-        if (itemInfo?.ArmorModel != null)
-            return itemInfo.ArmorModel.GetStatBoosts();
-
-        if (itemInfo?.UnitModel != null)
-            return itemInfo.UnitModel.GetStatBoosts();
-
-        return Enumerable.Empty<Stat>();
-    }
-
     private IEnumerable<DropLocationModel> GetItemLocations()
     {
-        if (itemInfo?.ItemModel.ItemIdentifier == null) return [];
+        if (itemInfo?.ItemIdentifier == null) return [];
 
-        return dropsLocations.Where(dl => dl.ItemIdentifier == itemInfo?.ItemModel.ItemIdentifier);
+        return dropsLocations.Where(dl => dl.ItemIdentifier == itemInfo?.ItemIdentifier);
     }
-
-    private record ItemInfoModel(ItemModel ItemModel, WeaponModel? WeaponModel, ArmorModel? ArmorModel, UnitModel? UnitModel);
 }
