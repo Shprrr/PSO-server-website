@@ -1,7 +1,7 @@
 {
   "mainAssemblyName": "PSOServerWebsite",
   "resources": {
-    "hash": "sha256-HXDfUOfAY5vdS/fGxAB1HC4SQARVgaJCC+i5rnRMgQg=",
+    "hash": "sha256-FD9TOMxgzY7uqzJPFvCERvcvGo4+btuwU1ahTtgShSA=",
     "fingerprinting": {
       "Blazored.LocalStorage.12n6dz54qr.wasm": "Blazored.LocalStorage.wasm",
       "ExtendedNumerics.BigDecimal.x0xsvppf4k.wasm": "ExtendedNumerics.BigDecimal.wasm",
@@ -30,7 +30,7 @@
       "NCalc.Core.7liut23bmc.wasm": "NCalc.Core.wasm",
       "NCalc.Sync.s8l73xvrq9.wasm": "NCalc.Sync.wasm",
       "Parlot.s6jkbq4gp2.wasm": "Parlot.wasm",
-      "PSOServerWebsite.mtuls7wfjc.wasm": "PSOServerWebsite.wasm",
+      "PSOServerWebsite.godfiv4idc.wasm": "PSOServerWebsite.wasm",
       "System.Collections.Concurrent.ytie6tcxr9.wasm": "System.Collections.Concurrent.wasm",
       "System.Collections.Immutable.klwo0sh5xh.wasm": "System.Collections.Immutable.wasm",
       "System.Collections.NonGeneric.ywjcl1g64y.wasm": "System.Collections.NonGeneric.wasm",
@@ -119,7 +119,7 @@
       "NCalc.Core.7liut23bmc.wasm": "sha256-ZdGtF9N7592ITG+4B9bt+bvqS3Q2N4cotEyw0pY+4eI=",
       "NCalc.Sync.s8l73xvrq9.wasm": "sha256-tOFs2u/7RvrNwWHFd/T71n8gpiKxAQ4ULF2DLp0n650=",
       "Parlot.s6jkbq4gp2.wasm": "sha256-3I4RlgsCWGarMnjOF7L8TmC5nUs+4wGmmarOvocHM+A=",
-      "PSOServerWebsite.mtuls7wfjc.wasm": "sha256-tphNyWAVhUXOoSKcJORBUCTLMUYMwMhAun5efNgh1aA=",
+      "PSOServerWebsite.godfiv4idc.wasm": "sha256-AOH7TbB31GdN2/XQO4sjx7qlDa6w5XruvQCoyIa/cqI=",
       "System.Collections.Concurrent.ytie6tcxr9.wasm": "sha256-Kk/NKIAZ2GmWeOzDxEcKJYz6LRV93xK6VW/67qXJaoo=",
       "System.Collections.Immutable.klwo0sh5xh.wasm": "sha256-CPtXZ1DfEdFx6G2q2aKpZHmqhsyCOCp6RhJ6PTsLHNU=",
       "System.Collections.NonGeneric.ywjcl1g64y.wasm": "sha256-0kiAfhldXBlVO40/S42WA/yVgmt3RswaCAc6wVZmn9I=",
