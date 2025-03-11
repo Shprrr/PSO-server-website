@@ -25,7 +25,7 @@ h4 {
     }
 
     .rare-drops tr > :first-child {
-        min-width: 150px;
+        width: 150px;
     }
 
 .probability {
