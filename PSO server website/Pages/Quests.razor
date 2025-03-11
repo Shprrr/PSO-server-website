@@ -118,7 +118,7 @@ else
                         @foreach (var item in items.Value)
                         {
                             <td>
-                                <ItemName ItemIdentifier="@(this.items[item].FirstOrDefault()?.Identifier ?? item)" ModalMoreInfo="@modalMoreInfo" />
+                                <ItemName ItemIdentifier="@(itemsByName[item].FirstOrDefault()?.Identifier ?? item)" ModalMoreInfo="@modalMoreInfo" />
                             </td>
                         }
                     </tr>
@@ -150,7 +150,7 @@ else
                     @foreach (var item in failureItems.Value)
                     {
                         <td>
-                            <ItemName ItemIdentifier="@(this.items[item.Replace(" x1", "")].FirstOrDefault()?.Identifier ?? item)" ModalMoreInfo="@modalMoreInfo" />
+                            <ItemName ItemIdentifier="@(itemsByName[item.Replace(" x1", "")].FirstOrDefault()?.Identifier ?? item)" ModalMoreInfo="@modalMoreInfo" />
                         </td>
                     }
                 </tr>
@@ -408,17 +408,17 @@ else
 <ItemMoreInfoModal @ref="modalMoreInfo" OnLoaded="ModalMoreInfoOnLoaded" />
 
 @code {
-    [DisallowNull] private ILookup<string, ItemNameModel> items = default!;
+    [DisallowNull] private ILookup<string, ItemNameModel> itemsByName = default!;
     [DisallowNull] private ConfigModel config = default!;
     [DisallowNull] private IEnumerable<QuestF960Success> questF960Success = default!;
     [DisallowNull] private ItemMoreInfoModal modalMoreInfo = default!;
 
-    [MemberNotNullWhen(false, nameof(items), nameof(config), nameof(modalMoreInfo))]
-    private bool IsLoading => items == null || config == null || modalMoreInfo == null || modalMoreInfoIsLoading;
+    [MemberNotNullWhen(false, nameof(itemsByName), nameof(config), nameof(modalMoreInfo))]
+    private bool IsLoading => itemsByName == null || config == null || modalMoreInfo == null || modalMoreInfoIsLoading;
 
     protected override async Task OnInitializedAsync()
     {
-        items = (await itemsRepository.GetItemsAsync()).ToLookup(i => i.Name, StringComparer.InvariantCultureIgnoreCase);
+        itemsByName = (await itemsRepository.GetItemsAsync()).ToLookup(i => i.Name, StringComparer.InvariantCultureIgnoreCase);
 
         config = await configurationRepository.GetConfigAsync();
 

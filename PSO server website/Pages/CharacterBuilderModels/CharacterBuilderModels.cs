@@ -1,4 +1,5 @@
 ﻿using PSOServerWebsite.Repositories;
+using PSOServerWebsite.Services;
 using System.Text.RegularExpressions;
 
 namespace PSOServerWebsite.Pages.CharacterBuilderModels;
@@ -102,41 +103,41 @@ public class LoadoutModel
     }
 }
 
-public partial class WeaponModel(ItemPMTModel itemPMT)
+public partial class WeaponModel
 {
     private int _grind;
     private int _hit;
 
-    private ItemNameModel? _model;
+    private ItemModel? _model;
 
-    public ItemNameModel? Model
+    public ItemModel? Model
     {
         get { return _model; }
         set
         {
             _model = value;
-            if (Identifier == null) return;
-            int maxGrind = itemPMT.Weapons[Identifier].MaxGrind;
+            if (_model == null) return;
+            int maxGrind = _model.AsWeapon.MaxGrind;
             if (Grind > maxGrind) Grind = maxGrind;
         }
     }
 
-    public string? Identifier => Model?.Identifier;
-    public string Name => Model?.Name ?? "";
+    public string? Identifier => Model?.ItemIdentifier;
+    public string Name => Model?.ItemName ?? "";
 
-    public int BaseAtp => string.IsNullOrEmpty(Identifier) ? 0 : itemPMT.Weapons[Identifier].ATPMax - itemPMT.Weapons[Identifier].ATPMin;
-    public int Atp => string.IsNullOrEmpty(Identifier) ? 0 : itemPMT.Weapons[Identifier].ATPMax + Grind * 2;
-    public int Ata => string.IsNullOrEmpty(Identifier) ? 0 : itemPMT.Weapons[Identifier].ATA + Hit;
-    public int Mst => string.IsNullOrEmpty(Identifier) ? 0 : itemPMT.Weapons[Identifier].MST;
+    public int BaseAtp => Model == null ? 0 : Model.AsWeapon.ATPMax - Model.AsWeapon.ATPMin;
+    public int Atp => Model == null ? 0 : Model.AsWeapon.ATPMax + Grind * 2;
+    public int Ata => Model == null ? 0 : Model.AsWeapon.ATA + Hit;
+    public int Mst => Model == null ? 0 : Model.AsWeapon.MST;
 
     public int Grind
     {
         get { return _grind; }
         set
         {
-            if (string.IsNullOrEmpty(Identifier)) return;
+            if (Model == null) return;
             if (value < 0) value = 0;
-            int maxGrind = itemPMT.Weapons[Identifier].MaxGrind;
+            int maxGrind = Model.AsWeapon.MaxGrind;
             if (value > maxGrind) value = maxGrind;
             _grind = value;
         }
@@ -153,21 +154,9 @@ public partial class WeaponModel(ItemPMTModel itemPMT)
         }
     }
 
-    public IEnumerable<Stat> GetStatBoosts()
-    {
-        if (string.IsNullOrEmpty(Identifier))
-            return [];
+    public IEnumerable<Stat> GetStatBoosts() => Model?.AsWeapon.StatBoosts ?? [];
 
-        return itemPMT.Weapons[Identifier].GetStatBoosts();
-    }
-
-    public IEnumerable<Tech> GetTechBoosts()
-    {
-        if (string.IsNullOrEmpty(Identifier))
-            return [];
-
-        return itemPMT.Weapons[Identifier].GetTechBoosts();
-    }
+    public IEnumerable<Tech> GetTechBoosts() => Model?.AsWeapon.TechBoosts ?? [];
 
     public override string ToString()
     {
@@ -178,12 +167,12 @@ public partial class WeaponModel(ItemPMTModel itemPMT)
         return s;
     }
 
-    public static WeaponModel Parse(ItemPMTModel itemPMT, ItemNameModel[] weapons, string weapon)
+    public static WeaponModel Parse(ItemModel[] weapons, string weapon)
     {
-        WeaponModel weaponModel = new(itemPMT);
+        WeaponModel weaponModel = new();
         Match m = WeaponStringRegex().Match(weapon);
         if (!m.Success) return weaponModel;
-        weaponModel.Model = weapons.FirstOrDefault(i => i.Name == m.Groups[1].Value);
+        weaponModel.Model = weapons.FirstOrDefault(i => i.ItemName == m.Groups[1].Value);
         if (m.Groups[2].Success) weaponModel.Grind = int.Parse(m.Groups[2].Value);
         if (m.Groups[3].Success) weaponModel.Hit = int.Parse(m.Groups[3].Value);
         return weaponModel;
@@ -193,79 +182,67 @@ public partial class WeaponModel(ItemPMTModel itemPMT)
     private static partial Regex WeaponStringRegex();
 }
 
-public class BaseArmorModel(ItemPMTModel itemPMT)
+public class BaseArmorModel()
 {
     private int _dfpBonus;
     private int _evpBonus;
 
-    private ItemNameModel? _model;
+    private ItemModel? _model;
 
-    public ItemNameModel? Model
+    public ItemModel? Model
     {
         get { return _model; }
         set
         {
             _model = value;
-            if (Identifier == null) return;
-            int dfpBonusMax = itemPMT.Armors[Identifier].DFPRange;
+            if (_model == null) return;
+            int dfpBonusMax = _model.AsArmor.DFPRange;
             if (DfpBonus > dfpBonusMax) DfpBonus = dfpBonusMax;
-            int evpBonusMax = itemPMT.Armors[Identifier].EVPRange;
+            int evpBonusMax = _model.AsArmor.EVPRange;
             if (EvpBonus > evpBonusMax) EvpBonus = evpBonusMax;
         }
     }
 
-    public string? Identifier => Model?.Identifier;
-    public string Name => Model?.Name ?? "";
+    public string? Identifier => Model?.ItemIdentifier;
+    public string Name => Model?.ItemName ?? "";
 
-    public int Dfp => string.IsNullOrEmpty(Identifier) ? 0 : itemPMT.Armors[Identifier].DFP + DfpBonus;
+    public int Dfp => Model == null ? 0 : Model.AsArmor.DFP + DfpBonus;
     public int DfpBonus
     {
         get { return _dfpBonus; }
         set
         {
-            if (string.IsNullOrEmpty(Identifier)) return;
+            if (Model == null) return;
             if (value < 0) value = 0;
-            int dfpBonusMax = itemPMT.Armors[Identifier].DFPRange;
+            int dfpBonusMax = Model.AsArmor.DFPRange;
             if (value > dfpBonusMax) value = dfpBonusMax;
             _dfpBonus = value;
         }
     }
 
-    public int Evp => string.IsNullOrEmpty(Identifier) ? 0 : itemPMT.Armors[Identifier].EVP + EvpBonus;
+    public int Evp => Model == null ? 0 : Model.AsArmor.EVP + EvpBonus;
     public int EvpBonus
     {
         get { return _evpBonus; }
         set
         {
-            if (string.IsNullOrEmpty(Identifier)) return;
+            if (Model == null) return;
             if (value < 0) value = 0;
-            int evpBonusMax = itemPMT.Armors[Identifier].EVPRange;
+            int evpBonusMax = Model.AsArmor.EVPRange;
             if (value > evpBonusMax) value = evpBonusMax;
             _evpBonus = value;
         }
     }
 
-    public int Efr => string.IsNullOrEmpty(Identifier) ? 0 : itemPMT.Armors[Identifier].EFR;
-    public int Eic => string.IsNullOrEmpty(Identifier) ? 0 : itemPMT.Armors[Identifier].EIC;
-    public int Eth => string.IsNullOrEmpty(Identifier) ? 0 : itemPMT.Armors[Identifier].ETH;
-    public int Edk => string.IsNullOrEmpty(Identifier) ? 0 : itemPMT.Armors[Identifier].EDK;
-    public int Elt => string.IsNullOrEmpty(Identifier) ? 0 : itemPMT.Armors[Identifier].ELT;
+    public int Efr => Model == null ? 0 : Model.AsArmor.EFR;
+    public int Eic => Model == null ? 0 : Model.AsArmor.EIC;
+    public int Eth => Model == null ? 0 : Model.AsArmor.ETH;
+    public int Edk => Model == null ? 0 : Model.AsArmor.EDK;
+    public int Elt => Model == null ? 0 : Model.AsArmor.ELT;
 
-    public IEnumerable<Stat> GetStatBoosts()
-    {
-        if (string.IsNullOrEmpty(Identifier))
-            return [];
+    public IEnumerable<Stat> GetStatBoosts() => Model?.AsArmor.StatBoosts ?? [];
 
-        return itemPMT.Armors[Identifier].GetStatBoosts();
-    }
-
-    public IEnumerable<Tech> GetTechBoosts()
-    {
-        if (string.IsNullOrEmpty(Identifier))
-            return [];
-
-        return itemPMT.Armors[Identifier].GetTechBoosts();
-    }
+    public IEnumerable<Tech> GetTechBoosts() => Model?.AsArmor.TechBoosts ?? [];
 
     public override string ToString()
     {
@@ -277,7 +254,7 @@ public class BaseArmorModel(ItemPMTModel itemPMT)
     }
 }
 
-public partial class ArmorModel(ItemPMTModel itemPMT) : BaseArmorModel(itemPMT)
+public partial class ArmorModel() : BaseArmorModel()
 {
     private int _numberSlots;
 
@@ -302,12 +279,12 @@ public partial class ArmorModel(ItemPMTModel itemPMT) : BaseArmorModel(itemPMT)
         return s;
     }
 
-    public static ArmorModel Parse(ItemPMTModel itemPMT, ItemNameModel[] armors, string armor)
+    public static ArmorModel Parse(ItemModel[] armors, string armor)
     {
-        ArmorModel armorModel = new(itemPMT);
+        ArmorModel armorModel = new();
         Match m = ArmorStringRegex().Match(armor);
         if (!m.Success) return armorModel;
-        armorModel.Model = armors.FirstOrDefault(i => i.Name == m.Groups[1].Value);
+        armorModel.Model = armors.FirstOrDefault(i => i.ItemName == m.Groups[1].Value);
         if (m.Groups[2].Success) armorModel.NumberSlots = int.Parse(m.Groups[2].Value);
         if (m.Groups[3].Success) armorModel.DfpBonus = int.Parse(m.Groups[3].Value);
         if (m.Groups[4].Success) armorModel.EvpBonus = int.Parse(m.Groups[4].Value);
@@ -318,14 +295,14 @@ public partial class ArmorModel(ItemPMTModel itemPMT) : BaseArmorModel(itemPMT)
     private static partial Regex ArmorStringRegex();
 }
 
-public partial class ShieldModel(ItemPMTModel itemPMT) : BaseArmorModel(itemPMT)
+public partial class ShieldModel() : BaseArmorModel()
 {
-    public static ShieldModel Parse(ItemPMTModel itemPMT, ItemNameModel[] shields, string shield)
+    public static ShieldModel Parse(ItemModel[] shields, string shield)
     {
-        ShieldModel shieldModel = new(itemPMT);
+        ShieldModel shieldModel = new();
         Match m = ShieldStringRegex().Match(shield);
         if (!m.Success) return shieldModel;
-        shieldModel.Model = shields.FirstOrDefault(i => i.Name == m.Groups[1].Value);
+        shieldModel.Model = shields.FirstOrDefault(i => i.ItemName == m.Groups[1].Value);
         if (m.Groups[2].Success) shieldModel.DfpBonus = int.Parse(m.Groups[2].Value);
         if (m.Groups[3].Success) shieldModel.EvpBonus = int.Parse(m.Groups[3].Value);
         return shieldModel;
@@ -338,9 +315,9 @@ public partial class ShieldModel(ItemPMTModel itemPMT) : BaseArmorModel(itemPMT)
 public partial class UnitModel(ItemPMTModel itemPMT)
 {
     private int _modifier;
-    private ItemNameModel? _model;
+    private ItemModel? _model;
 
-    public ItemNameModel? Model
+    public ItemModel? Model
     {
         get { return _model; }
         set
@@ -350,15 +327,16 @@ public partial class UnitModel(ItemPMTModel itemPMT)
         }
     }
 
-    public string? Identifier => Model?.Identifier;
-    public string Name => Model?.Name ?? "";
+    public string? Identifier => Model?.ItemIdentifier;
+    public string Name => Model?.ItemName ?? "";
+    public bool CanHaveModifier => Model?.AsUnit.CanHaveModifier ?? false;
 
     public int Modifier
     {
-        get { return !string.IsNullOrEmpty(Identifier) && itemPMT.Units[Identifier].CanHaveModifier ? _modifier : 0; }
+        get { return CanHaveModifier ? _modifier : 0; }
         set
         {
-            if (string.IsNullOrEmpty(Identifier) || !itemPMT.Units[Identifier].CanHaveModifier) return;
+            if (!CanHaveModifier) return;
             if (value < -2) value = -2;
             if (value > 2) value = 2;
             _modifier = value;
@@ -382,12 +360,12 @@ public partial class UnitModel(ItemPMTModel itemPMT)
         return s;
     }
 
-    public static UnitModel Parse(ItemPMTModel itemPMT, ItemNameModel[] units, string unit)
+    public static UnitModel Parse(ItemPMTModel itemPMT, ItemModel[] units, string unit)
     {
         UnitModel unitModel = new(itemPMT);
         Match m = UnitStringRegex().Match(unit);
         if (!m.Success) return unitModel;
-        unitModel.Model = units.FirstOrDefault(i => i.Name == m.Groups[1].Value);
+        unitModel.Model = units.FirstOrDefault(i => i.ItemName == m.Groups[1].Value);
         if (m.Groups[2].Success) unitModel.Modifier = m.Groups[2].Value.Sum(c => c == '+' ? 1 : c == '-' ? -1 : 0);
         return unitModel;
     }
@@ -403,9 +381,9 @@ public partial class MagModel
     private int _dex;
     private int _mind;
 
-    public ItemNameModel? Model { get; set; }
+    public ItemModel? Model { get; set; }
 
-    public string Name => Model?.Name ?? "";
+    public string Name => Model?.ItemName ?? "";
     public int Level => Def + Pow + Dex + Mind;
 
     public int Def
@@ -462,12 +440,12 @@ public partial class MagModel
 
     public override string ToString() => string.IsNullOrEmpty(Name) ? "" : $"{Name} {Def}/{Pow}/{Dex}/{Mind}";
 
-    public static MagModel Parse(ItemNameModel[] mags, string mag)
+    public static MagModel Parse(ItemModel[] mags, string mag)
     {
         MagModel magModel = new();
         Match m = MagStringRegex().Match(mag);
         if (!m.Success) return magModel;
-        magModel.Model = mags.FirstOrDefault(i => i.Name == m.Groups[1].Value);
+        magModel.Model = mags.FirstOrDefault(i => i.ItemName == m.Groups[1].Value);
         magModel.Def = int.Parse(m.Groups[2].Value);
         magModel.Pow = int.Parse(m.Groups[3].Value);
         magModel.Dex = int.Parse(m.Groups[4].Value);

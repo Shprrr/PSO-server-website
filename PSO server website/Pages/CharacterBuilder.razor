@@ -11,7 +11,7 @@
 @inject IJSRuntime JsRuntime
 @inject Blazored.LocalStorage.ILocalStorageService localStorage
 @inject LevelTableRepository levelTableRepository
-@inject ItemsRepository itemsRepository
+@inject ItemsService itemsService
 @inject ItemPMTRepository itemPMTRepository
 @inject DropsLocationsService dropsLocationsService
 
@@ -428,7 +428,7 @@ else
                     @foreach (var wishItem in Character.Wishlist)
                     {
                         <button type="button" class="btn btn-outline-primary d-flex" @onclick="@(()=> modals!.ShowEditWishlist(wishItem))">
-                            <ItemName ItemIdentifier="@GetItemByName(wishItem)?.Identifier" />
+                            <ItemName ItemIdentifier="@GetItemByName(wishItem)?.ItemIdentifier" />
                             <div class="btn btn-sm btn-danger ms-auto" @onclick="@(()=> modals!.ShowDeleteWishlist(wishItem))" @onclick:stopPropagation="true">Delete</div>
                         </button>
                     }
@@ -451,7 +451,8 @@ else
                                     <ItemName ItemIdentifier="@location.ItemIdentifier" />
                                     @if (location.Modifier != null)
                                     {
-                                        <text>&nbsp;</text>@location.Modifier
+                                        <text>&nbsp;</text>
+                                        @location.Modifier
                                     }
                                 </th>
                                 <td>@location.DifficultyName</td>
@@ -467,7 +468,7 @@ else
         </div>
     </div>
 
-    <CharacterBuilder_Modals @ref="modals" Parent="this" EditUnitIndex="EditUnit" ItemPMT="itemPMT" Weapons="weapons" Armors="armors" Shields="shields" Units="units" Mags="mags" OnClose="() => { RefreshStats(); StateHasChanged(); }" />
+    <CharacterBuilder_Modals @ref="modals" Parent="this" EditUnitIndex="EditUnit" Weapons="weapons" Armors="armors" Shields="shields" Units="units" Mags="mags" OnClose="() => { RefreshStats(); StateHasChanged(); }" />
 }
 
 @code {
@@ -475,11 +476,11 @@ else
 
     [DisallowNull] private LevelTableModel levelTable = default!;
     [DisallowNull] private ItemPMTModel itemPMT = default!;
-    [DisallowNull] private ItemNameModel[] weapons = default!;
-    [DisallowNull] private ItemNameModel[] armors = default!;
-    [DisallowNull] private ItemNameModel[] units = default!;
-    [DisallowNull] private ItemNameModel[] shields = default!;
-    [DisallowNull] private ItemNameModel[] mags = default!;
+    [DisallowNull] private ItemModel[] weapons = default!;
+    [DisallowNull] private ItemModel[] armors = default!;
+    [DisallowNull] private ItemModel[] units = default!;
+    [DisallowNull] private ItemModel[] shields = default!;
+    [DisallowNull] private ItemModel[] mags = default!;
     [DisallowNull] private IEnumerable<DropLocationModel> dropsLocations = default!;
 
     [DisallowNull] public List<CharacterModel> Characters { get; set; } = new();
@@ -493,19 +494,16 @@ else
     {
         levelTable = await levelTableRepository.GetLevelTableAsync();
         itemPMT = await itemPMTRepository.GetItemsAsync();
-        var items = (await itemsRepository.GetItemsAsync()).ToArray();
-        weapons = items.Where(i => i.Identifier.StartsWith("00")).ToArray();
-        armors = items.Where(i => i.Identifier.StartsWith("0101")).ToArray();
-        shields = items.Where(i => i.Identifier.StartsWith("0102")).ToArray();
-        units = items.Where(i => i.Identifier.StartsWith("0103")).ToArray();
-        mags = items.Where(i => i.Identifier.StartsWith("02")).ToArray();
-        weapon = new(itemPMT);
-        armor = new(itemPMT);
+        var items = itemsService.GetItems().ToArray();
+        weapons = items.Where(i => i.ItemType == ItemType.Weapon).ToArray();
+        armors = items.Where(i => i.ItemType == ItemType.Armor).ToArray();
+        shields = items.Where(i => i.ItemType == ItemType.Shield).ToArray();
+        units = items.Where(i => i.ItemType == ItemType.Unit).ToArray();
+        mags = items.Where(i => i.ItemType == ItemType.Mag).ToArray();
         unit1 = new(itemPMT);
         unit2 = new(itemPMT);
         unit3 = new(itemPMT);
         unit4 = new(itemPMT);
-        shield = new(itemPMT);
 
         dropsLocations = await dropsLocationsService.GetDropsLocationsAsync();
 
@@ -547,14 +545,14 @@ else
 
     private static readonly int[] maxMats = [250, 150, 150, 150, 250, 250, 150, 150, 250, 250, 150, 150];
 
-    [DisallowNull] private WeaponModel weapon = default!;
-    [DisallowNull] private ArmorModel armor = default!;
+    [DisallowNull] private WeaponModel weapon = new();
+    [DisallowNull] private ArmorModel armor = new();
     [DisallowNull] private UnitModel unit1 = default!;
     [DisallowNull] private UnitModel unit2 = default!;
     [DisallowNull] private UnitModel unit3 = default!;
     [DisallowNull] private UnitModel unit4 = default!;
-    [DisallowNull] private ShieldModel shield = default!;
-    [DisallowNull] private MagModel mag = default!;
+    [DisallowNull] private ShieldModel shield = new();
+    [DisallowNull] private MagModel mag = new();
 
     public string Name
     {
@@ -873,13 +871,13 @@ else
         string magName = Character.MagName;
         // It's this order because each one helps with requirements for other equipment.
         Mag = MagModel.Parse(mags, magName);
-        Armor = ArmorModel.Parse(itemPMT, armors, armorName);
+        Armor = ArmorModel.Parse(armors, armorName);
         Unit1 = UnitModel.Parse(itemPMT, units, unit1Name);
         Unit2 = UnitModel.Parse(itemPMT, units, unit2Name);
         Unit3 = UnitModel.Parse(itemPMT, units, unit3Name);
         Unit4 = UnitModel.Parse(itemPMT, units, unit4Name);
-        Shield = ShieldModel.Parse(itemPMT, shields, shieldName);
-        Weapon = WeaponModel.Parse(itemPMT, weapons, weaponName);
+        Shield = ShieldModel.Parse(shields, shieldName);
+        Weapon = WeaponModel.Parse(weapons, weaponName);
     }
 
     public void RefreshStats()
@@ -915,13 +913,13 @@ else
             if (TargetLuckMaterial != 0) Character.TargetLuckMaterial = 0;
             if (ShiftaLevel != 0) Character.ShiftaLevel = 0;
             if (DebandLevel != 0) Character.DebandLevel = 0;
-            if (Character.WeaponName != "") { Character.WeaponName = ""; Weapon = new(itemPMT); }
-            if (Character.ArmorName != "") { Character.ArmorName = ""; Armor = new(itemPMT); }
+            if (Character.WeaponName != "") { Character.WeaponName = ""; Weapon = new(); }
+            if (Character.ArmorName != "") { Character.ArmorName = ""; Armor = new(); }
             if (Character.Unit1Name != "") { Character.Unit1Name = ""; Unit1 = new(itemPMT); }
             if (Character.Unit2Name != "") { Character.Unit2Name = ""; Unit2 = new(itemPMT); }
             if (Character.Unit3Name != "") { Character.Unit3Name = ""; Unit3 = new(itemPMT); }
             if (Character.Unit4Name != "") { Character.Unit4Name = ""; Unit4 = new(itemPMT); }
-            if (Character.ShieldName != "") { Character.ShieldName = ""; Shield = new(itemPMT); }
+            if (Character.ShieldName != "") { Character.ShieldName = ""; Shield = new(); }
             if (Character.MagName != "Mag 5/0/0/0") { Character.MagName = "Mag 5/0/0/0"; Mag = MagModel.Parse(mags, "Mag 5/0/0/0"); }
 
             localStorage.SetItemAsync("characters", Characters);
@@ -969,13 +967,13 @@ else
         if (Character.MagName != Mag.ToString()) Character.MagName = Mag.ToString();
 
         // Reset equipment that don't meet requirements.
-        if (Weapon.Model != null && !GetItemWithRequirements(Weapon.Model).Any()) Weapon = new(itemPMT);
-        if (Armor.Model != null && !GetItemWithRequirements(Armor.Model).Any()) Armor = new(itemPMT);
+        if (Weapon.Model != null && !GetItemWithRequirements(Weapon.Model).Any()) Weapon = new();
+        if (Armor.Model != null && !GetItemWithRequirements(Armor.Model).Any()) Armor = new();
         if (Unit1.Model != null && (Armor.NumberSlots < 1 || !GetItemWithRequirements(Unit1.Model).Any())) Unit1 = new(itemPMT);
         if (Unit2.Model != null && (Armor.NumberSlots < 2 || !GetItemWithRequirements(Unit2.Model).Any())) Unit2 = new(itemPMT);
         if (Unit3.Model != null && (Armor.NumberSlots < 3 || !GetItemWithRequirements(Unit3.Model).Any())) Unit3 = new(itemPMT);
         if (Unit4.Model != null && (Armor.NumberSlots < 4 || !GetItemWithRequirements(Unit4.Model).Any())) Unit4 = new(itemPMT);
-        if (Shield.Model != null && !GetItemWithRequirements(Shield.Model).Any()) Shield = new(itemPMT);
+        if (Shield.Model != null && !GetItemWithRequirements(Shield.Model).Any()) Shield = new();
 
         // Calculate stats.
         var baseStats = levelTable.BaseStats[indexClass];
@@ -1040,11 +1038,11 @@ else
         _ => 0
     };
 
-    public IEnumerable<ItemNameModel> GetItemWithRequirements(params ItemNameModel[] items)
+    public IEnumerable<ItemModel> GetItemWithRequirements(params ItemModel[] items)
     {
         if (!ClassRaceSelection.HasValue) yield break;
 
-        foreach (var (item, weapon) in items.Join(itemPMT.Weapons, i => i.Identifier, w => w.Key, (i, w) => (item: i, weapon: w.Value)))
+        foreach (var (item, weapon) in items.Join(itemPMT.Weapons, i => i.ItemIdentifier, w => w.Key, (i, w) => (item: i, weapon: w.Value)))
         {
             bool meetRequirement = weapon.ClassFlags.HasFlag(ItemPMTRepository.ClassFeatureFlagsByClass[(int)ClassRaceSelection]);
             meetRequirement &= BaseATP >= weapon.ATPRequired;
@@ -1053,14 +1051,14 @@ else
             if (meetRequirement) yield return item;
         }
 
-        foreach (var (item, armor) in items.Join(itemPMT.Armors, i => i.Identifier, a => a.Key, (i, a) => (item: i, armor: a.Value)))
+        foreach (var (item, armor) in items.Join(itemPMT.Armors, i => i.ItemIdentifier, a => a.Key, (i, a) => (item: i, armor: a.Value)))
         {
             bool meetRequirement = armor.ClassFlags.HasFlag(ItemPMTRepository.ClassFeatureFlagsByClass[(int)ClassRaceSelection]);
             meetRequirement &= Level > armor.RequiredLevel;
             if (meetRequirement) yield return item;
         }
 
-        foreach (var (item, unit) in items.Join(itemPMT.Units, i => i.Identifier, u => u.Key, (i, u) => (item: i, unit: u.Value)))
+        foreach (var (item, unit) in items.Join(itemPMT.Units, i => i.ItemIdentifier, u => u.Key, (i, u) => (item: i, unit: u.Value)))
         {
             bool meetRequirement = unit.ClassFlags.HasFlag(ItemPMTRepository.ClassFeatureFlagsByClass[(int)ClassRaceSelection]);
             if (meetRequirement) yield return item;
@@ -1162,15 +1160,15 @@ else
     private IEnumerable<Stat> GetEverySpecialStats() => GetClassStatBoost().Concat(GetEveryStatBoost())
         .Where(s => !new string[] { "ATP", "MST", "ATA", "EVP", "HP", "TP", "DFP", "LCK", "EFR", "EIC", "ETH", "ELT", "EDK", "+ATP", "+ATA", "+EVP", "+DFP", "+MST", "+HP", "+LCK", "+All", "-ATP", "-ATA", "-EVP", "-DFP", "-MST", "-HP", "-LCK", "-All" }.Contains(s.Code));
 
-    public ItemNameModel? GetItemByName(string name)
+    public ItemModel? GetItemByName(string name)
     {
-        return weapons.Concat(armors.Concat(shields.Concat(units.Concat(mags)))).FirstOrDefault(i => i.Name == name);
+        return weapons.Concat(armors.Concat(shields.Concat(units.Concat(mags)))).FirstOrDefault(i => i.ItemName == name);
     }
 
     private IEnumerable<DropLocationModel> GetItemLocations()
     {
         var items = weapons.Concat(armors.Concat(shields.Concat(units.Concat(mags))));
-        var wishlistItems = Character.Wishlist.Join(items, w => w, i => i.Name, (w, i) => i.Identifier);
+        var wishlistItems = Character.Wishlist.Join(items, w => w, i => i.ItemName, (w, i) => i.ItemIdentifier);
 
         return dropsLocations.Join(wishlistItems, dl => dl.ItemIdentifier, w => w, (dl, w) => dl);
     }

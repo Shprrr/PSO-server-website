@@ -1,6 +1,5 @@
 ﻿@using PSOServerWebsite.Pages.CharacterBuilderModels
-@using UnitModel = PSOServerWebsite.Pages.CharacterBuilderModels.UnitModel
-@using PSOServerWebsite.Repositories
+@using PSOServerWebsite.Services
 @inject IJSRuntime JsRuntime
 
 <div id="modalCharacterSelection" class="modal" onhidden.bs.modal="@(() => OnClose?.Invoke())">
@@ -178,7 +177,7 @@
                 <label class="form-label col col-12">
                     Weapon
                     <InputSelectSearch @bind-Value="Parent.Weapon.Model" DataSource="@Parent.GetItemWithRequirements(Weapons)"
-                                       IdMember="@((w) => w?.Identifier)" DisplayMember="@((w) => w?.Name)" aria-label="Select a weapon"></InputSelectSearch>
+                                       IdMember="@((w) => w?.ItemIdentifier)" DisplayMember="@((w) => w?.ItemName)" aria-label="Select a weapon"></InputSelectSearch>
                 </label>
                 <label class="form-label col col-6">
                     Grind
@@ -260,7 +259,7 @@
                     <label class="form-label col col-12">
                         Armor
                         <InputSelectSearch @bind-Value="Parent.Armor.Model" DataSource="@Parent.GetItemWithRequirements(Armors)"
-                                           IdMember="@((a) => a?.Identifier)" DisplayMember="@((a) => a?.Name)" aria-label="Select an armor"></InputSelectSearch>
+                                           IdMember="@((a) => a?.ItemIdentifier)" DisplayMember="@((a) => a?.ItemName)" aria-label="Select an armor"></InputSelectSearch>
                     </label>
                     <label class="form-label col col-3">
                         DFP
@@ -365,9 +364,9 @@
                     <label class="form-label col col-12">
                         Unit
                         <InputSelectSearch @bind-Value="EditUnitModel.Model" DataSource="@Parent.GetItemWithRequirements(Units)"
-                                           IdMember="@((u) => u?.Identifier)" DisplayMember="@((u) => u?.Name)" aria-label="Select an unit"></InputSelectSearch>
+                                           IdMember="@((u) => u?.ItemIdentifier)" DisplayMember="@((u) => u?.ItemName)" aria-label="Select an unit"></InputSelectSearch>
                     </label>
-                    @if (EditUnitModel.Identifier != null && ItemPMT.Units[EditUnitModel.Identifier].CanHaveModifier)
+                    @if (EditUnitModel.CanHaveModifier)
                     {
                         <label class="form-label col col-3">
                             +/-
@@ -412,7 +411,7 @@
                     <label class="form-label col col-12">
                         Shield
                         <InputSelectSearch @bind-Value="Parent.Shield.Model" DataSource="@Parent.GetItemWithRequirements(Shields)"
-                                           IdMember="@((s) => s?.Identifier)" DisplayMember="@((s) => s?.Name)" aria-label="Select a shield"></InputSelectSearch>
+                                           IdMember="@((s) => s?.ItemIdentifier)" DisplayMember="@((s) => s?.ItemName)" aria-label="Select a shield"></InputSelectSearch>
                     </label>
                     <label class="form-label col col-3">
                         DFP
@@ -510,7 +509,7 @@
             <div class="modal-body container row">
                 <label class="form-label col col-6">
                     Mag
-                    <InputSelectSearch @bind-Value="Parent.Mag.Model" DataSource="@Mags" IdMember="@((s) => s?.Identifier)" DisplayMember="@((s) => s?.Name)" aria-label="Select a mag"></InputSelectSearch>
+                    <InputSelectSearch @bind-Value="Parent.Mag.Model" DataSource="@Mags" IdMember="@((s) => s?.ItemIdentifier)" DisplayMember="@((s) => s?.ItemName)" aria-label="Select a mag"></InputSelectSearch>
                 </label>
                 <label class="form-label col col-6">
                     Level
@@ -566,22 +565,22 @@
                         <label id="wishlistNewWeapon" class="tab-pane fade show active form-label col col-12">
                             Weapon
                             <InputSelectSearch @bind-Value="WishlistItem" DataSource="@Weapons"
-                                               IdMember="@((w) => w?.Identifier)" DisplayMember="@((w) => w?.Name)" aria-label="Select a weapon"></InputSelectSearch>
+                                               IdMember="@((w) => w?.ItemIdentifier)" DisplayMember="@((w) => w?.ItemName)" aria-label="Select a weapon"></InputSelectSearch>
                         </label>
                         <label id="wishlistNewArmor" class="tab-pane fade form-label col col-12">
                             Armor
                             <InputSelectSearch @bind-Value="WishlistItem" DataSource="@Armors"
-                                               IdMember="@((w) => w?.Identifier)" DisplayMember="@((w) => w?.Name)" aria-label="Select an armor"></InputSelectSearch>
+                                               IdMember="@((w) => w?.ItemIdentifier)" DisplayMember="@((w) => w?.ItemName)" aria-label="Select an armor"></InputSelectSearch>
                         </label>
                         <label id="wishlistNewUnit" class="tab-pane fade form-label col col-12">
                             Unit
                             <InputSelectSearch @bind-Value="WishlistItem" DataSource="@Units"
-                                               IdMember="@((w) => w?.Identifier)" DisplayMember="@((w) => w?.Name)" aria-label="Select an unit"></InputSelectSearch>
+                                               IdMember="@((w) => w?.ItemIdentifier)" DisplayMember="@((w) => w?.ItemName)" aria-label="Select an unit"></InputSelectSearch>
                         </label>
                         <label id="wishlistNewShield" class="tab-pane fade form-label col col-12">
                             Shield
                             <InputSelectSearch @bind-Value="WishlistItem" DataSource="@Shields"
-                                               IdMember="@((w) => w?.Identifier)" DisplayMember="@((w) => w?.Name)" aria-label="Select a shield"></InputSelectSearch>
+                                               IdMember="@((w) => w?.ItemIdentifier)" DisplayMember="@((w) => w?.ItemName)" aria-label="Select a shield"></InputSelectSearch>
                         </label>
                     </div>
                 </div>
@@ -614,22 +613,22 @@
                         <label id="wishlistEditWeapon" class="tab-pane fade show active form-label col col-12">
                             Weapon
                             <InputSelectSearch @bind-Value="WishlistItem" DataSource="@Weapons"
-                                               IdMember="@((w) => w?.Identifier)" DisplayMember="@((w) => w?.Name)" aria-label="Select a weapon"></InputSelectSearch>
+                                               IdMember="@((w) => w?.ItemIdentifier)" DisplayMember="@((w) => w?.ItemName)" aria-label="Select a weapon"></InputSelectSearch>
                         </label>
                         <label id="wishlistEditArmor" class="tab-pane fade form-label col col-12">
                             Armor
                             <InputSelectSearch @bind-Value="WishlistItem" DataSource="@Armors"
-                                               IdMember="@((w) => w?.Identifier)" DisplayMember="@((w) => w?.Name)" aria-label="Select an armor"></InputSelectSearch>
+                                               IdMember="@((w) => w?.ItemIdentifier)" DisplayMember="@((w) => w?.ItemName)" aria-label="Select an armor"></InputSelectSearch>
                         </label>
                         <label id="wishlistEditUnit" class="tab-pane fade form-label col col-12">
                             Unit
                             <InputSelectSearch @bind-Value="WishlistItem" DataSource="@Units"
-                                               IdMember="@((w) => w?.Identifier)" DisplayMember="@((w) => w?.Name)" aria-label="Select an unit"></InputSelectSearch>
+                                               IdMember="@((w) => w?.ItemIdentifier)" DisplayMember="@((w) => w?.ItemName)" aria-label="Select an unit"></InputSelectSearch>
                         </label>
                         <label id="wishlistEditShield" class="tab-pane fade form-label col col-12">
                             Shield
                             <InputSelectSearch @bind-Value="WishlistItem" DataSource="@Shields"
-                                               IdMember="@((w) => w?.Identifier)" DisplayMember="@((w) => w?.Name)" aria-label="Select a shield"></InputSelectSearch>
+                                               IdMember="@((w) => w?.ItemIdentifier)" DisplayMember="@((w) => w?.ItemName)" aria-label="Select a shield"></InputSelectSearch>
                         </label>
                     </div>
                 </div>
@@ -725,12 +724,11 @@
     public required CharacterBuilder Parent { get; set; }
     [Parameter]
     public int EditUnitIndex { get; set; }
-    [Parameter, EditorRequired] public required ItemPMTModel ItemPMT { get; set; }
-    [Parameter, EditorRequired] public required ItemNameModel[] Weapons { get; set; }
-    [Parameter, EditorRequired] public required ItemNameModel[] Armors { get; set; }
-    [Parameter, EditorRequired] public required ItemNameModel[] Shields { get; set; }
-    [Parameter, EditorRequired] public required ItemNameModel[] Units { get; set; }
-    [Parameter, EditorRequired] public required ItemNameModel[] Mags { get; set; }
+    [Parameter, EditorRequired] public required ItemModel[] Weapons { get; set; }
+    [Parameter, EditorRequired] public required ItemModel[] Armors { get; set; }
+    [Parameter, EditorRequired] public required ItemModel[] Shields { get; set; }
+    [Parameter, EditorRequired] public required ItemModel[] Units { get; set; }
+    [Parameter, EditorRequired] public required ItemModel[] Mags { get; set; }
 
     [Parameter]
     public Action? OnClose { get; set; }
@@ -844,7 +842,7 @@
         JsRuntime.InvokeVoidAsync("deleteLoadout", oldLoadoutName);
     }
 
-    private ItemNameModel? WishlistItem { get; set; } = null;
+    private ItemModel? WishlistItem { get; set; } = null;
     private void OnClickWishlistNew()
     {
         if (WishlistItem == null)
@@ -852,12 +850,12 @@
             JsRuntime.InvokeVoidAsync("alertModalWishlistNew", "Please choose an item to wishlist.");
             return;
         }
-        if (Parent.Character.Wishlist.Contains(WishlistItem.Name))
+        if (Parent.Character.Wishlist.Contains(WishlistItem.ItemName))
         {
             JsRuntime.InvokeVoidAsync("alertModalWishlistNew", "This item is already on the wishlist.");
             return;
         }
-        Parent.Character.Wishlist.Add(WishlistItem.Name);
+        Parent.Character.Wishlist.Add(WishlistItem.ItemName);
         JsRuntime.InvokeVoidAsync("closeModalWishlistNew").ConfigureAwait(false);
     }
 
@@ -867,12 +865,12 @@
         await JsRuntime.InvokeVoidAsync("showWishlistEdit");
         EditWishlistName = wishlistItem;
         WishlistItem = Parent.GetItemByName(wishlistItem);
-        string category = WishlistItem?.Identifier switch
+        string category = WishlistItem?.ItemType switch
         {
-            { } when WishlistItem.Identifier.StartsWith("00") => "Weapon",
-            { } when WishlistItem.Identifier.StartsWith("0101") => "Armor",
-            { } when WishlistItem.Identifier.StartsWith("0103") => "Unit",
-            { } when WishlistItem.Identifier.StartsWith("0102") => "Shield",
+            ItemType.Weapon => "Weapon",
+            ItemType.Armor => "Armor",
+            ItemType.Unit => "Unit",
+            ItemType.Shield => "Shield",
             _ => throw new NotSupportedException()
         };
         await JsRuntime.InvokeVoidAsync("changeActiveTabWishlistEdit", category);
@@ -884,12 +882,12 @@
             JsRuntime.InvokeVoidAsync("alertModalWishlistEdit", "Please choose an item to wishlist.");
             return;
         }
-        if (WishlistItem.Name != EditWishlistName && Parent.Character.Wishlist.Contains(WishlistItem.Name))
+        if (WishlistItem.ItemName != EditWishlistName && Parent.Character.Wishlist.Contains(WishlistItem.ItemName))
         {
             JsRuntime.InvokeVoidAsync("alertModalWishlistEdit", "This item is already on the wishlist.");
             return;
         }
-        Parent.Character.Wishlist[Parent.Character.Wishlist.IndexOf(EditWishlistName!)] = WishlistItem.Name;
+        Parent.Character.Wishlist[Parent.Character.Wishlist.IndexOf(EditWishlistName!)] = WishlistItem.ItemName;
         JsRuntime.InvokeVoidAsync("closeModalWishlistEdit").ConfigureAwait(false);
     }
 

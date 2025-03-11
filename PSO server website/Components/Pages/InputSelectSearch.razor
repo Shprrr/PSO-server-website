@@ -6,10 +6,10 @@
     <input class="form-select dropdown-toggle" @bind-value="SearchValue" role="search" data-bs-toggle="dropdown" aria-expanded="false"
            @oninput="FilterDataSource" onshow.bs.dropdown="@(async () => ShowDropdownAsync())" onhide.bs.dropdown="@(async () => HideDropdownAsync())" />
     <ul @ref="dropdownMenu" class="dropdown-menu overflow-auto shadow">
-        <li><button class="dropdown-item @(IdMember(Value) == null ? "active" : "")" value="" onclick="@(async () => SelectedValueChangeAsync(null))"><i>~ None ~</i></button></li>
+        <li><button class="dropdown-item @(IdMember(Value) == null ? "active" : "")" onclick="@(async () => SelectedValueChangeAsync(null))"><i>~ None ~</i></button></li>
         @foreach (var item in DataSourceFiltered)
         {
-            <li><button class="dropdown-item @(IdMember(Value) == IdMember(item) ? "active" : "")" value="@item" onclick="@(async () => SelectedValueChangeAsync(IdMember(item)))"><ItemName ItemIdentifier="@IdMember(item)" /></button></li>
+            <li><button class="dropdown-item @(IdMember(Value) == IdMember(item) ? "active" : "")" onclick="@(async () => SelectedValueChangeAsync(IdMember(item)))"><ItemName ItemIdentifier="@IdMember(item)" /></button></li>
         }
     </ul>
 </div>
