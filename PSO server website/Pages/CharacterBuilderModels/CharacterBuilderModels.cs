@@ -24,6 +24,7 @@ public class CharacterModel
 {
     public string Name { get; set; } = "";
     public ClassRace? ClassRaceSelection { get; set; }
+    public ClassFlag? ClassFlagSelection { get; set; }
     public string LoadoutSelection { get; set; } = "Default";
     public Dictionary<string, LoadoutModel> Loadouts { get; set; } = new() { ["Default"] = new() };
     [System.Text.Json.Serialization.JsonIgnore]

@@ -42,18 +42,18 @@ else
                     Class
                     <InputSelect @bind-Value="ClassRaceSelection" class="form-select" aria-label="Select a class">
                         <option value="">Select a class ...</option>
-                        <option selected="@(ClassRaceSelection == ClassRace.Humar)" value="@ClassRace.Humar">HUmar</option>
-                        <option selected="@(ClassRaceSelection == ClassRace.Hunewearl)" value="@ClassRace.Hunewearl">HUnewearl</option>
-                        <option selected="@(ClassRaceSelection == ClassRace.Hucast)" value="@ClassRace.Hucast">HUcast</option>
-                        <option selected="@(ClassRaceSelection == ClassRace.Hucaseal)" value="@ClassRace.Hucaseal">HUcaseal</option>
-                        <option selected="@(ClassRaceSelection == ClassRace.Ramar)" value="@ClassRace.Ramar">RAmar</option>
-                        <option selected="@(ClassRaceSelection == ClassRace.Ramarl)" value="@ClassRace.Ramarl">RAmarl</option>
-                        <option selected="@(ClassRaceSelection == ClassRace.Racast)" value="@ClassRace.Racast">RAcast</option>
-                        <option selected="@(ClassRaceSelection == ClassRace.Racaseal)" value="@ClassRace.Racaseal">RAcaseal</option>
-                        <option selected="@(ClassRaceSelection == ClassRace.Fomar)" value="@ClassRace.Fomar">FOmar</option>
-                        <option selected="@(ClassRaceSelection == ClassRace.Fomarl)" value="@ClassRace.Fomarl">FOmarl</option>
-                        <option selected="@(ClassRaceSelection == ClassRace.Fonewm)" value="@ClassRace.Fonewm">FOnewm</option>
-                        <option selected="@(ClassRaceSelection == ClassRace.Fonewearl)" value="@ClassRace.Fonewearl">FOnewearl</option>
+                        <option selected="@(ClassRaceSelection == ClassFlag.HUmar)" value="@ClassFlag.HUmar">HUmar</option>
+                        <option selected="@(ClassRaceSelection == ClassFlag.HUnewearl)" value="@ClassFlag.HUnewearl">HUnewearl</option>
+                        <option selected="@(ClassRaceSelection == ClassFlag.HUcast)" value="@ClassFlag.HUcast">HUcast</option>
+                        <option selected="@(ClassRaceSelection == ClassFlag.HUcaseal)" value="@ClassFlag.HUcaseal">HUcaseal</option>
+                        <option selected="@(ClassRaceSelection == ClassFlag.RAmar)" value="@ClassFlag.RAmar">RAmar</option>
+                        <option selected="@(ClassRaceSelection == ClassFlag.RAmarl)" value="@ClassFlag.RAmarl">RAmarl</option>
+                        <option selected="@(ClassRaceSelection == ClassFlag.RAcast)" value="@ClassFlag.RAcast">RAcast</option>
+                        <option selected="@(ClassRaceSelection == ClassFlag.RAcaseal)" value="@ClassFlag.RAcaseal">RAcaseal</option>
+                        <option selected="@(ClassRaceSelection == ClassFlag.FOmar)" value="@ClassFlag.FOmar">FOmar</option>
+                        <option selected="@(ClassRaceSelection == ClassFlag.FOmarl)" value="@ClassFlag.FOmarl">FOmarl</option>
+                        <option selected="@(ClassRaceSelection == ClassFlag.FOnewm)" value="@ClassFlag.FOnewm">FOnewm</option>
+                        <option selected="@(ClassRaceSelection == ClassFlag.FOnewearl)" value="@ClassFlag.FOnewearl">FOnewearl</option>
                     </InputSelect>
                 </label>
             </div>
@@ -509,6 +509,28 @@ else
 
         var characterSelectedIndex = await localStorage.GetItemAsync<int>("characterSelectedIndex");
         Characters = await localStorage.GetItemAsync<List<CharacterModel>>("characters") ?? new();
+        // Convert old data
+        Characters.ForEach(c =>
+            {
+                if (c.ClassFlagSelection == null)
+                    c.ClassFlagSelection = c.ClassRaceSelection switch
+                    {
+                        ClassRace.Humar => ClassFlag.HUmar,
+                        ClassRace.Hunewearl => ClassFlag.HUnewearl,
+                        ClassRace.Hucast => ClassFlag.HUcast,
+                        ClassRace.Hucaseal => ClassFlag.HUcaseal,
+                        ClassRace.Ramar => ClassFlag.RAmar,
+                        ClassRace.Ramarl => ClassFlag.RAmarl,
+                        ClassRace.Racast => ClassFlag.RAcast,
+                        ClassRace.Racaseal => ClassFlag.RAcaseal,
+                        ClassRace.Fomar => ClassFlag.FOmar,
+                        ClassRace.Fomarl => ClassFlag.FOmarl,
+                        ClassRace.Fonewm => ClassFlag.FOnewm,
+                        ClassRace.Fonewearl => ClassFlag.FOnewearl,
+                        null => null,
+                        _ => throw new NotImplementedException()
+                    };
+            });
         if (characterSelectedIndex >= Characters.Count) characterSelectedIndex = 0;
         if (Characters.Count > 0)
         {
@@ -560,10 +582,10 @@ else
         set { Character.Name = value; RefreshStats(); }
     }
 
-    public ClassRace? ClassRaceSelection
+    public ClassFlag? ClassRaceSelection
     {
-        get { return Character.ClassRaceSelection; }
-        set { Character.ClassRaceSelection = value; RefreshStats(); }
+        get { return Character.ClassFlagSelection; }
+        set { Character.ClassFlagSelection = value; RefreshStats(); }
     }
 
     public string LoadoutSelection
@@ -590,7 +612,7 @@ else
         get
         {
             if (!ClassRaceSelection.HasValue) return 0;
-            int indexClass = (int)ClassRaceSelection;
+            int indexClass = ConvertClassFlagToIndex(ClassRaceSelection.Value);
             var levelDeltas = levelTable.LevelDeltas[indexClass].Take(Level);
             return levelTable.BaseStats[indexClass].ATP + levelDeltas.Sum(l => l.ATP) + GetATPBonus() + GetEveryStatBoost().Sum(s => (int)CalculateStatBoost("ATP", s.Code, s.Value)) + (PowerMaterial + Mag.Pow) * 2;
         }
@@ -602,7 +624,7 @@ else
         get
         {
             if (!ClassRaceSelection.HasValue) return 0;
-            int indexClass = (int)ClassRaceSelection;
+            int indexClass = ConvertClassFlagToIndex(ClassRaceSelection.Value);
             var levelDeltas = levelTable.LevelDeltas[indexClass].Take(Level);
             return levelTable.BaseStats[indexClass].MST + levelDeltas.Sum(l => l.MST) + GetEveryStatBoost().Sum(s => (int)CalculateStatBoost("MST", s.Code, s.Value)) + (MindMaterial + Mag.Mind) * 2;
         }
@@ -613,7 +635,7 @@ else
         get
         {
             if (!ClassRaceSelection.HasValue) return 0;
-            int indexClass = (int)ClassRaceSelection;
+            int indexClass = ConvertClassFlagToIndex(ClassRaceSelection.Value);
             var levelDeltas = levelTable.LevelDeltas[indexClass].Take(Level);
             return levelTable.BaseStats[indexClass].ATA + levelDeltas.Sum(l => l.ATA) / 10f + GetATABonus() + GetEveryStatBoost().Sum(s => (float)CalculateStatBoost("ATA", s.Code, s.Value)) + Mag.Dex / 2f;
         }
@@ -858,6 +880,23 @@ else
         set { Character.Notes = value; RefreshStats(); }
     }
 
+    public int ConvertClassFlagToIndex(ClassFlag classFlag) => classFlag switch
+    {
+        ClassFlag.HUmar => 0,
+        ClassFlag.HUnewearl => 1,
+        ClassFlag.HUcast => 2,
+        ClassFlag.HUcaseal => 3,
+        ClassFlag.RAmar => 4,
+        ClassFlag.RAmarl => 5,
+        ClassFlag.RAcast => 6,
+        ClassFlag.RAcaseal => 7,
+        ClassFlag.FOmar => 8,
+        ClassFlag.FOmarl => 9,
+        ClassFlag.FOnewm => 10,
+        ClassFlag.FOnewearl => 11,
+        _ => throw new NotImplementedException()
+    };
+
     public void RefreshEquipmentModels()
     {
         // Keep equipment names because they will be erased when assigning the new loadout.
@@ -926,8 +965,6 @@ else
             return;
         }
 
-        int indexClass = (int)ClassRaceSelection;
-
         // Clamp materials numbers that can change with class selection.
         var maxMaterial = MaxPowerDefEvadeMaterial();
         if (TPMaterial > MaxTPMaterial()) TPMaterial = MaxTPMaterial();
@@ -976,6 +1013,7 @@ else
         if (Shield.Model != null && !GetItemWithRequirements(Shield.Model).Any()) Shield = new();
 
         // Calculate stats.
+        int indexClass = ConvertClassFlagToIndex(ClassRaceSelection.Value);
         var baseStats = levelTable.BaseStats[indexClass];
         var levelDeltas = levelTable.LevelDeltas[indexClass].Take(Level);
         var baseATP = BaseATP + Weapon.BaseAtp;
@@ -986,9 +1024,9 @@ else
             + GetEveryStatBoost().Sum(s => (int)CalculateStatBoost("HP", s.Code, s.Value));
         TP = ClassRaceSelection switch
         {
-            ClassRace.Humar or ClassRace.Hunewearl or ClassRace.Ramar or ClassRace.Ramarl
+            ClassFlag.HUmar or ClassFlag.HUnewearl or ClassFlag.RAmar or ClassFlag.RAmarl
                 => baseMST + Level - 1 + GetEveryStatBoost().Sum(s => (int)CalculateStatBoost("TP", s.Code, s.Value)),
-            ClassRace.Fomar or ClassRace.Fomarl or ClassRace.Fonewm or ClassRace.Fonewearl
+            ClassFlag.FOmar or ClassFlag.FOmarl or ClassFlag.FOnewm or ClassFlag.FOnewearl
                 => (int)Math.Floor((baseMST + Level - 1) * 1.5 + GetEveryStatBoost().Sum(s => (int)CalculateStatBoost("TP", s.Code, s.Value))),
             _ => 0
         } + TPMaterial * 2;
@@ -1011,30 +1049,30 @@ else
 
     private double GetHPMultiplier() => ClassRaceSelection switch
     {
-        ClassRace.Ramar or ClassRace.Ramarl or ClassRace.Racast or ClassRace.Racaseal => 1.85,
-        ClassRace.Fomar or ClassRace.Fomarl or ClassRace.Fonewm or ClassRace.Fonewearl => 1.45,
+        ClassFlag.RAmar or ClassFlag.RAmarl or ClassFlag.RAcast or ClassFlag.RAcaseal => 1.85,
+        ClassFlag.FOmar or ClassFlag.FOmarl or ClassFlag.FOnewm or ClassFlag.FOnewearl => 1.45,
         _ => 2
     };
 
     private int GetATPBonus() => ClassRaceSelection switch
     {
-        ClassRace.Humar or ClassRace.Hunewearl or ClassRace.Hucast or ClassRace.Hucaseal => 10,
-        ClassRace.Ramar or ClassRace.Ramarl or ClassRace.Racast or ClassRace.Racaseal => 5,
-        ClassRace.Fomar or ClassRace.Fomarl or ClassRace.Fonewm or ClassRace.Fonewearl => 3,
+        ClassFlag.HUmar or ClassFlag.HUnewearl or ClassFlag.HUcast or ClassFlag.HUcaseal => 10,
+        ClassFlag.RAmar or ClassFlag.RAmarl or ClassFlag.RAcast or ClassFlag.RAcaseal => 5,
+        ClassFlag.FOmar or ClassFlag.FOmarl or ClassFlag.FOnewm or ClassFlag.FOnewearl => 3,
         _ => 0
     };
 
     private int GetATABonus() => ClassRaceSelection switch
     {
-        ClassRace.Humar or ClassRace.Hunewearl => 38,
-        ClassRace.Hucast => 29,
-        ClassRace.Hucaseal => 36,
-        ClassRace.Ramar => 40,
-        ClassRace.Ramarl or ClassRace.Racaseal => 32,
-        ClassRace.Racast => 30,
-        ClassRace.Fomar or ClassRace.Fomarl => 48,
-        ClassRace.Fonewm => 49,
-        ClassRace.Fonewearl => 51,
+        ClassFlag.HUmar or ClassFlag.HUnewearl => 38,
+        ClassFlag.HUcast => 29,
+        ClassFlag.HUcaseal => 36,
+        ClassFlag.RAmar => 40,
+        ClassFlag.RAmarl or ClassFlag.RAcaseal => 32,
+        ClassFlag.RAcast => 30,
+        ClassFlag.FOmar or ClassFlag.FOmarl => 48,
+        ClassFlag.FOnewm => 49,
+        ClassFlag.FOnewearl => 51,
         _ => 0
     };
 
@@ -1042,25 +1080,31 @@ else
     {
         if (!ClassRaceSelection.HasValue) yield break;
 
-        foreach (var (item, weapon) in items.Join(itemPMT.Weapons, i => i.ItemIdentifier, w => w.Key, (i, w) => (item: i, weapon: w.Value)))
+        foreach (var item in items)
         {
-            bool meetRequirement = weapon.ClassFlags.HasFlag(ItemPMTRepository.ClassFeatureFlagsByClass[(int)ClassRaceSelection]);
-            meetRequirement &= BaseATP >= weapon.ATPRequired;
-            meetRequirement &= BaseATA >= weapon.ATARequired;
-            meetRequirement &= BaseMST >= weapon.MSTRequired;
-            if (meetRequirement) yield return item;
-        }
+            bool meetRequirement = true;
+            switch (item.ItemType)
+            {
+                case ItemType.Weapon:
+                    var weapon = item.AsWeapon;
+                    meetRequirement = weapon.EquipableClass.HasFlag(ClassRaceSelection);
+                    meetRequirement &= BaseATP >= weapon.ATPRequired;
+                    meetRequirement &= BaseATA >= weapon.ATARequired;
+                    meetRequirement &= BaseMST >= weapon.MSTRequired;
+                    break;
 
-        foreach (var (item, armor) in items.Join(itemPMT.Armors, i => i.ItemIdentifier, a => a.Key, (i, a) => (item: i, armor: a.Value)))
-        {
-            bool meetRequirement = armor.ClassFlags.HasFlag(ItemPMTRepository.ClassFeatureFlagsByClass[(int)ClassRaceSelection]);
-            meetRequirement &= Level > armor.RequiredLevel;
-            if (meetRequirement) yield return item;
-        }
+                case ItemType.Armor:
+                case ItemType.Shield:
+                    var armor = item.AsArmor;
+                    meetRequirement = armor.EquipableClass.HasFlag(ClassRaceSelection);
+                    meetRequirement &= Level >= armor.RequiredLevel;
+                    break;
 
-        foreach (var (item, unit) in items.Join(itemPMT.Units, i => i.ItemIdentifier, u => u.Key, (i, u) => (item: i, unit: u.Value)))
-        {
-            bool meetRequirement = unit.ClassFlags.HasFlag(ItemPMTRepository.ClassFeatureFlagsByClass[(int)ClassRaceSelection]);
+                case ItemType.Unit:
+                    var unit = item.AsUnit;
+                    meetRequirement = unit.EquipableClass.HasFlag(ClassRaceSelection);
+                    break;
+            }
             if (meetRequirement) yield return item;
         }
     }
@@ -1070,7 +1114,7 @@ else
 
     private double CalculateStatBoost(string stat, string statBoost, double amount)
     {
-        if (ClassRaceSelection is ClassRace.Hucast or ClassRace.Hucaseal or ClassRace.Racast or ClassRace.Racaseal && stat is "MST" or "TP") return 0;
+        if (ClassRaceSelection is ClassFlag.HUcast or ClassFlag.HUcaseal or ClassFlag.RAcast or ClassFlag.RAcaseal && stat is "MST" or "TP") return 0;
         if (statBoost == stat || statBoost == $"+{stat}" || statBoost == "+All" && stat != "HP") return amount;
         if (statBoost == $"-{stat}" || statBoost == "-All" && stat != "HP") return -1 * amount;
         return 0;
@@ -1078,16 +1122,16 @@ else
 
     private int MaxTPMaterial() => ClassRaceSelection switch
     {
-        null or ClassRace.Hucast or ClassRace.Hucaseal or ClassRace.Racast or ClassRace.Racaseal => 0,
+        null or ClassFlag.HUcast or ClassFlag.HUcaseal or ClassFlag.RAcast or ClassFlag.RAcaseal => 0,
         _ => 125
     };
 
-    private int MaxPowerDefEvadeMaterial() => ClassRaceSelection.HasValue ? maxMats[(int)ClassRaceSelection] : 0;
+    private int MaxPowerDefEvadeMaterial() => ClassRaceSelection.HasValue ? maxMats[ConvertClassFlagToIndex(ClassRaceSelection.Value)] : 0;
 
     private int MaxMindMaterial() => ClassRaceSelection switch
     {
-        null or ClassRace.Hucast or ClassRace.Hucaseal or ClassRace.Racast or ClassRace.Racaseal => 0,
-        _ => maxMats[(int)ClassRaceSelection]
+        null or ClassFlag.HUcast or ClassFlag.HUcaseal or ClassFlag.RAcast or ClassFlag.RAcaseal => 0,
+        _ => maxMats[ConvertClassFlagToIndex(ClassRaceSelection.Value)]
     };
 
     private double GetShiftaDebandMultiplier(int shiftaDebandLevel)
@@ -1099,7 +1143,7 @@ else
     {
         switch (ClassRaceSelection)
         {
-            case ClassRace.Fomar:
+            case ClassFlag.FOmar:
                 yield return new Tech("Gifoie", 30);
                 yield return new Tech("Gibarta", 30);
                 yield return new Tech("Gizonde", 30);
@@ -1108,7 +1152,7 @@ else
                 yield return new Tech("Deband", 100);
                 break;
 
-            case ClassRace.Fomarl:
+            case ClassFlag.FOmarl:
                 yield return new Tech("Grants", 50);
                 yield return new Tech("Resta", 100);
                 yield return new Tech("Anti", 100);
@@ -1116,7 +1160,7 @@ else
                 yield return new Tech("Deband", 100);
                 break;
 
-            case ClassRace.Fonewm:
+            case ClassFlag.FOnewm:
                 yield return new Tech("Gifoie", 30);
                 yield return new Tech("Gibarta", 30);
                 yield return new Tech("Gizonde", 30);
@@ -1125,7 +1169,7 @@ else
                 yield return new Tech("Razonde", 30);
                 break;
 
-            case ClassRace.Fonewearl:
+            case ClassFlag.FOnewearl:
                 yield return new Tech("Foie", 30);
                 yield return new Tech("Barta", 30);
                 yield return new Tech("Zonde", 30);
@@ -1146,10 +1190,10 @@ else
     {
         switch (ClassRaceSelection)
         {
-            case ClassRace.Ramar:
-            case ClassRace.Ramarl:
-            case ClassRace.Racast:
-            case ClassRace.Racaseal:
+            case ClassFlag.RAmar:
+            case ClassFlag.RAmarl:
+            case ClassFlag.RAcast:
+            case ClassFlag.RAcaseal:
                 yield return new Stat("Ranger", 0);
                 break;
 
