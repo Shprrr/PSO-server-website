@@ -162,6 +162,9 @@ public record UnitItemModel(string ItemIdentifier, string ItemName, ItemIcon Ico
         < 908 and not (896 or 900 or 904) => true,
         _ => false
     };
+
+    public IEnumerable<Stat> GetStatBoostsModified(int modifier)
+        => StatBoosts.Select(s => s with { Value = (short)(s.Value + modifier * ModifierAmount) });
 }
 
 public record ToolItemModel(string ItemIdentifier, string ItemName, ItemIcon Icon, uint ItemId, ushort Type,

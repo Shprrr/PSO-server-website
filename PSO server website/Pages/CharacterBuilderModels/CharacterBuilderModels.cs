@@ -23,6 +23,7 @@ public enum ClassRace
 public class CharacterModel
 {
     public string Name { get; set; } = "";
+    [Obsolete("Replaced by ClassFlagSelection")]
     public ClassRace? ClassRaceSelection { get; set; }
     public ClassFlag? ClassFlagSelection { get; set; }
     public string LoadoutSelection { get; set; } = "Default";
@@ -183,7 +184,7 @@ public partial class WeaponModel
     private static partial Regex WeaponStringRegex();
 }
 
-public class BaseArmorModel()
+public class BaseArmorModel
 {
     private int _dfpBonus;
     private int _evpBonus;
@@ -255,7 +256,7 @@ public class BaseArmorModel()
     }
 }
 
-public partial class ArmorModel() : BaseArmorModel()
+public partial class ArmorModel : BaseArmorModel
 {
     private int _numberSlots;
 
@@ -296,7 +297,7 @@ public partial class ArmorModel() : BaseArmorModel()
     private static partial Regex ArmorStringRegex();
 }
 
-public partial class ShieldModel() : BaseArmorModel()
+public partial class ShieldModel : BaseArmorModel
 {
     public static ShieldModel Parse(ItemModel[] shields, string shield)
     {
@@ -313,7 +314,7 @@ public partial class ShieldModel() : BaseArmorModel()
     private static partial Regex ShieldStringRegex();
 }
 
-public partial class UnitModel(ItemPMTModel itemPMT)
+public partial class UnitModel
 {
     private int _modifier;
     private ItemModel? _model;
@@ -344,13 +345,7 @@ public partial class UnitModel(ItemPMTModel itemPMT)
         }
     }
 
-    public IEnumerable<Stat> GetStatBoosts()
-    {
-        if (string.IsNullOrEmpty(Identifier))
-            return [];
-
-        return itemPMT.Units[Identifier].GetStatBoosts(Modifier);
-    }
+    public IEnumerable<Stat> GetStatBoosts() => Model?.AsUnit.GetStatBoostsModified(Modifier) ?? [];
 
     public override string ToString()
     {
@@ -361,9 +356,9 @@ public partial class UnitModel(ItemPMTModel itemPMT)
         return s;
     }
 
-    public static UnitModel Parse(ItemPMTModel itemPMT, ItemModel[] units, string unit)
+    public static UnitModel Parse(ItemModel[] units, string unit)
     {
-        UnitModel unitModel = new(itemPMT);
+        UnitModel unitModel = new();
         Match m = UnitStringRegex().Match(unit);
         if (!m.Success) return unitModel;
         unitModel.Model = units.FirstOrDefault(i => i.ItemName == m.Groups[1].Value);

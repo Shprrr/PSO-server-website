@@ -12,7 +12,6 @@
 @inject Blazored.LocalStorage.ILocalStorageService localStorage
 @inject LevelTableRepository levelTableRepository
 @inject ItemsService itemsService
-@inject ItemPMTRepository itemPMTRepository
 @inject DropsLocationsService dropsLocationsService
 
 <PageTitle>Character Builder</PageTitle>
@@ -475,7 +474,7 @@ else
     private CharacterBuilder_Modals? modals;
 
     [DisallowNull] private LevelTableModel levelTable = default!;
-    [DisallowNull] private ItemPMTModel itemPMT = default!;
+    [DisallowNull] private ItemModel[] items = default!;
     [DisallowNull] private ItemModel[] weapons = default!;
     [DisallowNull] private ItemModel[] armors = default!;
     [DisallowNull] private ItemModel[] units = default!;
@@ -487,29 +486,25 @@ else
     [DisallowNull] public CharacterModel Character { get; set; } = default!;
     private int EditUnit { get; set; }
 
-    [MemberNotNullWhen(false, nameof(levelTable), nameof(itemPMT), nameof(weapons), nameof(armors), nameof(units), nameof(shields), nameof(mags), nameof(dropsLocations))]
-    private bool IsLoading => levelTable == null || itemPMT == null || weapons == null || armors == null || units == null || shields == null || mags == null || dropsLocations == null;
+    [MemberNotNullWhen(false, nameof(levelTable), nameof(items), nameof(weapon), nameof(armors), nameof(units), nameof(shields), nameof(mags), nameof(dropsLocations))]
+    private bool IsLoading => levelTable == null || items == null || dropsLocations == null;
 
     protected override async Task OnInitializedAsync()
     {
         levelTable = await levelTableRepository.GetLevelTableAsync();
-        itemPMT = await itemPMTRepository.GetItemsAsync();
-        var items = itemsService.GetItems().ToArray();
+        items = itemsService.GetItems().ToArray();
         weapons = items.Where(i => i.ItemType == ItemType.Weapon).ToArray();
         armors = items.Where(i => i.ItemType == ItemType.Armor).ToArray();
         shields = items.Where(i => i.ItemType == ItemType.Shield).ToArray();
         units = items.Where(i => i.ItemType == ItemType.Unit).ToArray();
         mags = items.Where(i => i.ItemType == ItemType.Mag).ToArray();
-        unit1 = new(itemPMT);
-        unit2 = new(itemPMT);
-        unit3 = new(itemPMT);
-        unit4 = new(itemPMT);
 
         dropsLocations = await dropsLocationsService.GetDropsLocationsAsync();
 
         var characterSelectedIndex = await localStorage.GetItemAsync<int>("characterSelectedIndex");
         Characters = await localStorage.GetItemAsync<List<CharacterModel>>("characters") ?? new();
         // Convert old data
+#pragma warning disable CS0618 // Type or member is obsolete => Converting old data
         Characters.ForEach(c =>
             {
                 if (c.ClassFlagSelection == null)
@@ -531,6 +526,7 @@ else
                         _ => throw new NotImplementedException()
                     };
             });
+#pragma warning restore CS0618 // Type or member is obsolete
         if (characterSelectedIndex >= Characters.Count) characterSelectedIndex = 0;
         if (Characters.Count > 0)
         {
@@ -569,10 +565,10 @@ else
 
     [DisallowNull] private WeaponModel weapon = new();
     [DisallowNull] private ArmorModel armor = new();
-    [DisallowNull] private UnitModel unit1 = default!;
-    [DisallowNull] private UnitModel unit2 = default!;
-    [DisallowNull] private UnitModel unit3 = default!;
-    [DisallowNull] private UnitModel unit4 = default!;
+    [DisallowNull] private UnitModel unit1 = new();
+    [DisallowNull] private UnitModel unit2 = new();
+    [DisallowNull] private UnitModel unit3 = new();
+    [DisallowNull] private UnitModel unit4 = new();
     [DisallowNull] private ShieldModel shield = new();
     [DisallowNull] private MagModel mag = new();
 
@@ -911,10 +907,10 @@ else
         // It's this order because each one helps with requirements for other equipment.
         Mag = MagModel.Parse(mags, magName);
         Armor = ArmorModel.Parse(armors, armorName);
-        Unit1 = UnitModel.Parse(itemPMT, units, unit1Name);
-        Unit2 = UnitModel.Parse(itemPMT, units, unit2Name);
-        Unit3 = UnitModel.Parse(itemPMT, units, unit3Name);
-        Unit4 = UnitModel.Parse(itemPMT, units, unit4Name);
+        Unit1 = UnitModel.Parse(units, unit1Name);
+        Unit2 = UnitModel.Parse(units, unit2Name);
+        Unit3 = UnitModel.Parse(units, unit3Name);
+        Unit4 = UnitModel.Parse(units, unit4Name);
         Shield = ShieldModel.Parse(shields, shieldName);
         Weapon = WeaponModel.Parse(weapons, weaponName);
     }
@@ -954,10 +950,10 @@ else
             if (DebandLevel != 0) Character.DebandLevel = 0;
             if (Character.WeaponName != "") { Character.WeaponName = ""; Weapon = new(); }
             if (Character.ArmorName != "") { Character.ArmorName = ""; Armor = new(); }
-            if (Character.Unit1Name != "") { Character.Unit1Name = ""; Unit1 = new(itemPMT); }
-            if (Character.Unit2Name != "") { Character.Unit2Name = ""; Unit2 = new(itemPMT); }
-            if (Character.Unit3Name != "") { Character.Unit3Name = ""; Unit3 = new(itemPMT); }
-            if (Character.Unit4Name != "") { Character.Unit4Name = ""; Unit4 = new(itemPMT); }
+            if (Character.Unit1Name != "") { Character.Unit1Name = ""; Unit1 = new(); }
+            if (Character.Unit2Name != "") { Character.Unit2Name = ""; Unit2 = new(); }
+            if (Character.Unit3Name != "") { Character.Unit3Name = ""; Unit3 = new(); }
+            if (Character.Unit4Name != "") { Character.Unit4Name = ""; Unit4 = new(); }
             if (Character.ShieldName != "") { Character.ShieldName = ""; Shield = new(); }
             if (Character.MagName != "Mag 5/0/0/0") { Character.MagName = "Mag 5/0/0/0"; Mag = MagModel.Parse(mags, "Mag 5/0/0/0"); }
 
@@ -1006,10 +1002,10 @@ else
         // Reset equipment that don't meet requirements.
         if (Weapon.Model != null && !GetItemWithRequirements(Weapon.Model).Any()) Weapon = new();
         if (Armor.Model != null && !GetItemWithRequirements(Armor.Model).Any()) Armor = new();
-        if (Unit1.Model != null && (Armor.NumberSlots < 1 || !GetItemWithRequirements(Unit1.Model).Any())) Unit1 = new(itemPMT);
-        if (Unit2.Model != null && (Armor.NumberSlots < 2 || !GetItemWithRequirements(Unit2.Model).Any())) Unit2 = new(itemPMT);
-        if (Unit3.Model != null && (Armor.NumberSlots < 3 || !GetItemWithRequirements(Unit3.Model).Any())) Unit3 = new(itemPMT);
-        if (Unit4.Model != null && (Armor.NumberSlots < 4 || !GetItemWithRequirements(Unit4.Model).Any())) Unit4 = new(itemPMT);
+        if (Unit1.Model != null && (Armor.NumberSlots < 1 || !GetItemWithRequirements(Unit1.Model).Any())) Unit1 = new();
+        if (Unit2.Model != null && (Armor.NumberSlots < 2 || !GetItemWithRequirements(Unit2.Model).Any())) Unit2 = new();
+        if (Unit3.Model != null && (Armor.NumberSlots < 3 || !GetItemWithRequirements(Unit3.Model).Any())) Unit3 = new();
+        if (Unit4.Model != null && (Armor.NumberSlots < 4 || !GetItemWithRequirements(Unit4.Model).Any())) Unit4 = new();
         if (Shield.Model != null && !GetItemWithRequirements(Shield.Model).Any()) Shield = new();
 
         // Calculate stats.
