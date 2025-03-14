@@ -1022,7 +1022,7 @@ else
         {
             ClassFlag.HUmar or ClassFlag.HUnewearl or ClassFlag.RAmar or ClassFlag.RAmarl
                 => baseMST + Level - 1 + GetEveryStatBoost().Sum(s => (int)CalculateStatBoost("TP", s.Code, s.Value)),
-            ClassFlag.FOmar or ClassFlag.FOmarl or ClassFlag.FOnewm or ClassFlag.FOnewearl
+            { } when ClassFlag.Force.HasFlag(ClassRaceSelection)
                 => (int)Math.Floor((baseMST + Level - 1) * 1.5 + GetEveryStatBoost().Sum(s => (int)CalculateStatBoost("TP", s.Code, s.Value))),
             _ => 0
         } + TPMaterial * 2;
@@ -1045,16 +1045,17 @@ else
 
     private double GetHPMultiplier() => ClassRaceSelection switch
     {
-        ClassFlag.RAmar or ClassFlag.RAmarl or ClassFlag.RAcast or ClassFlag.RAcaseal => 1.85,
-        ClassFlag.FOmar or ClassFlag.FOmarl or ClassFlag.FOnewm or ClassFlag.FOnewearl => 1.45,
-        _ => 2
+        { } when ClassFlag.Hunter.HasFlag(ClassRaceSelection) => 2,
+        { } when ClassFlag.Ranger.HasFlag(ClassRaceSelection) => 1.85,
+        { } when ClassFlag.Force.HasFlag(ClassRaceSelection) => 1.45,
+        _ => 1
     };
 
     private int GetATPBonus() => ClassRaceSelection switch
     {
-        ClassFlag.HUmar or ClassFlag.HUnewearl or ClassFlag.HUcast or ClassFlag.HUcaseal => 10,
-        ClassFlag.RAmar or ClassFlag.RAmarl or ClassFlag.RAcast or ClassFlag.RAcaseal => 5,
-        ClassFlag.FOmar or ClassFlag.FOmarl or ClassFlag.FOnewm or ClassFlag.FOnewearl => 3,
+        { } when ClassFlag.Hunter.HasFlag(ClassRaceSelection) => 10,
+        { } when ClassFlag.Ranger.HasFlag(ClassRaceSelection) => 5,
+        { } when ClassFlag.Force.HasFlag(ClassRaceSelection) => 3,
         _ => 0
     };
 
@@ -1110,7 +1111,7 @@ else
 
     private double CalculateStatBoost(string stat, string statBoost, double amount)
     {
-        if (ClassRaceSelection is ClassFlag.HUcast or ClassFlag.HUcaseal or ClassFlag.RAcast or ClassFlag.RAcaseal && stat is "MST" or "TP") return 0;
+        if (ClassFlag.Cast.HasFlag(ClassRaceSelection.GetValueOrDefault()) && stat is "MST" or "TP") return 0;
         if (statBoost == stat || statBoost == $"+{stat}" || statBoost == "+All" && stat != "HP") return amount;
         if (statBoost == $"-{stat}" || statBoost == "-All" && stat != "HP") return -1 * amount;
         return 0;
@@ -1118,7 +1119,7 @@ else
 
     private int MaxTPMaterial() => ClassRaceSelection switch
     {
-        null or ClassFlag.HUcast or ClassFlag.HUcaseal or ClassFlag.RAcast or ClassFlag.RAcaseal => 0,
+        null or { } when ClassFlag.Cast.HasFlag(ClassRaceSelection.GetValueOrDefault()) => 0,
         _ => 125
     };
 
@@ -1126,8 +1127,8 @@ else
 
     private int MaxMindMaterial() => ClassRaceSelection switch
     {
-        null or ClassFlag.HUcast or ClassFlag.HUcaseal or ClassFlag.RAcast or ClassFlag.RAcaseal => 0,
-        _ => maxMats[ConvertClassFlagToIndex(ClassRaceSelection.Value)]
+        null or { } when ClassFlag.Cast.HasFlag(ClassRaceSelection.GetValueOrDefault()) => 0,
+        _ => maxMats[ConvertClassFlagToIndex(ClassRaceSelection!.Value)]
     };
 
     private double GetShiftaDebandMultiplier(int shiftaDebandLevel)
@@ -1184,18 +1185,8 @@ else
 
     private IEnumerable<Stat> GetClassStatBoost()
     {
-        switch (ClassRaceSelection)
-        {
-            case ClassFlag.RAmar:
-            case ClassFlag.RAmarl:
-            case ClassFlag.RAcast:
-            case ClassFlag.RAcaseal:
-                yield return new Stat("Ranger", 0);
-                break;
-
-            default:
-                yield break;
-        }
+        if (ClassFlag.Ranger.HasFlag(ClassRaceSelection.GetValueOrDefault()))
+            yield return new Stat("Ranger", 0);
     }
     private IEnumerable<Stat> GetEverySpecialStats() => GetClassStatBoost().Concat(GetEveryStatBoost())
         .Where(s => !new string[] { "ATP", "MST", "ATA", "EVP", "HP", "TP", "DFP", "LCK", "EFR", "EIC", "ETH", "ELT", "EDK", "+ATP", "+ATA", "+EVP", "+DFP", "+MST", "+HP", "+LCK", "+All", "-ATP", "-ATA", "-EVP", "-DFP", "-MST", "-HP", "-LCK", "-All" }.Contains(s.Code));

@@ -210,7 +210,13 @@ public enum ClassFlag
     FOmar = 0x100,
     FOmarl = 0x200,
     FOnewm = 0x400,
-    FOnewearl = 0x800
+    FOnewearl = 0x800,
+    Hunter = HUmar | HUnewearl | HUcast | HUcaseal,
+    Ranger = RAmar | RAmarl | RAcast | RAcaseal,
+    Force = FOmar | FOmarl | FOnewm | FOnewearl,
+    Human = HUmar | RAmar | RAmarl | FOmar | FOmarl,
+    Cast = HUcast | HUcaseal | RAcast | RAcaseal,
+    Newman = HUnewearl | FOnewm | FOnewearl
 }
 
 public enum Special
