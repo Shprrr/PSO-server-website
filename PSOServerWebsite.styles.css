@@ -285,7 +285,7 @@ h4[b-ifimzlxf9d] {
     }
 
     .rare-drops tr > :first-child[b-ifimzlxf9d] {
-        min-width: 150px;
+        width: 150px;
     }
 
 .probability[b-ifimzlxf9d] {
