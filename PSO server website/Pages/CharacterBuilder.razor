@@ -503,30 +503,6 @@ else
 
         var characterSelectedIndex = await localStorage.GetItemAsync<int>("characterSelectedIndex");
         Characters = await localStorage.GetItemAsync<List<CharacterModel>>("characters") ?? new();
-        // Convert old data
-#pragma warning disable CS0618 // Type or member is obsolete => Converting old data
-        Characters.ForEach(c =>
-            {
-                if (c.ClassFlagSelection == null)
-                    c.ClassFlagSelection = c.ClassRaceSelection switch
-                    {
-                        ClassRace.Humar => ClassFlag.HUmar,
-                        ClassRace.Hunewearl => ClassFlag.HUnewearl,
-                        ClassRace.Hucast => ClassFlag.HUcast,
-                        ClassRace.Hucaseal => ClassFlag.HUcaseal,
-                        ClassRace.Ramar => ClassFlag.RAmar,
-                        ClassRace.Ramarl => ClassFlag.RAmarl,
-                        ClassRace.Racast => ClassFlag.RAcast,
-                        ClassRace.Racaseal => ClassFlag.RAcaseal,
-                        ClassRace.Fomar => ClassFlag.FOmar,
-                        ClassRace.Fomarl => ClassFlag.FOmarl,
-                        ClassRace.Fonewm => ClassFlag.FOnewm,
-                        ClassRace.Fonewearl => ClassFlag.FOnewearl,
-                        null => null,
-                        _ => throw new NotImplementedException()
-                    };
-            });
-#pragma warning restore CS0618 // Type or member is obsolete
         if (characterSelectedIndex >= Characters.Count) characterSelectedIndex = 0;
         if (Characters.Count > 0)
         {

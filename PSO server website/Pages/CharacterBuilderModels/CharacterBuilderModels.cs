@@ -4,27 +4,9 @@ using System.Text.RegularExpressions;
 
 namespace PSOServerWebsite.Pages.CharacterBuilderModels;
 
-public enum ClassRace
-{
-    Humar,
-    Hunewearl,
-    Hucast,
-    Hucaseal,
-    Ramar,
-    Ramarl,
-    Racast,
-    Racaseal,
-    Fomar,
-    Fomarl,
-    Fonewm,
-    Fonewearl
-}
-
 public class CharacterModel
 {
     public string Name { get; set; } = "";
-    [Obsolete("Replaced by ClassFlagSelection")]
-    public ClassRace? ClassRaceSelection { get; set; }
     public ClassFlag? ClassFlagSelection { get; set; }
     public string LoadoutSelection { get; set; } = "Default";
     public Dictionary<string, LoadoutModel> Loadouts { get; set; } = new() { ["Default"] = new() };
