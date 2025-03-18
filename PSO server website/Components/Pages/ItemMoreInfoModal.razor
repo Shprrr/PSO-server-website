@@ -32,6 +32,10 @@
                                     <div class="col">@itemInfo.AsWeapon.TeamPoints</div>
                                 </div>
                                 <div class="row">
+                                    <div class="col">Attack Animation</div>
+                                    <div class="col">@GetAttackAnimation()</div>
+                                </div>
+                                <div class="row">
                                     <div class="col">Class Can Use</div>
                                     <div class="col"><ClassFlags Value="@itemInfo.AsWeapon.EquipableClass" /></div>
                                 </div>
@@ -319,6 +323,30 @@
         ItemType.Mag => "Mag",
         ItemType.Tool => "Item",
         _ => ""
+    };
+
+    public string GetAttackAnimation() => itemInfo?.AsWeapon.AttackAnimation switch
+    {
+        AttackAnimation.Fist => "Fist",
+        AttackAnimation.Saber => "Saber",
+        AttackAnimation.Sword => "Sword",
+        AttackAnimation.Dagger => "Dagger",
+        AttackAnimation.Partisan => "Partisan",
+        AttackAnimation.Slicer => "Slicer",
+        AttackAnimation.Handgun => "Handgun",
+        AttackAnimation.Rifle => "Rifle",
+        AttackAnimation.Mechgun => "Mechgun",
+        AttackAnimation.Shot => "Shot",
+        AttackAnimation.Cane => "Cane",
+        AttackAnimation.Rod => "Rod",
+        AttackAnimation.Wand => "Wand",
+        AttackAnimation.Claw => "Claw",
+        AttackAnimation.DoubleSaber => "Double Saber",
+        AttackAnimation.TwinSword => "Twin Sword",
+        AttackAnimation.Katana => "Katana",
+        AttackAnimation.Launcher => "Launcher",
+        AttackAnimation.Card => "Card",
+        _ => "Unknown"
     };
 
     private IEnumerable<DropLocationModel> GetItemLocations()

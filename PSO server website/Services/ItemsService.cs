@@ -1,4 +1,5 @@
-﻿using PSOServerWebsite.Repositories;
+﻿using System.Globalization;
+using PSOServerWebsite.Repositories;
 
 namespace PSOServerWebsite.Services;
 
@@ -31,7 +32,8 @@ public class ItemsService(ItemsRepository itemsRepository, ItemPMTRepository ite
                 _itemPMT.Weapons[itemIdentifier].MaxGrind, _itemPMT.Weapons[itemIdentifier].Photon,
                 (Special)_itemPMT.Weapons[itemIdentifier].Special, GetSpecialName(_itemPMT.Weapons[itemIdentifier].Special),
                 _itemPMT.Weapons[itemIdentifier].Projectile, _itemPMT.Weapons[itemIdentifier].ComboType,
-                _itemPMT.Weapons[itemIdentifier].GetStatBoosts(), _itemPMT.Weapons[itemIdentifier].GetTechBoosts()),
+                GetAttackAnimation(itemIdentifier), _itemPMT.Weapons[itemIdentifier].GetStatBoosts(),
+                _itemPMT.Weapons[itemIdentifier].GetTechBoosts()),
 
             ItemType.Armor or ItemType.Shield => new ArmorItemModel(item.Identifier, item.Name,
                 itemType, GetIcon(itemIdentifier), _itemPMT.Armors[itemIdentifier].Id,
@@ -72,6 +74,13 @@ public class ItemsService(ItemsRepository itemsRepository, ItemPMTRepository ite
         _ => throw new NotSupportedException()
     };
 
+    public AttackAnimation GetAttackAnimation(string itemIdentifier)
+    {
+        if (!itemIdentifier.StartsWith("00")) throw new ArgumentException("Item is not a weapon.", nameof(itemIdentifier));
+        int attackOffset = int.Parse(itemIdentifier.Substring(0, 4), NumberStyles.HexNumber);
+        return (AttackAnimation)_itemPMT.AttackAnimations[attackOffset];
+    }
+
     private static readonly Dictionary<string, ItemIcon> s_iconNames = new()
     {
         { "0101", ItemIcon.Armor },
@@ -88,12 +97,14 @@ public class ItemsService(ItemsRepository itemsRepository, ItemPMTRepository ite
         // For weapons, check the attack animation to determine the weapon type.
         if (itemIdentifier.StartsWith("00"))
         {
-            int attackOffset = int.Parse(itemIdentifier.Substring(0, 4), System.Globalization.NumberStyles.HexNumber);
-            return _itemPMT.AttackAnimations[attackOffset] switch
+            return GetAttackAnimation(itemIdentifier) switch
             {
-                0 or 1 or 2 or 3 or 4 or 5 or 13 or 14 or 15 or 16 => ItemIcon.Sword,
-                6 or 7 or 8 or 9 or 17 => ItemIcon.Gun,
-                10 or 11 or 12 or 18 => ItemIcon.Cane,
+                AttackAnimation.Fist or AttackAnimation.Saber or AttackAnimation.Sword or AttackAnimation.Dagger or
+                AttackAnimation.Partisan or AttackAnimation.Slicer or AttackAnimation.Claw or AttackAnimation.DoubleSaber or
+                AttackAnimation.TwinSword or AttackAnimation.Katana => ItemIcon.Sword,
+                AttackAnimation.Handgun or AttackAnimation.Rifle or AttackAnimation.Mechgun or AttackAnimation.Shot or
+                AttackAnimation.Launcher => ItemIcon.Gun,
+                AttackAnimation.Cane or AttackAnimation.Rod or AttackAnimation.Wand or AttackAnimation.Card => ItemIcon.Cane,
                 _ => throw new NotSupportedException(),
             };
         }
@@ -139,7 +150,7 @@ public record ItemModel(string ItemIdentifier, string ItemName, ItemType ItemTyp
 public record WeaponItemModel(string ItemIdentifier, string ItemName, ItemIcon Icon, uint ItemId, ushort Type,
     ushort Skin, uint TeamPoints, ClassFlag EquipableClass, ushort ATPRequired, ushort MSTRequired, ushort ATARequired,
     ushort ATPMin, ushort ATPMax, ushort MST, ushort ATA, byte MaxGrind, byte PhotonId, Special Special,
-    string SpecialName, byte ProjectileId, byte ComboTypeFlag, IEnumerable<Stat> StatBoosts,
+    string SpecialName, byte ProjectileId, byte ComboTypeFlag, AttackAnimation AttackAnimation, IEnumerable<Stat> StatBoosts,
     IEnumerable<Tech> TechBoosts)
     : ItemModel(ItemIdentifier, ItemName, ItemType.Weapon, Icon, StatBoosts, TechBoosts);
 
@@ -217,6 +228,29 @@ public enum ClassFlag
     Human = HUmar | RAmar | RAmarl | FOmar | FOmarl,
     Cast = HUcast | HUcaseal | RAcast | RAcaseal,
     Newman = HUnewearl | FOnewm | FOnewearl
+}
+
+public enum AttackAnimation
+{
+    Fist,
+    Saber,
+    Sword,
+    Dagger,
+    Partisan,
+    Slicer,
+    Handgun,
+    Rifle,
+    Mechgun,
+    Shot,
+    Cane,
+    Rod,
+    Wand,
+    Claw,
+    DoubleSaber,
+    TwinSword,
+    Katana,
+    Launcher,
+    Card
 }
 
 public enum Special
