@@ -1,6 +1,5 @@
 ﻿@page "/items"
 @using PSOServerWebsite.Services
-@using System.Text.RegularExpressions
 @inject ItemsService itemsService
 
 <PageTitle>Items</PageTitle>
@@ -66,9 +65,6 @@ else
 
     private void OnFilterValueChanged()
     {
-        if (string.IsNullOrEmpty(filter))
-            itemsFiltered = items;
-        else
-            itemsFiltered = items.Where(i => Regex.IsMatch(i.ItemName, filter, RegexOptions.IgnoreCase)).ToArray();
+        itemsFiltered = InputSelectSearch<ItemModel>.FilterItems(items, filter).ToArray();
     }
 }

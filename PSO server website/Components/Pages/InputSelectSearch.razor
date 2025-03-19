@@ -1,4 +1,6 @@
-﻿@inherits InputBase<TValue>
+﻿@using PSOServerWebsite.Services
+@using System.Text.RegularExpressions
+@inherits InputBase<TValue>
 @typeparam TValue
 @inject IJSRuntime JS
 
@@ -45,7 +47,10 @@
     private void FilterDataSource(ChangeEventArgs eventArgs)
     {
         SearchValue = (string?)eventArgs.Value;
-        DataSourceFiltered = DataSource.Where(i => string.IsNullOrWhiteSpace(SearchValue) || SearchValue == DisplayMember(i) ? true : DisplayMember(i)!.StartsWith(SearchValue, StringComparison.CurrentCultureIgnoreCase));
+        if (typeof(TValue) == typeof(ItemModel))
+            DataSourceFiltered = (IEnumerable<TValue>)FilterItems(DataSource.Cast<ItemModel>(), SearchValue);
+        else
+            DataSourceFiltered = DataSource.Where(i => string.IsNullOrWhiteSpace(SearchValue) || SearchValue == DisplayMember(i) ? true : DisplayMember(i)!.StartsWith(SearchValue, StringComparison.CurrentCultureIgnoreCase));
     }
 
     private async Task SelectedValueChangeAsync(string? newId)
@@ -79,5 +84,13 @@
             validationErrorMessage = "Can't convert from string.";
             return false;
         }
+    }
+
+    public static IEnumerable<ItemModel> FilterItems(IEnumerable<ItemModel> items, string? filter)
+    {
+        if (string.IsNullOrEmpty(filter))
+            return items;
+        else
+            return items.Where(i => Regex.IsMatch(i.ItemName, filter, RegexOptions.IgnoreCase));
     }
 }
