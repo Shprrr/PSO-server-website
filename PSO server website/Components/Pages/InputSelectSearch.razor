@@ -91,6 +91,17 @@
         if (string.IsNullOrEmpty(filter))
             return items;
         else
-            return items.Where(i => Regex.IsMatch(i.ItemName, filter, RegexOptions.IgnoreCase));
+            return items.Where(i =>
+            {
+                var typeMatch = Regex.Match(filter, @"type[:=](\w+)", RegexOptions.IgnoreCase);
+                if (typeMatch.Success)
+                {
+                    var type = typeMatch.Groups[1].Value;
+                    return i.ItemType.ToString().Equals(type, StringComparison.OrdinalIgnoreCase)
+                        || i.ItemType == ItemType.Weapon && i.AsWeapon.AttackAnimation.ToString().Equals(type, StringComparison.OrdinalIgnoreCase);
+                }
+
+                return Regex.IsMatch(i.ItemName, filter, RegexOptions.IgnoreCase);
+            });
     }
 }
