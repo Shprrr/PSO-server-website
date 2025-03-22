@@ -4,21 +4,33 @@
 @typeparam TValue
 @inject IJSRuntime JS
 
-<div @ref="dropdown" class="dropdown" @attributes="AdditionalAttributes">
-    <input class="form-select dropdown-toggle" @bind-value="SearchValue" role="search" data-bs-toggle="dropdown" aria-expanded="false"
-           @oninput="FilterDataSource" onshow.bs.dropdown="@(async () => ShowDropdownAsync())" onhide.bs.dropdown="@(async () => HideDropdownAsync())" />
-    <ul @ref="dropdownMenu" class="dropdown-menu overflow-auto shadow">
-        <li><button class="dropdown-item @(IdMember(Value) == null ? "active" : "")" onclick="@(async () => SelectedValueChangeAsync(null))"><i>~ None ~</i></button></li>
-        @foreach (var item in DataSourceFiltered)
-        {
-            <li><button class="dropdown-item @(IdMember(Value) == IdMember(item) ? "active" : "")" onclick="@(async () => SelectedValueChangeAsync(IdMember(item)))"><ItemName ItemIdentifier="@IdMember(item)" /></button></li>
-        }
-    </ul>
+<div class="d-flex">
+    <div @ref="dropdown" class="dropdown w-100" @attributes="AdditionalAttributes">
+        <input class="form-select dropdown-toggle" @bind-value="SearchValue" role="search" data-bs-toggle="dropdown" aria-expanded="false"
+               @oninput="FilterDataSource" onshow.bs.dropdown="@(async () => ShowDropdownAsync())" onhide.bs.dropdown="@(async () => HideDropdownAsync())" />
+        <ul @ref="dropdownMenu" class="dropdown-menu overflow-auto shadow">
+            <li><button class="dropdown-item @(IdMember(Value) == null ? "active" : "")" onclick="@(async () => SelectedValueChangeAsync(null))"><i>~ None ~</i></button></li>
+            @foreach (var item in DataSourceFiltered)
+            {
+                <li><button class="dropdown-item @(IdMember(Value) == IdMember(item) ? "active" : "")" onclick="@(async () => SelectedValueChangeAsync(IdMember(item)))"><ItemName ItemIdentifier="@IdMember(item)" /></button></li>
+            }
+        </ul>
+    </div>
+    @if (typeof(TValue) == typeof(ItemModel))
+        @Tooltip
+
 </div>
 
 <script>bootstrap.Dropdown.Default.popperConfig = { strategy: "fixed" };</script>
 
 @code {
+    public static RenderFragment Tooltip = __builder =>
+    {
+        <button class="btn btn-small bi bi-question-circle" data-bs-toggle="tooltip" data-bs-html="true"
+                data-bs-title="You can search by name or by an attribute.<br />&quot;type:&quot; to filter by item type or by attack animation for a weapon.<br />Ex: type:Dagger<br />Ex: type:Armor<br />Don't put spaces in attribute values.<br />Ex: type:DoubleSaber"></button>
+        <script>[...document.querySelectorAll('[data-bs-toggle="tooltip"]')].map (t => new bootstrap.Tooltip(t));</script>
+    };
+
     [Parameter]
     public IEnumerable<TValue> DataSource { get; set; } = [];
 

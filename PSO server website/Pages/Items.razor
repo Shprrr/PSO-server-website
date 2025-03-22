@@ -13,7 +13,7 @@
 else
 {
     <InputText DisplayName="Filter" @bind-Value="filter" @bind-Value:after="OnFilterValueChanged" placeholder="Filter name" />
-
+    @(InputSelectSearch<ItemModel>.Tooltip)
     <table class="table table-striped">
         <thead>
             <tr>
