@@ -23,7 +23,7 @@
 
   // Server's name (maximum 16 characters). This appears in the upper-right
   // corner of the screen while in lobbies.
-  "ServerName": "v1.01",
+  "ServerName": "v1.02",
 
   // If this option is disabled, the server only allows users who have accounts
   // on the server to connect. If this is enabled, all users will be allowed to
@@ -77,7 +77,7 @@
     ["Event names", "$C7Show lobby event\nnames", "Use these names with %sevent and %sallevent.\n\nnone - no event\nxmas - Christmas event\nval - Valentine's Day\neaster - Easter Sunday event\nhallo - Halloween event\nsonic - Sonic Adventure DX event\nnewyear - New Year's event\nbval - White Day\nwedding - Wedding Day event\nspring - spring event\ns-spring - spring event with striped background\nsummer - summer event\ns-summer - summer event with striped background\nfall - fall event"],
     ["GC lobby types", "$C7Show lobby type\nlist for Episodes\nI & II", "Use these names with %sln on Episodes 1 & 2.\n$C6*$C7 indicates lobbies where players can't move.\n\nnormal - standard lobby\ninormal - under standard lobby $C6*$C7\nipc - under PC lobby $C6*$C7\niball - under soccer lobby $C6*$C7\ncave1 - Cave 1 $C6*$C7\ncave2u - Cave 2 Ultimate $C6*$C7\ndragon - Dragon stage (floor is black)\nderolle - De Rol Le stage (water/walls are gone)\nvolopt - Vol Opt stage\ndarkfalz - Dark Falz stage"],
     ["Ep3 lobby types", "$C7Show lobby type\nlist for Episode III", "Use these names with %sln on Episode 3.\n\nnormal - Standard lobby\nplanet - Blank Ragol lobby\nclouds - Blank sky lobby\ncave - Unguis Lapis (platform missing)\njungle - Nebula Montana 1 (Ep2 Jungle)\nforest2-1 - Lupus Silva 2 (Ep1 Forest 2)\nforest2-2 - Lupus Silva 1 (Ep1 Forest 2)\nwindpower - Molae Venti\noverview - Nebula Montana 2\nseaside - Tener Sinus (Ep2 Seaside)\nfons - Mortis Fons\ndmorgue - Destroyed Morgue (column missing)\ncaelum - Tower of Caelum (top)\ncyber - Cyber\nboss1 - Castor/Pollux map\nboss2 - Amplum Umbra map\ndolor - Dolor Odor\nravum - Ravum Aedes Sacra\nsky - Via Tubus (tube missing)\nmorgue - Morgue (column missing)"],
-    ["Area list", "$C7Show stage code\nlist", "Use these names with %swarpme and %swarpall.\n$C2Green$C7 areas will be empty unless you are in a quest.\n$C6Yellow$C7 areas will not allow you to move.\n\n    $C8Episode 1  / Episode 2        / Episode 4$C7\n0: Pioneer 2  / Pioneer 2        / Pioneer 2\n1: Forest 1   / Temple Alpha    / Crater East\n2: Forest 2   / Temple Beta     / Crater West\n3: Caves 1    / Spaceship Alpha / Crater South\n4: Caves 2    / Spaceship Beta  / Crater North\n5: Caves 3    / CCA              / Crater Interior\n6: Mines 1    / Jungle North     / Desert 1\n7: Mines 2    / Jungle South     / Desert 2\n8: Ruins 1     / Mountain         / Desert 3\n9: Ruins 2     / Seaside          / Saint Million\n10: Ruins 3   / Seabed Upper    / $C6Purgatory$C7\n11: Dragon    / Seabed Lower\n12: De Rol Le / Gal Gryphon\n13: Vol Opt   / Olga Flow\n14: Dark Falz / Barba Ray\n15: $C2Lobby$C7     / Gol Dragon\n16: $C6Battle 1$C7  / $C6Seaside Night$C7\n17: $C6Battle 2$C7  / $C2Tower$C7"],
+    ["Area list", "$C7Show stage code\nlist", "Use these names with %swarpme and %swarpall.\n$C2Green$C7 areas will be empty unless you are in a quest.\n$C6Yellow$C7 areas will not allow you to move.\n\n    $C8Episode 1  / Episode 2        / Episode 4$C7\n0: Pioneer 2  / Pioneer 2        / Pioneer 2\n1: Forest 1   / Temple Alpha    / Crater East\n2: Forest 2   / Temple Beta     / Crater West\n3: Caves 1    / Spaceship Alpha / Crater South\n4: Caves 2    / Spaceship Beta  / Crater North\n5: Caves 3    / CCA              / Crater Interior\n6: Mines 1    / Jungle North     / Desert 1\n7: Mines 2    / Jungle South     / Desert 2\n8: Ruins 1     / Mountain         / Desert 3\n9: Ruins 2     / Seaside          / Saint-Milion\n10: Ruins 3   / Seabed Upper    / $C6Test map$C7\n11: Dragon    / Seabed Lower\n12: De Rol Le / Gal Gryphon\n13: Vol Opt   / Olga Flow\n14: Dark Falz / Barba Ray\n15: $C2Lobby$C7     / Gol Dragon\n16: $C6Battle 1$C7  / $C6Seaside Night$C7\n17: $C6Battle 2$C7  / $C2Tower$C7"],
   ],
 
   // Welcome message. If not blank, this message will be shown to PSO GC users
@@ -93,7 +93,7 @@
   // PSO's normal text renderer, so linebreaks must be \r\n and color escapes
   // (e.g. $C6) do not work in PCPatchServerMessage.
   "PCPatchServerMessage": "newserv patch server\r\n\r\nThis server is not affiliated with, sponsored by, or in any other way connected to SEGA or Sonic Team, and is owned and operated completely independently.",
-  "BBPatchServerMessage": "$C7Shprrr newserv v1.01 patch server\n\nThis server is not affiliated with, sponsored by, or in any\nother way connected to SEGA or Sonic Team, and is owned\nand operated completely independently.",
+  "BBPatchServerMessage": "$C7Shprrr newserv v1.02 patch server\n\nThis server is not affiliated with, sponsored by, or in any\nother way connected to SEGA or Sonic Team, and is owned\nand operated completely independently.",
 
   // Lobby search orders. When a player joins the lobby from the main menu, they
   // are placed into the first lobby in the list that has empty spaces. In these
@@ -136,7 +136,7 @@
   "LobbyEvents": [
     "none", // Lobby 1
     "sonic", // Lobby 2
-    "winter", // Lobby 3
+    "spring", // Lobby 3
     "xmas", // Lobby 4
     "val", // Lobby 5
     "easter", // Lobby 6
@@ -156,7 +156,7 @@
     "none", // Lobby C5 (Episode 3 only)
   ],
   // Menu event. This is the holiday event the player sees at the main menu.
-  "MenuEvent": "winter",
+  "MenuEvent": "spring",
 
   // Episode 3 menu song. If set, Episode 3 clients will hear this song when
   // they are at the newserv main menu. The values are:
@@ -465,7 +465,7 @@
     {"MesetaLimit": 999999, "ToolLimits": [10, 10, 1, 10, 10, 10, 10, 10, 10, 1, 1, 1, 1, 1, 1, 1, 99, 1]}, // XB
 //                               # Index:  00  01 02  03  04  05  06  07  08  09 0A  0B 0C 0D 0E  0F  10 11 12 13 14 15
 //                               .binary   63  63 01  63  63  63  63  63  63  01 63  63 01 01 01  63  63 01 01 01 01 01
-    {"MesetaLimit": 999999, "ToolLimits": [99, 99, 1, 99, 99, 99, 99, 99, 99, 1, 99, 99, 1, 1, 1, 99, 99, 1]}, // BB
+    {"MesetaLimit": 999999, "ToolLimits": [99, 99, 1, 99, 99, 99, 99, 99, 99, 99, 99, 99, 1, 1, 1, 99, 99, 1]}, // BB
   ],
 
   // Quest result item definitions for opcode F95E (used in Black Paper's
@@ -600,7 +600,7 @@
   // StackLimits patch and the ItemStackLimits field in this file, and want the
   // limits to take effect on BB clients.
   "BBRequiredPatches": [
-    "StackLimits", "DisableIdleDisconnect"
+    "StackLimits", "DisableIdleDisconnect", "EnemyHPBars", "HungryMagSound"
     // You will probably want to uncomment the following line if you want to
     // use items that were unreleased on the original Sega servers.
     // "ClearUnreleasedItemList",
@@ -739,7 +739,7 @@
   // default value is 30 minutes. If this is set to zero or not specified,
   // persistent games never expire; such a game can then only deleted by joining
   // it, running $persist again, and leaving.
-  "PersistentGameIdleTimeout": 1800000000,
+  "PersistentGameIdleTimeout": 0,
 
   // Cheat mode behavior. There are three values:
   //   "Off": Cheat mode is disabled on the entire server. Cheat mode cannot be
@@ -844,15 +844,37 @@
   // in infinite HP mode.)
   "EnableV3V4ProtectedSubcommands": false,
 
-  // Whether to allow cross-play for various game versions. DCv1 and DCv2 are
-  // always allowed to join each other's games (though DCv2 can deny permission
-  // for DCv1 players to join when creating a game); if AllowDCPCGames is
-  // enabled, then PC players are allowed in DC games and vice versa. Similarly,
-  // if AllowGCXBGames is enabled, then GameCube and Xbox players are allowed to
-  // join each other's games. Note that this behavior is experimental; you are
-  // likely to encounter bugs in cross-play games, especially in the DC/PC case.
-  "AllowDCPCGames": false,
-  "AllowGCXBGames": true,
+  // These flags specify which versions to allow to join games, depending on
+  // the version that created the game. Each entry here is a bit field
+  // specifying which versions can join. The bits are in the same order as
+  // specified here in the comments, starting from the right (so DC_NTE is the
+  // third bit from the right). By default, all non-prototype v1 and v2
+  // versions can play with each other, and GC and Xbox can play with each
+  // other also.
+  // Note that there are some built-in restrictions. If a game is in the
+  // Ultimate difficulty level, for example, it will not be accessible to v1
+  // players regardless of what's specified below. There are similar
+  // restrictions based on the game mode and episode number.
+  // I don't plan to implement the ability for NTE or prototype versions to
+  // play with each other or with non-NTE versions. If you allow any NTE or
+  // prototype versions to play with other versions and you encounter a bug in
+  // that scenario, don't submit a ticket about it.
+  "CompatibilityGroups": [
+    0x0000, // PC_PATCH
+    0x0000, // BB_PATCH
+    0x0004, // DC_NTE compatible only with itself
+    0x0008, // DC_11_2000 compatible only with itself
+    0x00B0, // DC_V1 compatible with DC_V1, DC_V2, and PC_V2
+    0x00B0, // DC_V2 compatible with DC_V1, DC_V2, and PC_V2
+    0x0040, // PC_NTE compatible only with itself
+    0x00B0, // PC_V2 compatible with DC_V1, DC_V2, and PC_V2
+    0x0100, // GC_NTE compatible only with itself
+    0x1200, // GC_V3 compatible with GC_V3 and XB_V3
+    0x0400, // GC_EP3_NTE compatible only with itself
+    0x0800, // GC_EP3 compatible only with itself
+    0x1200, // XB_V3 compatible with GC_V3 and XB_V3
+    0x2000, // BB_V4 compatible only with itself
+  ],
 
   // This option causes the server to override name colors for all players based
   // on which version of the game they're using. If this option is missing or
@@ -913,6 +935,11 @@
   // all difficulties use the same rates.) If the Challenge set is not
   // specified, the default rates are used for Challenge mode, which is 1/500
   // for all enemies.
+  // The Mericarand rate applies to Mericarol enemies whose arguments specify
+  // that they may be replaced with Mericus or Merikle. (Specifically, if
+  // uparam1 > 2, this is the case.) When a Mericarol is replaced, the enemy
+  // index is used to determine whether it will be a Mericus (even enemy index)
+  // or Merikle (odd enemy index).
   "RareEnemyRates-Normal": {
     // These are probabilities out of 0xFFFFFFFF - so 0 means that rare enemy
     // will never appear, and 0xFFFFFFFF means it will always appear (until 16
@@ -922,14 +949,15 @@
     // 0x0147AE14 = 21474836
     // 0x1999999A = 429496730
     // 0xFFFFFFFF = 4294967295
-    "Hildeblue": 0x0147AE14,
-    "Rappy": 0x0147AE14,
-    "NarLily": 0x0147AE14,
-    "PouillySlime": 0x0147AE14,
-    "MerissaAA": 0x0147AE14,
-    "Pazuzu": 0x0147AE14,
-    "DorphonEclair": 0x0147AE14,
-    "Kondrieu": 0x1999999A,
+    "Hildeblue": 0x0147AE14, // 1/500
+    "Rappy": 0x0147AE14, // 1/500
+    "NarLily": 0x0147AE14, // 1/500
+    "PouillySlime": 0x0147AE14, // 1/500
+    "Mericarand": 0x33333333, // 1/5
+    "MerissaAA": 0x0147AE14, // 1/500
+    "Pazuzu": 0x0147AE14, // 1/500
+    "DorphonEclair": 0x0147AE14, // 1/500
+    "Kondrieu": 0x1999999A, // 1/10
   },
   // "RareEnemyRates-Hard": {...},
   // "RareEnemyRates-VeryHard": {...},
