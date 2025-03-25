@@ -9,6 +9,11 @@
 
 <h1>Changelog</h1>
 
+<h2>2025-03-10 (v1.02)</h2>
+<ul>
+    <li><a href="https://github.com/fuzziqersoftware/newserv/compare/v2024-11-11...v2025-03-10">Additional changes for the server</a></li>
+</ul>
+
 <h2>2024-11-11 (v1.01)</h2>
 
 @if (IsLoading)
@@ -138,22 +143,22 @@ else
 </ul>
 
 @code {
-    [DisallowNull] private RareDropModel rareDrops = default!;
+    [DisallowNull] private RareDropModel rareDrops20241111 = default!;
     [DisallowNull] private RareDropModel rareDrops20240422 = default!;
     [DisallowNull] private Dictionary<string, ItemNameModel> items = default!;
-    [DisallowNull] private LocationModel[] locations = default!;
+    [DisallowNull] private LocationModel[] locations20241111 = default!;
     [DisallowNull] private DiffRareDrops[] diffRareDrops20241111 = default!;
 
-    [MemberNotNullWhen(false, nameof(rareDrops), nameof(rareDrops20240422), nameof(items), nameof(locations), nameof(diffRareDrops20241111))]
-    private bool IsLoading => rareDrops == null || rareDrops20240422 == null || items == null || locations == null || diffRareDrops20241111 == null;
+    [MemberNotNullWhen(false, nameof(rareDrops20241111), nameof(rareDrops20240422), nameof(items), nameof(locations20241111), nameof(diffRareDrops20241111))]
+    private bool IsLoading => rareDrops20241111 == null || rareDrops20240422 == null || items == null || locations20241111 == null || diffRareDrops20241111 == null;
 
     protected override async Task OnInitializedAsync()
     {
-        rareDrops = await rareDropsRepository.GetRareDropsAsync();
+        rareDrops20241111 = await rareDropsRepository.GetRareDropsAsync("2024-11-11");
         rareDrops20240422 = await rareDropsRepository.GetRareDropsAsync("2024-04-22");
         items = (await itemsRepository.GetItemsAsync()).ToDictionary(i => i.Identifier);
-        locations = (await locationsRepository.GetLocationsAsync()).ToArray();
-        diffRareDrops20241111 = CompareRareDrops(rareDrops20240422, rareDrops);
+        locations20241111 = (await locationsRepository.GetLocationsAsync("2024-11-11")).ToArray();
+        diffRareDrops20241111 = CompareRareDrops(rareDrops20240422, rareDrops20241111);
     }
 
     private DiffRareDrops[] CompareRareDrops(RareDropModel rareDropsOld, RareDropModel rareDropsNew)
@@ -184,7 +189,7 @@ else
                     }
                 }
 
-                diffRareDrops.AddRange(diffRareDropsByDifficulty.OrderBy(d => d.Location, new LocationComparer(locations, episode.Name)).ThenBy(d => d.SectionId, new SectionIdComparer()));
+                diffRareDrops.AddRange(diffRareDropsByDifficulty.OrderBy(d => d.Location, new LocationComparer(locations20241111, episode.Name)).ThenBy(d => d.SectionId, new SectionIdComparer()));
             }
         }
 
@@ -215,7 +220,7 @@ else
     private string GetLocationName(string locationId, string episode, string difficulty)
     {
         int episodeNumber = (int)char.GetNumericValue(episode[^1]);
-        var location = locations.First(l => l.Episode == episodeNumber).Locations.FirstOrDefault(l => l.Id == locationId);
+        var location = locations20241111.First(l => l.Episode == episodeNumber).Locations.FirstOrDefault(l => l.Id == locationId);
         if (location == null) return locationId;
         if (difficulty == "Ultimate" && !string.IsNullOrEmpty(location.UltimateName))
             return location.UltimateName;

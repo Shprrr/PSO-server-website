@@ -5,12 +5,23 @@ namespace PSOServerWebsite.Repositories;
 
 public class LocationsRepository(HttpClient http)
 {
-    private static Task<IEnumerable<LocationModel>>? s_locations;
+    private static readonly Dictionary<string, Task<IEnumerable<LocationModel>>> s_locations = [];
 
-    public async Task<IEnumerable<LocationModel>> GetLocationsAsync()
+    public async Task<IEnumerable<LocationModel>> GetLocationsAsync(string? version = null)
     {
-        s_locations ??= http.GetFromJsonAsync<IEnumerable<LocationModel>>("data/locations.json")!;
-        return await s_locations;
+        string filename = "data/locations.json";
+        if (version == null)
+            version = "current";
+        else
+            filename = $"data/locations-{version}.json";
+
+        if (!s_locations.TryGetValue(version, out Task<IEnumerable<LocationModel>>? locations))
+        {
+            locations = http.GetFromJsonAsync<IEnumerable<LocationModel>>(filename)!;
+            s_locations.Add(version, locations);
+        }
+
+        return await locations;
     }
 }
 
