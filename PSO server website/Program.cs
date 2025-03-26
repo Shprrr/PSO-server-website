@@ -18,6 +18,7 @@ builder.Services.AddSingleton<ItemPMTRepository>();
 builder.Services.AddScoped<LocationsRepository>();
 builder.Services.AddScoped<LevelTableRepository>();
 builder.Services.AddScoped<ConfigurationRepository>();
+builder.Services.AddScoped<BattleParameterRepository>();
 
 builder.Services.AddSingleton<ItemsService>();
 builder.Services.AddScoped<DropsLocationsService>();
