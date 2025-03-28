@@ -10,6 +10,8 @@ public class BattleParameterRepository(HttpClient http)
     private const int StatSize = 0x24;
     private const int AttackOffset = 0x3600;
     private const int AttackSize = 0x30;
+    private const int ResistOffset = 0x7E00;
+    private const int ResistSize = 0x20;
     private static readonly string[] s_difficultyNames = ["Normal", "Hard", "Very Hard", "Ultimate"];
 
     public async Task<BattleParameterModel> GetBattleParameterAsync()
@@ -30,6 +32,8 @@ public class BattleParameterRepository(HttpClient http)
                     enemyParameter = ReadStat(fileBytes, enemyOffset, enemyParameter);
                     enemyOffset = AttackOffset + i * TableSize * AttackSize + enemy.Index * AttackSize;
                     enemyParameter = ReadAttack(fileBytes, enemyOffset, enemyParameter);
+                    enemyOffset = ResistOffset + i * TableSize * ResistSize + Convert.ToInt32(enemy.ResistOffset, 16) * ResistSize;
+                    enemyParameter = ReadResist(fileBytes, enemyOffset, enemyParameter);
                     enemyParameters.Add(enemyParameter);
                 }
             }
@@ -108,6 +112,33 @@ public class BattleParameterRepository(HttpClient http)
         return enemyParameter;
     }
 
+    private static EnemyParameterModel ReadResist(byte[] fileBytes, int enemyOffset, EnemyParameterModel enemyParameter)
+    {
+        enemyParameter.EVPBonus = BitConverter.ToInt16(fileBytes, enemyOffset);
+        enemyOffset += Marshal.SizeOf(enemyParameter.EVPBonus);
+        enemyParameter.EFR = BitConverter.ToUInt16(fileBytes, enemyOffset);
+        enemyOffset += Marshal.SizeOf(enemyParameter.EFR);
+        enemyParameter.EIC = BitConverter.ToUInt16(fileBytes, enemyOffset);
+        enemyOffset += Marshal.SizeOf(enemyParameter.EIC);
+        enemyParameter.ETH = BitConverter.ToUInt16(fileBytes, enemyOffset);
+        enemyOffset += Marshal.SizeOf(enemyParameter.ETH);
+        enemyParameter.ELT = BitConverter.ToUInt16(fileBytes, enemyOffset);
+        enemyOffset += Marshal.SizeOf(enemyParameter.ELT);
+        enemyParameter.EDK = BitConverter.ToUInt16(fileBytes, enemyOffset);
+        enemyOffset += Marshal.SizeOf(enemyParameter.EDK);
+        enemyParameter.UnknownResist6 = BitConverter.ToUInt32(fileBytes, enemyOffset);
+        enemyOffset += Marshal.SizeOf(enemyParameter.UnknownResist6);
+        enemyParameter.UnknownResist7 = BitConverter.ToUInt32(fileBytes, enemyOffset);
+        enemyOffset += Marshal.SizeOf(enemyParameter.UnknownResist7);
+        enemyParameter.UnknownResist8 = BitConverter.ToUInt32(fileBytes, enemyOffset);
+        enemyOffset += Marshal.SizeOf(enemyParameter.UnknownResist8);
+        enemyParameter.UnknownResist9 = BitConverter.ToUInt32(fileBytes, enemyOffset);
+        enemyOffset += Marshal.SizeOf(enemyParameter.UnknownResist9);
+        enemyParameter.DFPBonus = BitConverter.ToInt32(fileBytes, enemyOffset);
+        _ = Marshal.SizeOf(enemyParameter.DFPBonus);
+        return enemyParameter;
+    }
+
     private record EpisodeEnemies(int Episode, EnemyModel[] Enemies);
     private record EnemyModel(string Id, string Name, string? UltimateName, int Index, string StatOffset, string ResistOffset);
 }
@@ -157,4 +188,16 @@ public class EnemyParameterModel(int episode, string difficultyName, string id, 
     public uint Unknown14 { get; set; }
     public uint Unknown15 { get; set; }
     public uint Unknown16 { get; set; }
+
+    public short EVPBonus { get; set; }
+    public ushort EFR { get; set; }
+    public ushort EIC { get; set; }
+    public ushort ETH { get; set; }
+    public ushort ELT { get; set; }
+    public ushort EDK { get; set; }
+    public uint UnknownResist6 { get; set; }
+    public uint UnknownResist7 { get; set; }
+    public uint UnknownResist8 { get; set; }
+    public uint UnknownResist9 { get; set; }
+    public int DFPBonus { get; set; }
 }
