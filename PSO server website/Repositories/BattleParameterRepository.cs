@@ -12,6 +12,8 @@ public class BattleParameterRepository(HttpClient http)
     private const int AttackSize = 0x30;
     private const int ResistOffset = 0x7E00;
     private const int ResistSize = 0x20;
+    private const int MovementOffset = 0xAE00;
+    private const int MovementSize = 0x30;
     private static readonly string[] s_difficultyNames = ["Normal", "Hard", "Very Hard", "Ultimate"];
 
     public async Task<BattleParameterModel> GetBattleParameterAsync()
@@ -34,6 +36,8 @@ public class BattleParameterRepository(HttpClient http)
                     enemyParameter = ReadAttack(fileBytes, enemyOffset, enemyParameter);
                     enemyOffset = ResistOffset + i * TableSize * ResistSize + Convert.ToInt32(enemy.ResistOffset, 16) * ResistSize;
                     enemyParameter = ReadResist(fileBytes, enemyOffset, enemyParameter);
+                    enemyOffset = MovementOffset + i * TableSize * MovementSize + Convert.ToInt32(enemy.ResistOffset, 16) * MovementSize;
+                    enemyParameter = ReadMovement(fileBytes, enemyOffset, enemyParameter);
                     enemyParameters.Add(enemyParameter);
                 }
             }
@@ -139,6 +143,35 @@ public class BattleParameterRepository(HttpClient http)
         return enemyParameter;
     }
 
+    private static EnemyParameterModel ReadMovement(byte[] fileBytes, int enemyOffset, EnemyParameterModel enemyParameter)
+    {
+        enemyParameter.IdleMoveSpeed = BitConverter.ToSingle(fileBytes, enemyOffset);
+        enemyOffset += Marshal.SizeOf(enemyParameter.IdleMoveSpeed);
+        enemyParameter.IdleAnimationSpeed = BitConverter.ToSingle(fileBytes, enemyOffset);
+        enemyOffset += Marshal.SizeOf(enemyParameter.IdleAnimationSpeed);
+        enemyParameter.MoveSpeed = BitConverter.ToSingle(fileBytes, enemyOffset);
+        enemyOffset += Marshal.SizeOf(enemyParameter.MoveSpeed);
+        enemyParameter.AnimationSpeed = BitConverter.ToSingle(fileBytes, enemyOffset);
+        enemyOffset += Marshal.SizeOf(enemyParameter.AnimationSpeed);
+        enemyParameter.UnknownMovement1 = BitConverter.ToSingle(fileBytes, enemyOffset);
+        enemyOffset += Marshal.SizeOf(enemyParameter.UnknownMovement1);
+        enemyParameter.UnknownMovement2 = BitConverter.ToSingle(fileBytes, enemyOffset);
+        enemyOffset += Marshal.SizeOf(enemyParameter.UnknownMovement2);
+        enemyParameter.UnknownMovement3 = BitConverter.ToUInt32(fileBytes, enemyOffset);
+        enemyOffset += Marshal.SizeOf(enemyParameter.UnknownMovement3);
+        enemyParameter.UnknownMovement4 = BitConverter.ToUInt32(fileBytes, enemyOffset);
+        enemyOffset += Marshal.SizeOf(enemyParameter.UnknownMovement4);
+        enemyParameter.UnknownMovement5 = BitConverter.ToUInt32(fileBytes, enemyOffset);
+        enemyOffset += Marshal.SizeOf(enemyParameter.UnknownMovement5);
+        enemyParameter.UnknownMovement6 = BitConverter.ToUInt32(fileBytes, enemyOffset);
+        enemyOffset += Marshal.SizeOf(enemyParameter.UnknownMovement6);
+        enemyParameter.UnknownMovement7 = BitConverter.ToUInt32(fileBytes, enemyOffset);
+        enemyOffset += Marshal.SizeOf(enemyParameter.UnknownMovement7);
+        enemyParameter.UnknownMovement8 = BitConverter.ToUInt32(fileBytes, enemyOffset);
+        _ = Marshal.SizeOf(enemyParameter.UnknownMovement8);
+        return enemyParameter;
+    }
+
     private record EpisodeEnemies(int Episode, EnemyModel[] Enemies);
     private record EnemyModel(string Id, string Name, string? UltimateName, int Index, string StatOffset, string ResistOffset);
 }
@@ -200,4 +233,17 @@ public class EnemyParameterModel(int episode, string difficultyName, string id, 
     public uint UnknownResist8 { get; set; }
     public uint UnknownResist9 { get; set; }
     public int DFPBonus { get; set; }
+
+    public float IdleMoveSpeed { get; set; }
+    public float IdleAnimationSpeed { get; set; }
+    public float MoveSpeed { get; set; }
+    public float AnimationSpeed { get; set; }
+    public float UnknownMovement1 { get; set; }
+    public float UnknownMovement2 { get; set; }
+    public uint UnknownMovement3 { get; set; }
+    public uint UnknownMovement4 { get; set; }
+    public uint UnknownMovement5 { get; set; }
+    public uint UnknownMovement6 { get; set; }
+    public uint UnknownMovement7 { get; set; }
+    public uint UnknownMovement8 { get; set; }
 }
