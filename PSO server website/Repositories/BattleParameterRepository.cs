@@ -24,7 +24,7 @@ public class BattleParameterRepository(HttpClient http)
         List<EnemyParameterModel> enemyParameters = [];
         foreach (EpisodeEnemies episode in enemies)
         {
-            foreach (EnemyModel enemy in episode.Enemies)
+            foreach (EnemyDataModel enemy in episode.Enemies)
             {
                 for (int i = 0; i < s_difficultyNames.Length; i++)
                 {
@@ -32,8 +32,15 @@ public class BattleParameterRepository(HttpClient http)
                     EnemyParameterModel enemyParameter = new(episode.Episode, s_difficultyNames[i], enemy.Id,
                         i == 3 && !string.IsNullOrEmpty(enemy.UltimateName) ? enemy.UltimateName : enemy.Name);
                     enemyParameter = ReadStat(fileBytes, enemyOffset, enemyParameter);
-                    enemyOffset = AttackOffset + i * TableSize * AttackSize + enemy.Index * AttackSize;
-                    enemyParameter = ReadAttack(fileBytes, enemyOffset, enemyParameter);
+
+                    List<EnemyAttackModel> enemyAttacks = [];
+                    foreach (EnemyDataAttackModel attack in enemy.Attacks ?? [])
+                    {
+                        enemyOffset = AttackOffset + i * TableSize * AttackSize + Convert.ToInt32(attack.AttackOffset, 16) * AttackSize;
+                        enemyAttacks.Add(ReadAttack(fileBytes, enemyOffset, attack.Name));
+                    }
+                    enemyParameter.Attacks = [.. enemyAttacks];
+
                     enemyOffset = ResistOffset + i * TableSize * ResistSize + Convert.ToInt32(enemy.ResistOffset, 16) * ResistSize;
                     enemyParameter = ReadResist(fileBytes, enemyOffset, enemyParameter);
                     enemyOffset = MovementOffset + i * TableSize * MovementSize + Convert.ToInt32(enemy.ResistOffset, 16) * MovementSize;
@@ -77,43 +84,47 @@ public class BattleParameterRepository(HttpClient http)
         return enemyParameter;
     }
 
-    private static EnemyParameterModel ReadAttack(byte[] fileBytes, int enemyOffset, EnemyParameterModel enemyParameter)
+    private static EnemyAttackModel ReadAttack(byte[] fileBytes, int enemyOffset, string name)
     {
-        enemyParameter.Unknown1 = BitConverter.ToInt16(fileBytes, enemyOffset);
-        enemyOffset += Marshal.SizeOf(enemyParameter.Unknown1);
-        enemyParameter.AttackATP = BitConverter.ToInt16(fileBytes, enemyOffset);
-        enemyOffset += Marshal.SizeOf(enemyParameter.AttackATP);
-        enemyParameter.ATABonus = BitConverter.ToInt16(fileBytes, enemyOffset);
-        enemyOffset += Marshal.SizeOf(enemyParameter.ATABonus);
-        enemyParameter.Unknown4 = BitConverter.ToInt16(fileBytes, enemyOffset);
-        enemyOffset += Marshal.SizeOf(enemyParameter.Unknown4);
-        enemyParameter.DistanceX = BitConverter.ToSingle(fileBytes, enemyOffset);
-        enemyOffset += Marshal.SizeOf(enemyParameter.DistanceX);
-        enemyParameter.AngleX = BitConverter.ToUInt32(fileBytes, enemyOffset);
-        enemyOffset += Marshal.SizeOf(enemyParameter.AngleX);
-        enemyParameter.DistanceY = BitConverter.ToSingle(fileBytes, enemyOffset);
-        enemyOffset += Marshal.SizeOf(enemyParameter.DistanceY);
-        enemyParameter.AngleY = BitConverter.ToUInt32(fileBytes, enemyOffset);
-        enemyOffset += Marshal.SizeOf(enemyParameter.AngleY);
-        enemyParameter.Unknown8 = BitConverter.ToUInt16(fileBytes, enemyOffset);
-        enemyOffset += Marshal.SizeOf(enemyParameter.Unknown8);
-        enemyParameter.Unknown9 = BitConverter.ToUInt16(fileBytes, enemyOffset);
-        enemyOffset += Marshal.SizeOf(enemyParameter.Unknown9);
-        enemyParameter.Unknown10 = BitConverter.ToUInt16(fileBytes, enemyOffset);
-        enemyOffset += Marshal.SizeOf(enemyParameter.Unknown10);
-        enemyParameter.Unknown11 = BitConverter.ToUInt16(fileBytes, enemyOffset);
-        enemyOffset += Marshal.SizeOf(enemyParameter.Unknown11);
-        enemyParameter.Unknown12 = BitConverter.ToUInt32(fileBytes, enemyOffset);
-        enemyOffset += Marshal.SizeOf(enemyParameter.Unknown12);
-        enemyParameter.Unknown13 = BitConverter.ToUInt32(fileBytes, enemyOffset);
-        enemyOffset += Marshal.SizeOf(enemyParameter.Unknown13);
-        enemyParameter.Unknown14 = BitConverter.ToUInt32(fileBytes, enemyOffset);
-        enemyOffset += Marshal.SizeOf(enemyParameter.Unknown14);
-        enemyParameter.Unknown15 = BitConverter.ToUInt32(fileBytes, enemyOffset);
-        enemyOffset += Marshal.SizeOf(enemyParameter.Unknown15);
-        enemyParameter.Unknown16 = BitConverter.ToUInt32(fileBytes, enemyOffset);
-        _ = Marshal.SizeOf(enemyParameter.Unknown16);
-        return enemyParameter;
+        EnemyAttackModel enemyAttack = new()
+        {
+            Name = name,
+            Unknown1 = BitConverter.ToInt16(fileBytes, enemyOffset)
+        };
+        enemyOffset += Marshal.SizeOf(enemyAttack.Unknown1);
+        enemyAttack.AttackATP = BitConverter.ToInt16(fileBytes, enemyOffset);
+        enemyOffset += Marshal.SizeOf(enemyAttack.AttackATP);
+        enemyAttack.ATABonus = BitConverter.ToInt16(fileBytes, enemyOffset);
+        enemyOffset += Marshal.SizeOf(enemyAttack.ATABonus);
+        enemyAttack.Unknown4 = BitConverter.ToInt16(fileBytes, enemyOffset);
+        enemyOffset += Marshal.SizeOf(enemyAttack.Unknown4);
+        enemyAttack.DistanceX = BitConverter.ToSingle(fileBytes, enemyOffset);
+        enemyOffset += Marshal.SizeOf(enemyAttack.DistanceX);
+        enemyAttack.AngleX = BitConverter.ToUInt32(fileBytes, enemyOffset);
+        enemyOffset += Marshal.SizeOf(enemyAttack.AngleX);
+        enemyAttack.DistanceY = BitConverter.ToSingle(fileBytes, enemyOffset);
+        enemyOffset += Marshal.SizeOf(enemyAttack.DistanceY);
+        enemyAttack.AngleY = BitConverter.ToUInt32(fileBytes, enemyOffset);
+        enemyOffset += Marshal.SizeOf(enemyAttack.AngleY);
+        enemyAttack.Unknown8 = BitConverter.ToUInt16(fileBytes, enemyOffset);
+        enemyOffset += Marshal.SizeOf(enemyAttack.Unknown8);
+        enemyAttack.Unknown9 = BitConverter.ToUInt16(fileBytes, enemyOffset);
+        enemyOffset += Marshal.SizeOf(enemyAttack.Unknown9);
+        enemyAttack.Unknown10 = BitConverter.ToUInt16(fileBytes, enemyOffset);
+        enemyOffset += Marshal.SizeOf(enemyAttack.Unknown10);
+        enemyAttack.Unknown11 = BitConverter.ToUInt16(fileBytes, enemyOffset);
+        enemyOffset += Marshal.SizeOf(enemyAttack.Unknown11);
+        enemyAttack.Unknown12 = BitConverter.ToUInt32(fileBytes, enemyOffset);
+        enemyOffset += Marshal.SizeOf(enemyAttack.Unknown12);
+        enemyAttack.Unknown13 = BitConverter.ToUInt32(fileBytes, enemyOffset);
+        enemyOffset += Marshal.SizeOf(enemyAttack.Unknown13);
+        enemyAttack.Unknown14 = BitConverter.ToUInt32(fileBytes, enemyOffset);
+        enemyOffset += Marshal.SizeOf(enemyAttack.Unknown14);
+        enemyAttack.Unknown15 = BitConverter.ToUInt32(fileBytes, enemyOffset);
+        enemyOffset += Marshal.SizeOf(enemyAttack.Unknown15);
+        enemyAttack.Unknown16 = BitConverter.ToUInt32(fileBytes, enemyOffset);
+        _ = Marshal.SizeOf(enemyAttack.Unknown16);
+        return enemyAttack;
     }
 
     private static EnemyParameterModel ReadResist(byte[] fileBytes, int enemyOffset, EnemyParameterModel enemyParameter)
@@ -172,8 +183,9 @@ public class BattleParameterRepository(HttpClient http)
         return enemyParameter;
     }
 
-    private record EpisodeEnemies(int Episode, EnemyModel[] Enemies);
-    private record EnemyModel(string Id, string Name, string? UltimateName, int Index, string StatOffset, string ResistOffset);
+    private record EpisodeEnemies(int Episode, EnemyDataModel[] Enemies);
+    private record EnemyDataModel(string Id, string Name, string? UltimateName, string StatOffset, string ResistOffset, EnemyDataAttackModel[] Attacks);
+    private record EnemyDataAttackModel(string AttackOffset, string Name);
 }
 
 public class BattleParameterModel
@@ -201,27 +213,6 @@ public class EnemyParameterModel(int episode, string difficultyName, string id, 
     public uint Experience { get; set; }
     public uint Meseta { get; set; }
 
-    public short Unknown1 { get; set; }
-    public short AttackATP { get; set; }
-    public short ATABonus { get; set; }
-    public short Unknown4 { get; set; }
-    public float DistanceX { get; set; }
-    /// <summary>
-    /// Out of 0x10000 (high 16 bits are unused)
-    /// </summary>
-    public uint AngleX { get; set; }
-    public float DistanceY { get; set; }
-    public uint AngleY { get; set; }
-    public ushort Unknown8 { get; set; }
-    public ushort Unknown9 { get; set; }
-    public ushort Unknown10 { get; set; }
-    public ushort Unknown11 { get; set; }
-    public uint Unknown12 { get; set; }
-    public uint Unknown13 { get; set; }
-    public uint Unknown14 { get; set; }
-    public uint Unknown15 { get; set; }
-    public uint Unknown16 { get; set; }
-
     public short EVPBonus { get; set; }
     public ushort EFR { get; set; }
     public ushort EIC { get; set; }
@@ -246,4 +237,31 @@ public class EnemyParameterModel(int episode, string difficultyName, string id, 
     public uint UnknownMovement6 { get; set; }
     public uint UnknownMovement7 { get; set; }
     public uint UnknownMovement8 { get; set; }
+
+    public EnemyAttackModel[] Attacks { get; set; } = [];
+}
+
+public class EnemyAttackModel
+{
+    public required string Name { get; set; }
+    public short Unknown1 { get; set; }
+    public short AttackATP { get; set; }
+    public short ATABonus { get; set; }
+    public short Unknown4 { get; set; }
+    public float DistanceX { get; set; }
+    /// <summary>
+    /// Out of 0x10000 (high 16 bits are unused)
+    /// </summary>
+    public uint AngleX { get; set; }
+    public float DistanceY { get; set; }
+    public uint AngleY { get; set; }
+    public ushort Unknown8 { get; set; }
+    public ushort Unknown9 { get; set; }
+    public ushort Unknown10 { get; set; }
+    public ushort Unknown11 { get; set; }
+    public uint Unknown12 { get; set; }
+    public uint Unknown13 { get; set; }
+    public uint Unknown14 { get; set; }
+    public uint Unknown15 { get; set; }
+    public uint Unknown16 { get; set; }
 }
