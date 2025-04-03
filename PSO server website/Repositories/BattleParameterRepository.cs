@@ -19,9 +19,19 @@ public class BattleParameterRepository(HttpClient http)
     public async Task<BattleParameterModel> GetBattleParameterAsync()
     {
         EpisodeEnemies[] enemies = (await http.GetFromJsonAsync<EpisodeEnemies[]>("data/enemies.json"))!;
-        byte[] fileBytes = await http.GetByteArrayAsync("data/BattleParamEntry.dat");
-
         List<EnemyParameterModel> enemyParameters = [];
+
+        byte[] fileBytes = await http.GetByteArrayAsync("data/BattleParamEntry_on.dat");
+        enemyParameters = ReadEnemies(enemies, enemyParameters, fileBytes, false);
+
+        fileBytes = await http.GetByteArrayAsync("data/BattleParamEntry.dat");
+        enemyParameters = ReadEnemies(enemies, enemyParameters, fileBytes, true);
+
+        return new BattleParameterModel { Enemies = [.. enemyParameters] };
+    }
+
+    private static List<EnemyParameterModel> ReadEnemies(EpisodeEnemies[] enemies, List<EnemyParameterModel> enemyParameters, byte[] fileBytes, bool solo)
+    {
         foreach (EpisodeEnemies episode in enemies)
         {
             foreach (EnemyDataModel enemy in episode.Enemies)
@@ -29,7 +39,7 @@ public class BattleParameterRepository(HttpClient http)
                 for (int i = 0; i < s_difficultyNames.Length; i++)
                 {
                     int enemyOffset = StatOffset + i * TableSize * StatSize + Convert.ToInt32(enemy.StatOffset, 16) * StatSize;
-                    EnemyParameterModel enemyParameter = new(episode.Episode, s_difficultyNames[i], enemy.Id,
+                    EnemyParameterModel enemyParameter = new(episode.Episode, solo, i, enemy.Id,
                         i == 3 && !string.IsNullOrEmpty(enemy.UltimateName) ? enemy.UltimateName : enemy.Name);
                     enemyParameter = ReadStat(fileBytes, enemyOffset, enemyParameter);
 
@@ -48,9 +58,8 @@ public class BattleParameterRepository(HttpClient http)
                     enemyParameters.Add(enemyParameter);
                 }
             }
-
         }
-        return new BattleParameterModel { Enemies = [.. enemyParameters] };
+        return enemyParameters;
     }
 
     private static EnemyParameterModel ReadStat(byte[] fileBytes, int enemyOffset, EnemyParameterModel enemyParameter)
@@ -193,10 +202,11 @@ public class BattleParameterModel
     public EnemyParameterModel[] Enemies { get; set; } = [];
 }
 
-public class EnemyParameterModel(int episode, string difficultyName, string id, string name)
+public class EnemyParameterModel(int episode, bool solo, int difficulty, string id, string name)
 {
     public int Episode { get; set; } = episode;
-    public string DifficultyName { get; set; } = difficultyName;
+    public bool Solo { get; set; } = solo;
+    public int Difficulty { get; set; } = difficulty;
     public string Id { get; set; } = id;
     public string Name { get; set; } = name;
     public ushort ATP { get; set; }
