@@ -13,6 +13,7 @@
 @inject LevelTableRepository levelTableRepository
 @inject ItemsService itemsService
 @inject DropsLocationsService dropsLocationsService
+@inject BattleParameterRepository battleParameterRepository
 
 <PageTitle>Character Builder</PageTitle>
 
@@ -421,6 +422,108 @@ else
         </script>
 
         <div class="row">
+            <div class="col-4">
+                <label class="form-label">Test Against Monster Enemy (TAME)</label>
+            </div>
+            <div class="col">
+                <button type="button" class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#modalChangeMonster">
+                    Change monster
+                </button>
+            </div>
+        </div>
+        @if (MonsterTest != null)
+        {
+            <div class="row">
+                <div class="col col-2">
+                    <label class="form-label">
+                        Name
+                        <InputText @bind-Value="MonsterTest.Name" DisplayName="Name" class="form-control" disabled></InputText>
+                    </label>
+                </div>
+                <div class="col">
+                    <label class="form-label">
+                        HP
+                        <input value="@MonsterTest.HP" class="form-control" disabled />
+                    </label>
+                </div>
+                <div class="col">
+                    <label class="form-label">
+                        ATP
+                        <input value="@MonsterTest.ATP" class="form-control" disabled />
+                    </label>
+                </div>
+                <div class="col">
+                    <label class="form-label">
+                        DFP
+                        <input value="@MonsterTest.DFP" class="form-control" disabled />
+                    </label>
+                </div>
+                <div class="col">
+                    <label class="form-label">
+                        MST
+                        <input value="@MonsterTest.MST" class="form-control" disabled />
+                    </label>
+                </div>
+                <div class="col">
+                    <label class="form-label">
+                        ATA
+                        <input value="@MonsterTest.ATA" class="form-control" disabled />
+                    </label>
+                </div>
+                <div class="col">
+                    <label class="form-label">
+                        EVP
+                        <input value="@MonsterTest.EVP" class="form-control" disabled />
+                    </label>
+                </div>
+                <div class="col">
+                    <label class="form-label">
+                        LCK
+                        <input value="@MonsterTest.LCK" class="form-control" disabled />
+                    </label>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col col-2">
+                    <label class="form-label">
+                        EFR
+                        <input value="@MonsterTest.EFR" class="form-control" disabled />
+                    </label>
+                </div>
+                <div class="col col-2">
+                    <label class="form-label">
+                        EIC
+                        <input value="@MonsterTest.EIC" class="form-control" disabled />
+                    </label>
+                </div>
+                <div class="col col-2">
+                    <label class="form-label">
+                        ETH
+                        <input value="@MonsterTest.ETH" class="form-control" disabled />
+                    </label>
+                </div>
+                <div class="col col-2">
+                    <label class="form-label">
+                        EDK
+                        <input value="@MonsterTest.EDK" class="form-control" disabled />
+                    </label>
+                </div>
+                <div class="col col-2">
+                    <label class="form-label">
+                        ELT
+                        <input value="@MonsterTest.ELT" class="form-control" disabled />
+                    </label>
+                </div>
+                <div class="col col-2">
+                    <label class="form-label">
+                        ESP
+                        <input value="@MonsterTest.ESP" class="form-control" disabled />
+                    </label>
+                </div>
+            </div>
+        }
+
+        <div class="row">
             <div class="col">
                 <label class="form-label w-100">Wishlist</label>
                 <div class="btn-group-vertical vstack" role="group">
@@ -467,7 +570,7 @@ else
         </div>
     </div>
 
-    <CharacterBuilder_Modals @ref="modals" Parent="this" EditUnitIndex="EditUnit" Weapons="weapons" Armors="armors" Shields="shields" Units="units" Mags="mags" OnClose="() => { RefreshStats(); StateHasChanged(); }" />
+    <CharacterBuilder_Modals @ref="modals" Parent="this" EditUnitIndex="EditUnit" Weapons="weapons" Armors="armors" Shields="shields" Units="units" Mags="mags" BattleParameters="battleParameters" OnClose="() => { RefreshStats(); StateHasChanged(); }" />
 }
 
 @code {
@@ -481,13 +584,14 @@ else
     [DisallowNull] private ItemModel[] shields = default!;
     [DisallowNull] private ItemModel[] mags = default!;
     [DisallowNull] private IEnumerable<DropLocationModel> dropsLocations = default!;
+    [DisallowNull] private BattleParameterModel battleParameters = default!;
 
     [DisallowNull] public List<CharacterModel> Characters { get; set; } = new();
     [DisallowNull] public CharacterModel Character { get; set; } = default!;
     private int EditUnit { get; set; }
 
-    [MemberNotNullWhen(false, nameof(levelTable), nameof(items), nameof(weapon), nameof(armors), nameof(units), nameof(shields), nameof(mags), nameof(dropsLocations))]
-    private bool IsLoading => levelTable == null || items == null || dropsLocations == null;
+    [MemberNotNullWhen(false, nameof(levelTable), nameof(items), nameof(weapon), nameof(armors), nameof(units), nameof(shields), nameof(mags), nameof(dropsLocations), nameof(battleParameters))]
+    private bool IsLoading => levelTable == null || items == null || dropsLocations == null || battleParameters == null;
 
     protected override async Task OnInitializedAsync()
     {
@@ -500,6 +604,8 @@ else
         mags = items.Where(i => i.ItemType == ItemType.Mag).ToArray();
 
         dropsLocations = await dropsLocationsService.GetDropsLocationsAsync();
+
+        battleParameters = await battleParameterRepository.GetBattleParameterAsync();
 
         var characterSelectedIndex = await localStorage.GetItemAsync<int>("characterSelectedIndex");
         Characters = await localStorage.GetItemAsync<List<CharacterModel>>("characters") ?? new();
@@ -851,6 +957,8 @@ else
         get { return Character.Notes; }
         set { Character.Notes = value; RefreshStats(); }
     }
+
+    public EnemyParameterModel? MonsterTest { get; set; }
 
     public int ConvertClassFlagToIndex(ClassFlag classFlag) => classFlag switch
     {

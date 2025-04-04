@@ -546,6 +546,109 @@
     </div>
 </div>
 
+<div id="modalChangeMonster" class="modal" onhidden.bs.modal="@(() => OnClose?.Invoke())">
+    <div class="modal-dialog modal-dialog-scrollable modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <span>Change Monster</span><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body container row">
+                <label class="form-label col col-6">
+                    Episode
+                    <InputSelect @bind-Value="MonsterEpisodeSelection" class="form-select" aria-label="Select an episode">
+                        <option value="-1">Select an episode ...</option>
+                        <option selected="@(MonsterEpisodeSelection == 1)" value="1">Episode 1</option>
+                        <option selected="@(MonsterEpisodeSelection == 2)" value="2">Episode 2</option>
+                        <option selected="@(MonsterEpisodeSelection == 4)" value="4">Episode 4</option>
+                    </InputSelect>
+                </label>
+                <div class="col col-6">
+                    <div class="form-label">Play Mode</div>
+                    <div class="form-check form-check-inline">
+                        <label class="form-check-label"><input class="form-check-input" type="radio" name="radioMonsterModeSoloSelection" checked="@(!MonsterModeSoloSelection)" onchange="@(() => { MonsterModeSoloSelection = false; })" /> Normal</label>
+                    </div>
+                    <div class="form-check form-check-inline">
+                        <label class="form-check-label"><input class="form-check-input" type="radio" name="radioMonsterModeSoloSelection" checked="@MonsterModeSoloSelection" onchange="@(() => { MonsterModeSoloSelection = true; })" /> One Person</label>
+                    </div>
+                </div>
+                <label class="form-label col col-6 offset-6">
+                    Difficulty
+                    <InputSelect @bind-Value="MonsterDifficultySelection" class="form-select" aria-label="Select a difficulty">
+                        <option value="-1">Select a difficulty ...</option>
+                        <option selected="@(MonsterDifficultySelection == 0)" value="0">Normal</option>
+                        <option selected="@(MonsterDifficultySelection == 1)" value="1">Hard</option>
+                        <option selected="@(MonsterDifficultySelection == 2)" value="2">Very Hard</option>
+                        <option selected="@(MonsterDifficultySelection == 3)" value="3">Ultimate</option>
+                    </InputSelect>
+                </label>
+                <label class="form-label col col-12">
+                    Monster
+                    <InputSelectSearch @bind-Value="Parent.MonsterTest"
+                                       DataSource="@BattleParameters.Enemies.Where(e => e.Episode== MonsterEpisodeSelection && e.Solo == MonsterModeSoloSelection && e.Difficulty == MonsterDifficultySelection)"
+                                       IdMember="@((m) => m?.Id)" DisplayMember="@((m) => m?.Name)" aria-label="Select a monster"></InputSelectSearch>
+                </label>
+                @if (Parent.MonsterTest != null)
+                {
+                    <label class="form-label col col-3">
+                        HP
+                        <input value="@Parent.MonsterTest.HP" class="form-control" disabled />
+                    </label>
+                    <label class="form-label col col-3">
+                        ATP
+                        <input value="@Parent.MonsterTest.ATP" class="form-control" disabled />
+                    </label>
+                    <label class="form-label col col-3">
+                        DFP
+                        <input value="@Parent.MonsterTest.DFP" class="form-control" disabled />
+                    </label>
+                    <label class="form-label col col-3">
+                        MST
+                        <input value="@Parent.MonsterTest.MST" class="form-control" disabled />
+                    </label>
+                    <label class="form-label col col-3">
+                        ATA
+                        <input value="@Parent.MonsterTest.ATA" class="form-control" disabled />
+                    </label>
+                    <label class="form-label col col-3">
+                        EVP
+                        <input value="@Parent.MonsterTest.EVP" class="form-control" disabled />
+                    </label>
+                    <label class="form-label col col-3">
+                        LCK
+                        <input value="@Parent.MonsterTest.LCK" class="form-control" disabled />
+                    </label>
+                    <div class="w-100"></div>
+                    <label class="form-label col col-2">
+                        EFR
+                        <input value="@Parent.MonsterTest.EFR" class="form-control" disabled />
+                    </label>
+                    <label class="form-label col col-2">
+                        EIC
+                        <input value="@Parent.MonsterTest.EIC" class="form-control" disabled />
+                    </label>
+                    <label class="form-label col col-2">
+                        ETH
+                        <input value="@Parent.MonsterTest.ETH" class="form-control" disabled />
+                    </label>
+                    <label class="form-label col col-2">
+                        EDK
+                        <input value="@Parent.MonsterTest.EDK" class="form-control" disabled />
+                    </label>
+                    <label class="form-label col col-2">
+                        ELT
+                        <input value="@Parent.MonsterTest.ELT" class="form-control" disabled />
+                    </label>
+                    <label class="form-label col col-2">
+                        ESP
+                        <input value="@Parent.MonsterTest.ESP" class="form-control" disabled />
+                    </label>
+                }
+            </div>
+            <div class="modal-footer"></div>
+        </div>
+    </div>
+</div>
+
 <div id="modalWishlistNew" class="modal" onshow.bs.modal="@(() => { WishlistItem = null; })" onhidden.bs.modal="@(() => OnClose?.Invoke())">
     <div class="modal-dialog modal-dialog-scrollable modal-dialog-centered">
         <div class="modal-content">
@@ -729,6 +832,7 @@
     [Parameter, EditorRequired] public required ItemModel[] Shields { get; set; }
     [Parameter, EditorRequired] public required ItemModel[] Units { get; set; }
     [Parameter, EditorRequired] public required ItemModel[] Mags { get; set; }
+    [Parameter, EditorRequired] public required Repositories.BattleParameterModel BattleParameters { get; set; }
 
     [Parameter]
     public Action? OnClose { get; set; }
@@ -742,6 +846,10 @@
         4 => Parent.Unit4,
         _ => throw new NotSupportedException()
     };
+
+    private int MonsterEpisodeSelection { get; set; } = -1;
+    private bool MonsterModeSoloSelection { get; set; }
+    private int MonsterDifficultySelection { get; set; } = -1;
 
     private void OnClickCharacterSelection(CharacterModel? newSelection)
     {

@@ -12,13 +12,25 @@
             <li><button class="dropdown-item @(IdMember(Value) == null ? "active" : "")" onclick="@(async () => SelectedValueChangeAsync(null))"><i>~ None ~</i></button></li>
             @foreach (var item in DataSourceFiltered)
             {
-                <li><button class="dropdown-item @(IdMember(Value) == IdMember(item) ? "active" : "")" onclick="@(async () => SelectedValueChangeAsync(IdMember(item)))"><ItemName ItemIdentifier="@IdMember(item)" /></button></li>
+                <li>
+                    <button class="dropdown-item @(IdMember(Value) == IdMember(item) ? "active" : "")" onclick="@(async () => SelectedValueChangeAsync(IdMember(item)))">
+                        @if (typeof(TValue) == typeof(ItemModel))
+                        {
+                            <ItemName ItemIdentifier="@IdMember(item)" />
+                        }
+                        else
+                        {
+                            @DisplayMember(item)
+                        }
+                    </button>
+                </li>
             }
         </ul>
     </div>
     @if (typeof(TValue) == typeof(ItemModel))
+    {
         @Tooltip
-
+    }
 </div>
 
 <script>bootstrap.Dropdown.Default.popperConfig = { strategy: "fixed" };</script>
