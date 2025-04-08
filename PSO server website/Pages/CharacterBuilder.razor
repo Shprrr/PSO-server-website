@@ -422,7 +422,7 @@ else
         </script>
 
         <div class="row">
-            <div class="col-4">
+            <div class="col-auto">
                 <label class="form-label">Test Against Monster Enemy (TAME)</label>
             </div>
             <div class="col">
@@ -518,6 +518,50 @@ else
                     <label class="form-label">
                         ESP
                         <input value="@MonsterTest.ESP" class="form-control" disabled />
+                    </label>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col">
+                    <label class="form-label">
+                        Normal Attack
+                        <span class="row">
+                            <span class="col">
+                                <input value="@MonsterNormalAttackDamage" class="form-control" disabled />
+                            </span>
+                            <span class="col">
+                                <span class="form-check form-switch">
+                                    <label class="form-check-label">
+                                        Is Knockdown
+                                        <input checked="@MonsterNormalAttackIsKnockdown" class="form-check-input" type="checkbox" disabled />
+                                    </label>
+                                </span>
+                            </span>
+                        </span>
+                    </label>
+                </div>
+                <div class="col">
+                    <label class="form-label">
+                        Critical Hit
+                        <span class="row">
+                            <span class="col col-3">
+                                <span class="input-group">
+                                    <input value="@MonsterNormalAttackCriticalChance" class="form-control" disabled />
+                                    <span class="input-group-append input-group-text">%</span>
+                                </span>
+                            </span>
+                            <span class="col">
+                                <input value="@MonsterNormalAttackCriticalDamage" class="form-control" disabled />
+                            </span>
+                            <span class="col">
+                                <span class="form-check form-switch">
+                                    <label class="form-check-label">
+                                        Is Knockdown
+                                        <input checked="@MonsterNormalAttackCriticalIsKnockdown" class="form-check-input" type="checkbox" disabled />
+                                    </label>
+                                </span>
+                            </span>
+                        </span>
                     </label>
                 </div>
             </div>
@@ -959,6 +1003,12 @@ else
     }
 
     public EnemyParameterModel? MonsterTest { get; set; }
+
+    public int MonsterNormalAttackDamage { get => MonsterTest == null ? 0 : Math.Max(0, (MonsterTest.ATP - DFP) / 5); }
+    public bool MonsterNormalAttackIsKnockdown { get => MonsterTest == null ? false : (100 * MonsterNormalAttackDamage / HP) >= 25; }
+    public int MonsterNormalAttackCriticalChance { get => MonsterTest == null ? 0 : MonsterTest.LCK / 5; }
+    public int MonsterNormalAttackCriticalDamage { get => MonsterTest == null ? 0 : (int)(MonsterNormalAttackDamage * 1.5); }
+    public bool MonsterNormalAttackCriticalIsKnockdown { get => MonsterTest == null ? false : (100 * MonsterNormalAttackCriticalDamage / HP) >= 25; }
 
     public int ConvertClassFlagToIndex(ClassFlag classFlag) => classFlag switch
     {
