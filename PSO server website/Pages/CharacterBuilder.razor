@@ -526,6 +526,12 @@ else
                     <label class="form-label">
                         Normal Attack
                         <span class="row">
+                            <span class="col col-3">
+                                <span class="input-group">
+                                    <input value="@MonsterNormalAttackAccuracy" class="form-control" disabled />
+                                    <span class="input-group-append input-group-text">%</span>
+                                </span>
+                            </span>
                             <span class="col">
                                 <input value="@MonsterNormalAttackDamage" class="form-control" disabled />
                             </span>
@@ -1004,11 +1010,12 @@ else
 
     public EnemyParameterModel? MonsterTest { get; set; }
 
-    public int MonsterNormalAttackDamage { get => MonsterTest == null ? 0 : Math.Max(0, (MonsterTest.ATP - DFP) / 5); }
-    public bool MonsterNormalAttackIsKnockdown { get => MonsterTest == null ? false : (100 * MonsterNormalAttackDamage / HP) >= 25; }
-    public int MonsterNormalAttackCriticalChance { get => MonsterTest == null ? 0 : MonsterTest.LCK / 5; }
-    public int MonsterNormalAttackCriticalDamage { get => MonsterTest == null ? 0 : (int)(MonsterNormalAttackDamage * 1.5); }
-    public bool MonsterNormalAttackCriticalIsKnockdown { get => MonsterTest == null ? false : (100 * MonsterNormalAttackCriticalDamage / HP) >= 25; }
+    public int MonsterNormalAttackAccuracy => MonsterTest == null ? 0 : (int)Math.Clamp(MonsterTest.ATA - EVP * 0.2, 0, 100);
+    public int MonsterNormalAttackDamage => MonsterTest == null ? 0 : Math.Max(0, (MonsterTest.ATP - DFP) / 5);
+    public bool MonsterNormalAttackIsKnockdown => MonsterTest == null ? false : (100 * MonsterNormalAttackDamage / HP) >= 25;
+    public int MonsterNormalAttackCriticalChance => MonsterTest == null ? 0 : MonsterTest.LCK / 5;
+    public int MonsterNormalAttackCriticalDamage => MonsterTest == null ? 0 : (int)(MonsterNormalAttackDamage * 1.5);
+    public bool MonsterNormalAttackCriticalIsKnockdown => MonsterTest == null ? false : (100 * MonsterNormalAttackCriticalDamage / HP) >= 25;
 
     public int ConvertClassFlagToIndex(ClassFlag classFlag) => classFlag switch
     {
