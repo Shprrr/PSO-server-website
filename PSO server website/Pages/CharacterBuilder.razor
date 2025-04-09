@@ -523,6 +523,27 @@ else
             </div>
             <div class="row">
                 <div class="col">
+                    <label class="form-label">Are you?</label>
+                </div>
+                <div class="col">
+                    <span class="form-check form-switch">
+                        <label class="form-check-label">
+                            <img src="img/32px-Paralysis.png" title="Paralyzed" /> or <img src="img/32px-Shock.png" title="Shocked" />
+                            <input @bind="@MonsterTestPlayerIsParalyzed" class="form-check-input" type="checkbox" />
+                        </label>
+                    </span>
+                </div>
+                <div class="col">
+                    <span class="form-check form-switch">
+                        <label class="form-check-label">
+                            <img src="img/32px-Freeze.png" title="Frozen" />
+                            <input @bind="@MonsterTestPlayerIsFrozen" class="form-check-input" type="checkbox" />
+                        </label>
+                    </span>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col">
                     <label class="form-label">
                         Normal Attack
                         <span class="row">
@@ -1010,7 +1031,24 @@ else
 
     public EnemyParameterModel? MonsterTest { get; set; }
 
-    public int MonsterNormalAttackAccuracy => MonsterTest == null ? 0 : (int)Math.Clamp(MonsterTest.ATA - EVP * 0.2, 0, 100);
+    public bool MonsterTestPlayerIsParalyzed { get; set; }
+    public bool MonsterTestPlayerIsFrozen { get; set; }
+    public int MonsterNormalAttackAccuracy
+    {
+        get
+        {
+            if (MonsterTest == null) return 0;
+            var EVPEffective = EVP * this switch
+            {
+                { } when MonsterTestPlayerIsParalyzed && MonsterTestPlayerIsFrozen => 0.55,
+                { } when MonsterTestPlayerIsParalyzed => 0.85,
+                { } when MonsterTestPlayerIsFrozen => 0.7,
+                _ => 1
+            };
+            return (int)Math.Clamp(MonsterTest.ATA - EVPEffective * 0.2, 0, 100);
+        }
+    }
+
     public int MonsterNormalAttackDamage => MonsterTest == null ? 0 : Math.Max(0, (MonsterTest.ATP - DFP) / 5);
     public bool MonsterNormalAttackIsKnockdown => MonsterTest == null ? false : (100 * MonsterNormalAttackDamage / HP) >= 25;
     public int MonsterNormalAttackCriticalChance => MonsterTest == null ? 0 : MonsterTest.LCK / 5;
