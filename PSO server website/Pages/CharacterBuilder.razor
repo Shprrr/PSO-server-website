@@ -331,14 +331,14 @@ else
         <div class="row">
             <div class="col">
                 <label class="form-label">
-                    Shifta Level
+                    <img src="img/32px-Shifta.png" title="Shifta" class="label-icon" /> Shifta Level
                     <InputNumber @bind-Value="ShiftaLevel" DisplayName="Shifta Level" class="form-control"></InputNumber>
                 </label>
                 <span class="ms-1">@GetShiftaDebandDuration(ShiftaLevel)</span>
             </div>
             <div class="col">
                 <label class="form-label">
-                    Deband Level
+                    <img src="img/32px-Deband.png" title="Deband" class="label-icon" /> Deband Level
                     <InputNumber @bind-Value="DebandLevel" DisplayName="Deband Level" class="form-control"></InputNumber>
                 </label>
                 <span class="ms-1">@GetShiftaDebandDuration(DebandLevel)</span>
@@ -440,7 +440,7 @@ else
                 <div class="col">
                     <span class="form-check form-switch">
                         <label class="form-check-label">
-                            <img src="img/32px-Paralysis.png" title="Paralyzed" /> or <img src="img/32px-Shock.png" title="Shocked" />
+                            <img src="img/32px-Paralysis.png" title="Paralyzed" class="label-icon" /> or <img src="img/32px-Shock.png" title="Shocked" class="label-icon" />
                             <input @bind="@MonsterTestPlayerIsParalyzed" class="form-check-input" type="checkbox" />
                         </label>
                     </span>
@@ -448,7 +448,7 @@ else
                 <div class="col">
                     <span class="form-check form-switch">
                         <label class="form-check-label">
-                            <img src="img/32px-Freeze.png" title="Frozen" />
+                            <img src="img/32px-Freeze.png" title="Frozen" class="label-icon" />
                             <input @bind="@MonsterTestPlayerIsFrozen" class="form-check-input" type="checkbox" />
                         </label>
                     </span>
@@ -549,7 +549,7 @@ else
                 <div class="col">
                     <span class="form-check form-switch">
                         <label class="form-check-label">
-                            <img src="img/32px-Paralysis.png" title="Paralyzed" /> or <img src="img/32px-Shock.png" title="Shocked" />
+                            <img src="img/32px-Paralysis.png" title="Paralyzed" class="label-icon" /> or <img src="img/32px-Shock.png" title="Shocked" class="label-icon" />
                             <input @bind="@MonsterTestEnemyIsParalyzed" class="form-check-input" type="checkbox" />
                         </label>
                     </span>
@@ -557,10 +557,22 @@ else
                 <div class="col">
                     <span class="form-check form-switch">
                         <label class="form-check-label">
-                            <img src="img/32px-Freeze.png" title="Frozen" />
+                            <img src="img/32px-Freeze.png" title="Frozen" class="label-icon" />
                             <input @bind="@MonsterTestEnemyIsFrozen" class="form-check-input" type="checkbox" />
                         </label>
                     </span>
+                </div>
+                <div class="col">
+                    <label class="form-label">
+                        <img src="img/32px-Jellen.png" title="Jellen" class="label-icon" /> Jellen Level
+                        <InputNumber @bind-Value="MonsterTestJellenLevel" DisplayName="Jellen Level" class="form-control"></InputNumber>
+                    </label>
+                </div>
+                <div class="col">
+                    <label class="form-label">
+                        <img src="img/32px-Zalure.png" title="Zalure" class="label-icon" /> Zalure Level
+                        <InputNumber @bind-Value="MonsterTestZalureLevel" DisplayName="Zalure Level" class="form-control"></InputNumber>
+                    </label>
                 </div>
             </div>
             <div class="row">
@@ -1091,6 +1103,8 @@ else
     public bool MonsterTestPlayerIsFrozen { get; set; }
     public bool MonsterTestEnemyIsParalyzed { get; set; }
     public bool MonsterTestEnemyIsFrozen { get; set; }
+    public int MonsterTestJellenLevel { get; set; }
+    public int MonsterTestZalureLevel { get; set; }
 
     public int PlayerNormalAttackAccuracy
     {
@@ -1108,8 +1122,8 @@ else
         }
     }
 
-    public int PlayerNormalAttackLowDamage => MonsterTest == null ? 0 : (int)Math.Max(0, (LowATP - MonsterTest.DFP) / 5 * 0.9);
-    public int PlayerNormalAttackHighDamage => MonsterTest == null ? 0 : (int)Math.Max(0, (ATP - MonsterTest.DFP) / 5 * 0.9);
+    public int PlayerNormalAttackLowDamage => MonsterTest == null ? 0 : (int)Math.Max(0, (LowATP - (MonsterTest.DFP + MonsterTest.DFP * GetShiftaDebandMultiplier(-MonsterTestZalureLevel))) / 5 * 0.9);
+    public int PlayerNormalAttackHighDamage => MonsterTest == null ? 0 : (int)Math.Max(0, (ATP - (MonsterTest.DFP + MonsterTest.DFP * GetShiftaDebandMultiplier(-MonsterTestZalureLevel))) / 5 * 0.9);
     public int PlayerNormalAttackCriticalChance => MonsterTest == null ? 0 : LCK / 5;
     public int PlayerNormalAttackCriticalLowDamage => MonsterTest == null ? 0 : (int)(PlayerNormalAttackLowDamage * 1.5);
     public int PlayerNormalAttackCriticalHighDamage => MonsterTest == null ? 0 : (int)(PlayerNormalAttackHighDamage * 1.5);
@@ -1130,7 +1144,7 @@ else
         }
     }
 
-    public int MonsterNormalAttackDamage => MonsterTest == null ? 0 : Math.Max(0, (MonsterTest.ATP - DFP) / 5);
+    public int MonsterNormalAttackDamage => MonsterTest == null ? 0 : (int)Math.Max(0, ((MonsterTest.ATP + MonsterTest.ATP * GetShiftaDebandMultiplier(-MonsterTestJellenLevel)) - DFP) / 5);
     public bool MonsterNormalAttackIsKnockdown => MonsterTest == null ? false : (100 * MonsterNormalAttackDamage / HP) >= 25;
     public int MonsterNormalAttackCriticalChance => MonsterTest == null ? 0 : MonsterTest.LCK / 5;
     public int MonsterNormalAttackCriticalDamage => MonsterTest == null ? 0 : (int)(MonsterNormalAttackDamage * 1.5);
