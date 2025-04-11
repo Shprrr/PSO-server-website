@@ -434,6 +434,27 @@ else
         @if (MonsterTest != null)
         {
             <div class="row">
+                <div class="col">
+                    <label class="form-label">Are you?</label>
+                </div>
+                <div class="col">
+                    <span class="form-check form-switch">
+                        <label class="form-check-label">
+                            <img src="img/32px-Paralysis.png" title="Paralyzed" /> or <img src="img/32px-Shock.png" title="Shocked" />
+                            <input @bind="@MonsterTestPlayerIsParalyzed" class="form-check-input" type="checkbox" />
+                        </label>
+                    </span>
+                </div>
+                <div class="col">
+                    <span class="form-check form-switch">
+                        <label class="form-check-label">
+                            <img src="img/32px-Freeze.png" title="Frozen" />
+                            <input @bind="@MonsterTestPlayerIsFrozen" class="form-check-input" type="checkbox" />
+                        </label>
+                    </span>
+                </div>
+            </div>
+            <div class="row">
                 <div class="col col-2">
                     <label class="form-label">
                         Name
@@ -523,13 +544,13 @@ else
             </div>
             <div class="row">
                 <div class="col">
-                    <label class="form-label">Are you?</label>
+                    <label class="form-label">Is it?</label>
                 </div>
                 <div class="col">
                     <span class="form-check form-switch">
                         <label class="form-check-label">
                             <img src="img/32px-Paralysis.png" title="Paralyzed" /> or <img src="img/32px-Shock.png" title="Shocked" />
-                            <input @bind="@MonsterTestPlayerIsParalyzed" class="form-check-input" type="checkbox" />
+                            <input @bind="@MonsterTestEnemyIsParalyzed" class="form-check-input" type="checkbox" />
                         </label>
                     </span>
                 </div>
@@ -537,7 +558,7 @@ else
                     <span class="form-check form-switch">
                         <label class="form-check-label">
                             <img src="img/32px-Freeze.png" title="Frozen" />
-                            <input @bind="@MonsterTestPlayerIsFrozen" class="form-check-input" type="checkbox" />
+                            <input @bind="@MonsterTestEnemyIsFrozen" class="form-check-input" type="checkbox" />
                         </label>
                     </span>
                 </div>
@@ -546,6 +567,40 @@ else
                 <div class="col">
                     <label class="form-label">
                         Normal Attack
+                        <span class="row">
+                            <span class="col col-3">
+                                <span class="input-group">
+                                    <input value="@PlayerNormalAttackAccuracy" class="form-control" disabled />
+                                    <span class="input-group-append input-group-text">%</span>
+                                </span>
+                            </span>
+                            <span class="col">
+                                <input value="@PlayerNormalAttackLowDamage - @PlayerNormalAttackHighDamage" class="form-control" disabled />
+                            </span>
+                        </span>
+                    </label>
+                </div>
+                <div class="col">
+                    <label class="form-label">
+                        Critical Hit
+                        <span class="row">
+                            <span class="col col-3">
+                                <span class="input-group">
+                                    <input value="@PlayerNormalAttackCriticalChance" class="form-control" disabled />
+                                    <span class="input-group-append input-group-text">%</span>
+                                </span>
+                            </span>
+                            <span class="col">
+                                <input value="@PlayerNormalAttackCriticalLowDamage - @PlayerNormalAttackCriticalHighDamage" class="form-control" disabled />
+                            </span>
+                        </span>
+                    </label>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col">
+                    <label class="form-label">
+                        Enemy Attack
                         <span class="row">
                             <span class="col col-3">
                                 <span class="input-group">
@@ -766,6 +821,7 @@ else
             return levelTable.BaseStats[indexClass].ATP + levelDeltas.Sum(l => l.ATP) + GetATPBonus() + GetEveryStatBoost().Sum(s => (int)CalculateStatBoost("ATP", s.Code, s.Value)) + (PowerMaterial + Mag.Pow) * 2;
         }
     }
+    public int LowATP { get; set; }
     public int ATP { get; set; }
     public int DFP { get; set; }
     public int BaseMST
@@ -1033,6 +1089,31 @@ else
 
     public bool MonsterTestPlayerIsParalyzed { get; set; }
     public bool MonsterTestPlayerIsFrozen { get; set; }
+    public bool MonsterTestEnemyIsParalyzed { get; set; }
+    public bool MonsterTestEnemyIsFrozen { get; set; }
+
+    public int PlayerNormalAttackAccuracy
+    {
+        get
+        {
+            if (MonsterTest == null) return 0;
+            var EVPEffective = MonsterTest.EVP * this switch
+            {
+                { } when MonsterTestEnemyIsParalyzed && MonsterTestEnemyIsFrozen => 0.55,
+                { } when MonsterTestEnemyIsParalyzed => 0.85,
+                { } when MonsterTestEnemyIsFrozen => 0.7,
+                _ => 1
+            };
+            return (int)Math.Clamp(ATA - EVPEffective * 0.2, 0, 100);
+        }
+    }
+
+    public int PlayerNormalAttackLowDamage => MonsterTest == null ? 0 : (int)Math.Max(0, (LowATP - MonsterTest.DFP) / 5 * 0.9);
+    public int PlayerNormalAttackHighDamage => MonsterTest == null ? 0 : (int)Math.Max(0, (ATP - MonsterTest.DFP) / 5 * 0.9);
+    public int PlayerNormalAttackCriticalChance => MonsterTest == null ? 0 : LCK / 5;
+    public int PlayerNormalAttackCriticalLowDamage => MonsterTest == null ? 0 : (int)(PlayerNormalAttackLowDamage * 1.5);
+    public int PlayerNormalAttackCriticalHighDamage => MonsterTest == null ? 0 : (int)(PlayerNormalAttackHighDamage * 1.5);
+
     public int MonsterNormalAttackAccuracy
     {
         get
@@ -1102,6 +1183,7 @@ else
             if (Level != 1) Character.Level = 1;
             HP = 0;
             TP = 0;
+            LowATP = 0;
             ATP = 0;
             DFP = 0;
             MST = 0;
@@ -1205,6 +1287,7 @@ else
                 => (int)Math.Floor((baseMST + Level - 1) * 1.5 + GetEveryStatBoost().Sum(s => (int)CalculateStatBoost("TP", s.Code, s.Value))),
             _ => 0
         } + TPMaterial * 2;
+        LowATP = (int)Math.Floor(BaseATP + BaseATP * GetShiftaDebandMultiplier(ShiftaLevel)) + Weapon.Atp - Weapon.BaseAtp;
         ATP = (int)Math.Floor(baseATP + baseATP * GetShiftaDebandMultiplier(ShiftaLevel)) + Weapon.Atp - Weapon.BaseAtp;
         DFP = (int)Math.Floor(baseDFP + baseDFP * GetShiftaDebandMultiplier(DebandLevel));
         MST = baseMST;
