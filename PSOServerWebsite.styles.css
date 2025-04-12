@@ -236,6 +236,10 @@ main[b-x8btpx0o3k] {
     --bs-border-width: 1px;
     border-left: calc(var(--bs-border-width) * 2) solid currentcolor;
 }
+/* /Pages/CharacterBuilder.razor.rz.scp.css */
+.label-icon[b-16829gpfme] {
+    max-height: 1.25em;
+}
 /* /Pages/Quests.razor.rz.scp.css */
 .quests-items[b-7y5dhq6oes] {
     font-size: x-small;
